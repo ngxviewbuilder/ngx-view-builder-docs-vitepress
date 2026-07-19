@@ -31,9 +31,11 @@ Row context in expressions and actions: `{row.fieldName}` — e.g. a row action 
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |
-| **Total path (lazy)** | Path to the total record count, e.g. `meta.total` or `totalCount`. Required for server-side pagination. |
+| **Total path (lazy)** | Path to the total record count, e.g. `meta.total` or `totalCount`. Optional — `total`, `totalCount`, `totalRecords`, `count`, `cnt` (and the same names nested under `paging.*`) are auto-detected without setting this. |
 | **Order clause** | Sort expression the backend expects. |
 | **Order direction** | `asc` / `desc`, used with the order clause or column sorting. |
+
+With **Lazy load** on, set the data source's **Method** to `TABLE-POST` — this sends a real `POST` but automatically merges the current page/sort/search state into the request body for you. **For the exact request/response JSON your backend must implement, see [Table: server-side paging & filtering](../../developers/data-sources#table-server-side-paging-filtering-table-post) in the developer docs** — hand that section to whoever builds the endpoint.
 
 ### Search
 
@@ -135,7 +137,7 @@ Every action uses the standard [action editor](../events-actions) — a row butt
 | Property | What it does |
 | --- | --- |
 | **Show header controls** | Master switch for the header bar (search, export, menu…). |
-| **Show export buttons** | CSV / Excel / PDF export. |
+| **Show export buttons** | CSV / Excel / PDF export — generated entirely in the browser from the rows the table already has (or re-fetches with a larger page size for "export all"). There is no separate server-side export endpoint to build. |
 | **Export column picker dialog** | Choose which columns to export — useful for wide tables. |
 | **Export file name** | Default download name. |
 | **Export all page size** | Batch size when exporting all pages of a lazy table. |

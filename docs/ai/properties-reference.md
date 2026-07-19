@@ -254,11 +254,15 @@ Value shape: `boolean`
 
 | Property | Type | Notes |
 |---|---|---|
-| `placeholder` | `string` | |
-| `accept` | `string` | Accepted MIME types or extensions |
+| `accept` | `string` | Accepted MIME types or extensions, e.g. `.pdf,image/*` |
 | `multiple` | `boolean` | Allow multiple files |
-| `maxSize` | `number` | Max file size in bytes |
-| `requiredMessage` | `string` | |
+| `maxFiles` | `number` | Max number of attached files (default `5`) |
+| `maxFileSizeMb` | `number` | Max file size **in megabytes**, not bytes |
+| `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources; empty `uploadDataSourceName` means files never leave the browser (local metadata only) |
+| `uploadFormFieldName` | `string` | `multipart/form-data` field name for the file (default `file`) — upload always sends single-field `FormData`, never JSON/base64 |
+| `fileKeyField` / `fileNameField` / `fileTypeField` / `fileSizeField` | `string` | Field names read from the server's response object (defaults `key`, `name`, `contentType`, `size`; the older `fil_key`/`fil_name`/`fil_content_type`/`fil_size` names are still recognized as fallback aliases) |
+
+Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name` — never file bytes/base64. Full request/response wire contract: [File upload requests](../developers/data-sources#file-upload-requests).
 
 ### `panel`
 
@@ -322,12 +326,29 @@ Column type values: `text` `number` `date` `boolean` `html` `status` `toggleSwit
 | Property | Type | Notes |
 |---|---|---|
 | `columnsConfig` | `ITableColumnConfig[]` | Column definitions — use `key` not `name` |
-| `dataSource` | `ITableDataSourceConfig` | Table datasource config |
-| `sortable` | `boolean` | Enable sorting |
-| `filtering` | `boolean` | Enable filtering |
-| `paging` | `boolean` | Enable paging |
+| `dataSource` | `IElementDataSource` | Client-side table only (`lazyLoad: false`) — must return **all** rows in one response; the table paginates/sorts/filters in the browser |
+| `tableDataSourceName` | `string` | Server-side table (`lazyLoad: true`) — the source referenced must accept the `TABLE-POST` paging/filter contract below |
+| `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
+| `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count; both optional — common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
-| `rowActions` | `ITableRowActionConfig[]` | Row action buttons |
+| `rowActions` | `ITableRowActionConfig[]` | Row action buttons — go through the generic action/data-source pipeline, not this contract |
+
+**Do not use `ITableDataSourceConfig`** — it exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
+
+When `lazyLoad: true` and the data source's `method` is the literal string `TABLE-POST` (sent over the wire as a real `POST`), NGX View Builder auto-merges the current page/sort/search state into the request body:
+
+```json
+{
+  "pagingParams": { "cnt": null, "orderClause": "lastName DESC", "pageSize": 25, "skipRows": 50, "totalCountUsed": false },
+  "params": [ ["tenantId", "42"] ],
+  "extendedParams": [
+    { "paramName": "quickSearch", "paramValue": { "condition": "%-%", "value": "acme" } },
+    { "paramName": "status", "paramValue": { "condition": "=", "value": "active" } }
+  ]
+}
+```
+
+`condition` values: `%-%` contains, `!%-%` not contains, `%-` starts with, `-%` ends with, `=`/`!=` equals/not equals, `>`/`>=`/`<`/`<=` for numbers and dates. Full contract, response shape, row-action/inline-edit context, and export behavior: [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post).
 
 ### `tabs` / `tabsPro`
 

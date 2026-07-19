@@ -22,7 +22,7 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | Field | What it does |
 | --- | --- |
 | **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required — actions using a URL-less REST source warn in the editor. |
-| **Method** | `GET`, `POST`, `PUT`, `DELETE`… |
+| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST` — a special method for a **Table**'s data source: sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}` — use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 

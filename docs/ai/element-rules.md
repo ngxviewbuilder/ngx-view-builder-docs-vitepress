@@ -70,8 +70,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `fileUpload`
 
 - Use for file uploads.
-- Value shape depends on the backend contract and file model.
+- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`) — never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
 - Do not treat it as a plain text URL field.
+- Consulting mode: for the exact upload/download/delete request and response contract, see [Properties reference](./properties-reference#fileupload) and [File upload requests](../developers/data-sources#file-upload-requests).
 
 ### `button`
 
@@ -203,6 +204,7 @@ Canonical example:
 - Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
+- Server-side paging/search (`lazyLoad: true` + a `TABLE-POST` datasource method) has its own request/response contract — do not invent one. Consulting mode: see [Properties reference](./properties-reference#table) and [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post).
 - If `key` is empty or absent, the column will not be rendered at runtime.
 - This is not an editable `dynamicTable`.
 

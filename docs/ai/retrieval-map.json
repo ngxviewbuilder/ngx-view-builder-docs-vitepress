@@ -52,13 +52,13 @@
     { "path": "docs:developers/builder-integration.md", "maxChars": 1400 },
     { "path": "docs:developers/runtime-integration.md", "maxChars": 1400 },
     { "path": "docs:developers/structure-json.md", "maxChars": 1200 },
-    { "path": "docs:developers/data-sources.md", "maxChars": 1200 },
+    { "path": "docs:developers/data-sources.md", "maxChars": 2200 },
     { "path": "docs:developers/runtime-variables.md", "maxChars": 1000 }
   ],
   "groupFallback": {
     "input": [{ "path": "docs:creators/elements/inputs.md", "maxChars": 1400 }],
     "choice": [{ "path": "docs:creators/elements/choices.md", "maxChars": 1400 }],
-    "table": [{ "path": "docs:creators/elements/tables.md", "maxChars": 1500 }],
+    "table": [{ "path": "docs:creators/elements/tables.md", "maxChars": 2100 }],
     "container": [{ "path": "docs:creators/elements/containers.md", "maxChars": 1500 }]
   },
   "types": {
@@ -84,7 +84,8 @@
       { "path": "lib:lib/core/builder/datasets/properties/phone-input.property.ts", "maxChars": 1000 }
     ],
     "fileUpload": [
-      { "path": "docs:creators/elements/special.md", "maxChars": 1800 },
+      { "path": "docs:creators/elements/special.md", "maxChars": 2300 },
+      { "path": "docs:developers/data-sources.md", "maxChars": 8600 },
       { "path": "lib:lib/core/builder/datasets/properties/file-upload.property.ts", "maxChars": 1200 }
     ],
     "button": [
@@ -149,7 +150,8 @@
     ],
     "table": [
       { "path": "docs:ai/element-selection-map.md", "maxChars": 1000 },
-      { "path": "docs:creators/elements/tables.md", "maxChars": 1700 },
+      { "path": "docs:creators/elements/tables.md", "maxChars": 2100 },
+      { "path": "docs:developers/data-sources.md", "maxChars": 5200 },
       { "path": "lib:lib/core/shared/interfaces/element/table.interface.ts", "maxChars": 2000 },
       { "path": "lib:lib/core/builder/datasets/properties/table.property.ts", "maxChars": 1600 }
     ],
