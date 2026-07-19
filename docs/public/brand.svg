@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240">
+  <g fill="none" stroke="#1554ff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M75 10H10v65M158 10h65v65M10 167v65h65M223 167v65h-65"/>
+  </g>
+  <rect x="112" y="3" width="30" height="26" rx="7" fill="#78a0ff"/>
+  <text x="13" y="200" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="152" fill="#1554ff" letter-spacing="-3">NGX</text>
+  <text x="385" y="184" font-family="Segoe UI,Arial,sans-serif" font-weight="700" font-size="72" fill="#1554ff">View Builder</text>
+</svg>

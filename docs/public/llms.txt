@@ -1,0 +1,32 @@
+# NGX View Builder
+
+> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. This file indexes the documentation an AI agent should read, most important first.
+
+## AI reference (machine-first — start here)
+
+- [Overview & index](https://ngxviewbuilder.io/ai/): how to use these pages and the machine-readable retrieval-map.json
+- [Generation contract](https://ngxviewbuilder.io/ai/generation-contract): core rules of engagement and output modes for generating structure JSON
+- [JSON authoring rules](https://ngxviewbuilder.io/ai/json-authoring-rules): structure skeleton, pages/elements rules, naming, value shapes
+- [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map): mapping user intent to the right element type
+- [Logic & expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions): visibleIf, expression, and related fields with syntax rules
+- [Element rules & value shapes](https://ngxviewbuilder.io/ai/element-rules): per-element usage rules
+- [Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference): every supported property per element type
+- [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes): known anti-patterns with corrections
+- [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): converting a legacy form-builder JSON format
+- [Machine index](https://ngxviewbuilder.io/ai/retrieval-map.json): JSON map of request profiles to source files
+
+## Developer documentation
+
+- [Introduction](https://ngxviewbuilder.io/developers/): what the library is and how the pieces fit
+- [Installation](https://ngxviewbuilder.io/developers/installation): npm install and setup
+- [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration): host the visual builder in an app
+- [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): render structure JSON in production
+- [API service reference](https://ngxviewbuilder.io/developers/api-service): every host API method
+- [Events reference](https://ngxviewbuilder.io/developers/events): all typed events and payloads
+- [Structure JSON](https://ngxviewbuilder.io/developers/structure-json): the document format
+
+## Creator documentation
+
+- [Creators guide](https://ngxviewbuilder.io/creators/): using the visual builder without code
+- [Expressions basics](https://ngxviewbuilder.io/creators/expressions): the expression language
+- [Function reference](https://ngxviewbuilder.io/creators/functions): built-in expression functions

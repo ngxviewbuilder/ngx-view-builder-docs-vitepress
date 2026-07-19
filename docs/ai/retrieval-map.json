@@ -1,0 +1,251 @@
+{
+  "$comment": "Machine index for AI agents (used by ngx-view-builder-ai-agent). Path prefixes: 'docs:' resolves against roots.docs, 'lib:' against roots.library; both roots are relative to the workspace root (the folder containing all ngx-view-builder* projects). maxChars is the per-source character budget injected into the prompt. When documentation moves, update this file — the agent code does not hardcode paths.",
+  "roots": {
+    "docs": "ngx-view-builder-docs-vitepress/docs",
+    "library": "ngx-view-builder/projects/ngx-view-builder/src"
+  },
+  "universal": [
+    { "path": "docs:ai/generation-contract.md", "maxChars": 700 },
+    { "path": "docs:ai/json-authoring-rules.md", "maxChars": 1200 },
+    { "path": "docs:ai/common-mistakes.md", "maxChars": 1800 },
+    { "path": "docs:ai/properties-reference.md", "maxChars": 3000 },
+    { "path": "docs:ai/element-rules.md", "maxChars": 1200 },
+    { "path": "lib:lib/core/shared/interfaces/structure.interface.ts", "maxChars": 1400 },
+    { "path": "lib:lib/core/shared/interfaces/validator.interface.ts", "maxChars": 400 },
+    { "path": "lib:lib/core/shared/utils/enums/component-types.enum.ts", "maxChars": 900 }
+  ],
+  "selection": [
+    { "path": "docs:ai/element-selection-map.md", "maxChars": 1200 },
+    { "path": "docs:creators/elements/index.md", "maxChars": 900 }
+  ],
+  "review": [
+    { "path": "docs:ai/common-mistakes.md", "maxChars": 1200 }
+  ],
+  "legacyForms": [
+    { "path": "docs:ai/legacy-form-migration.md", "maxChars": 2400 },
+    { "path": "docs:ai/logic-and-expressions.md", "maxChars": 1800 }
+  ],
+  "logic": [
+    { "path": "docs:creators/cheat-sheet.md", "maxChars": 1400 },
+    { "path": "docs:creators/expressions.md", "maxChars": 1800 },
+    { "path": "docs:creators/conditional-logic.md", "maxChars": 2400 },
+    { "path": "docs:ai/logic-and-expressions.md", "maxChars": 1400 }
+  ],
+  "validators": [
+    { "path": "lib:lib/core/shared/interfaces/validator.interface.ts", "maxChars": 900 },
+    { "path": "docs:creators/validation.md", "maxChars": 1200 }
+  ],
+  "events": [
+    { "path": "lib:lib/core/shared/interfaces/event.interface.ts", "maxChars": 1100 },
+    { "path": "lib:lib/core/shared/interfaces/element/element-action.interface.ts", "maxChars": 1200 }
+  ],
+  "actions": [
+    { "path": "docs:creators/events-actions.md", "maxChars": 2400 }
+  ],
+  "data": [
+    { "path": "docs:creators/data-sources.md", "maxChars": 1500 },
+    { "path": "docs:creators/variables.md", "maxChars": 1200 }
+  ],
+  "developer": [
+    { "path": "docs:developers/api-service.md", "maxChars": 2600 },
+    { "path": "docs:developers/events.md", "maxChars": 2000 },
+    { "path": "docs:developers/builder-integration.md", "maxChars": 1400 },
+    { "path": "docs:developers/runtime-integration.md", "maxChars": 1400 },
+    { "path": "docs:developers/structure-json.md", "maxChars": 1200 },
+    { "path": "docs:developers/data-sources.md", "maxChars": 1200 },
+    { "path": "docs:developers/runtime-variables.md", "maxChars": 1000 }
+  ],
+  "groupFallback": {
+    "input": [{ "path": "docs:creators/elements/inputs.md", "maxChars": 1400 }],
+    "choice": [{ "path": "docs:creators/elements/choices.md", "maxChars": 1400 }],
+    "table": [{ "path": "docs:creators/elements/tables.md", "maxChars": 1500 }],
+    "container": [{ "path": "docs:creators/elements/containers.md", "maxChars": 1500 }]
+  },
+  "types": {
+    "text": [
+      { "path": "docs:creators/elements/inputs.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/shared/interfaces/element/text-input.interface.ts", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/text-input.property.ts", "maxChars": 1200 }
+    ],
+    "textarea": [
+      { "path": "docs:creators/elements/inputs.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/textarea.property.ts", "maxChars": 1000 }
+    ],
+    "number": [
+      { "path": "docs:creators/elements/inputs.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/number-input.property.ts", "maxChars": 1200 }
+    ],
+    "slider": [
+      { "path": "docs:creators/elements/inputs.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/slider.property.ts", "maxChars": 1000 }
+    ],
+    "phoneInput": [
+      { "path": "docs:creators/elements/inputs.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/phone-input.property.ts", "maxChars": 1000 }
+    ],
+    "fileUpload": [
+      { "path": "docs:creators/elements/special.md", "maxChars": 1800 },
+      { "path": "lib:lib/core/builder/datasets/properties/file-upload.property.ts", "maxChars": 1200 }
+    ],
+    "button": [
+      { "path": "docs:creators/elements/buttons.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/button.property.ts", "maxChars": 1400 },
+      { "path": "lib:lib/core/shared/interfaces/element/element-action.interface.ts", "maxChars": 1600 }
+    ],
+    "code": [
+      { "path": "docs:creators/elements/special.md", "maxChars": 1000 }
+    ],
+    "autocomplete": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/shared/interfaces/element/select-input.interface.ts", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/autocomplete.property.ts", "maxChars": 1200 }
+    ],
+    "select": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/shared/interfaces/element/select-input.interface.ts", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/select-input.property.ts", "maxChars": 1400 }
+    ],
+    "multiSelect": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/shared/interfaces/element/select-input.interface.ts", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/multi-select-input.property.ts", "maxChars": 1200 }
+    ],
+    "radio": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/radio-input.property.ts", "maxChars": 1200 }
+    ],
+    "checkbox": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/checkbox-input.property.ts", "maxChars": 1200 }
+    ],
+    "singleCheckbox": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/single-checkbox.property.ts", "maxChars": 1000 }
+    ],
+    "toggleSwitch": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/toggle-switch.property.ts", "maxChars": 1000 }
+    ],
+    "toggleButton": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/select-button.property.ts", "maxChars": 1000 }
+    ],
+    "dropdown": [
+      { "path": "docs:creators/elements/choices.md", "maxChars": 1400 }
+    ],
+    "datepicker": [
+      { "path": "docs:creators/elements/date-time.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/datepicker.property.ts", "maxChars": 1400 }
+    ],
+    "dateRange": [
+      { "path": "docs:creators/elements/date-time.md", "maxChars": 1400 },
+      { "path": "lib:lib/core/builder/datasets/properties/date-range.property.ts", "maxChars": 1200 }
+    ],
+    "dynamicTable": [
+      { "path": "docs:ai/element-selection-map.md", "maxChars": 1000 },
+      { "path": "docs:creators/elements/tables.md", "maxChars": 1700 },
+      { "path": "lib:lib/core/builder/datasets/properties/dynamic-table.property.ts", "maxChars": 1600 },
+      { "path": "lib:lib/core/builder/datasets/properties/dynamic-table-column.property.ts", "maxChars": 1200 }
+    ],
+    "table": [
+      { "path": "docs:ai/element-selection-map.md", "maxChars": 1000 },
+      { "path": "docs:creators/elements/tables.md", "maxChars": 1700 },
+      { "path": "lib:lib/core/shared/interfaces/element/table.interface.ts", "maxChars": 2000 },
+      { "path": "lib:lib/core/builder/datasets/properties/table.property.ts", "maxChars": 1600 }
+    ],
+    "listGrid": [
+      { "path": "docs:creators/elements/tables.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/list-grid.property.ts", "maxChars": 1200 }
+    ],
+    "chart": [
+      { "path": "docs:creators/elements/tables.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/chart.property.ts", "maxChars": 1200 }
+    ],
+    "dynamicPanel": [
+      { "path": "docs:ai/element-selection-map.md", "maxChars": 1000 },
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/shared/interfaces/element/dynamic-panel.interface.ts", "maxChars": 600 },
+      { "path": "lib:lib/core/builder/datasets/properties/dynamic-panel.property.ts", "maxChars": 1200 }
+    ],
+    "panel": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/shared/interfaces/element/panel.interface.ts", "maxChars": 600 },
+      { "path": "lib:lib/core/builder/datasets/properties/panel.property.ts", "maxChars": 1600 }
+    ],
+    "tabs": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/tabs.property.ts", "maxChars": 1200 }
+    ],
+    "tabsPro": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/tabs-pro.property.ts", "maxChars": 1200 }
+    ],
+    "accordion": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/accordion.property.ts", "maxChars": 1200 }
+    ],
+    "dialog": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/dialog.property.ts", "maxChars": 1200 }
+    ],
+    "splitter": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/splitter.property.ts", "maxChars": 1000 }
+    ],
+    "progressFlow": [
+      { "path": "docs:creators/elements/containers.md", "maxChars": 1500 },
+      { "path": "lib:lib/core/builder/datasets/properties/progress-flow.property.ts", "maxChars": 1000 }
+    ],
+    "richText": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/rich-text.property.ts", "maxChars": 1000 }
+    ],
+    "richTextViewer": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/rich-text-viewer.property.ts", "maxChars": 1000 }
+    ],
+    "image": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/image.property.ts", "maxChars": 1000 }
+    ],
+    "avatar": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/avatar.property.ts", "maxChars": 1000 }
+    ],
+    "icon": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/icon.property.ts", "maxChars": 800 }
+    ],
+    "messageCard": [
+      { "path": "docs:creators/elements/feedback.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/message-card.property.ts", "maxChars": 1000 }
+    ],
+    "statsCard": [
+      { "path": "docs:creators/elements/feedback.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/stats-card.property.ts", "maxChars": 1000 }
+    ],
+    "badge": [
+      { "path": "docs:creators/elements/feedback.md", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/badge.property.ts", "maxChars": 800 }
+    ],
+    "toast": [
+      { "path": "docs:creators/elements/feedback.md", "maxChars": 1000 },
+      { "path": "lib:lib/core/builder/datasets/properties/toast.property.ts", "maxChars": 1000 }
+    ],
+    "breadcrumbs": [
+      { "path": "lib:lib/core/builder/datasets/properties/breadcrumbs.property.ts", "maxChars": 800 }
+    ],
+    "pageTitle": [
+      { "path": "docs:creators/elements/content.md", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/page-title.property.ts", "maxChars": 800 }
+    ],
+    "iframe": [
+      { "path": "docs:creators/elements/special.md", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/iframe.property.ts", "maxChars": 800 }
+    ],
+    "customHtml": [
+      { "path": "docs:creators/elements/special.md", "maxChars": 800 },
+      { "path": "lib:lib/core/builder/datasets/properties/custom-html.property.ts", "maxChars": 800 }
+    ]
+  }
+}
