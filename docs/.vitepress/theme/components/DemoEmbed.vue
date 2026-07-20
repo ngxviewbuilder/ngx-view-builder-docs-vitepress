@@ -15,6 +15,29 @@ const runtimeFrame = ref<HTMLIFrameElement | null>(null);
 // Resolved on mount (client only): localhost docs → local demo app, prod docs → hosted demo.
 const base = ref('');
 
+// The demo app is a real Angular bundle behind the iframe — it needs a moment
+// to boot, which otherwise shows as a blank/white flash before the form
+// appears. A brief, deliberate spinner reads as "loading" instead of "broken".
+const MIN_LOADER_MS = 1500;
+const builderLoading = ref(true);
+const runtimeLoading = ref(true);
+let builderLoadStartedAt = 0;
+let runtimeLoadStartedAt = 0;
+
+function onBuilderLoad(): void {
+  const elapsed = Date.now() - builderLoadStartedAt;
+  setTimeout(() => {
+    builderLoading.value = false;
+  }, Math.max(0, MIN_LOADER_MS - elapsed));
+}
+
+function onRuntimeLoad(): void {
+  const elapsed = Date.now() - runtimeLoadStartedAt;
+  setTimeout(() => {
+    runtimeLoading.value = false;
+  }, Math.max(0, MIN_LOADER_MS - elapsed));
+}
+
 const theme = computed(() => (isDark.value ? 'dark' : 'light'));
 
 function resolveBase(): string {
@@ -46,6 +69,8 @@ function selectTab(tab: 'builder' | 'runtime'): void {
     // Re-create the runtime iframe so it picks up the latest structure
     // the builder auto-saved into localStorage.
     runtimeKey.value += 1;
+    runtimeLoading.value = true;
+    runtimeLoadStartedAt = Date.now();
   }
   if (activeTab.value !== tab) {
     trackEvent('demo_tab_change', { tab });
@@ -72,6 +97,7 @@ watch(fullscreen, (value) => {
 
 onMounted(() => {
   base.value = resolveBase();
+  builderLoadStartedAt = Date.now();
   builderSrc.value = `${base.value}/builder?embed=1&theme=${theme.value}`;
   window.addEventListener('keydown', onKeydown);
 });
@@ -130,6 +156,7 @@ onBeforeUnmount(() => {
         :src="builderSrc"
         title="NGX View Builder — Builder"
         allow="clipboard-read; clipboard-write"
+        @load="onBuilderLoad"
       />
       <iframe
         v-if="activeTab === 'runtime'"
@@ -139,7 +166,15 @@ onBeforeUnmount(() => {
         :src="runtimeSrc"
         title="NGX View Builder — Runtime"
         allow="clipboard-read; clipboard-write"
+        @load="onRuntimeLoad"
       />
+
+      <div
+        v-if="(activeTab === 'builder' && builderLoading) || (activeTab === 'runtime' && runtimeLoading)"
+        class="demo-embed__loader"
+      >
+        <span class="demo-embed__spinner" />
+      </div>
     </div>
   </div>
 </template>
@@ -227,5 +262,36 @@ onBeforeUnmount(() => {
   height: 100%;
   border: none;
   background: var(--vp-c-bg);
+}
+
+.demo-embed__loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vp-c-bg);
+  z-index: 1;
+}
+
+.demo-embed__spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 3px solid var(--vp-c-divider);
+  border-top-color: var(--vp-c-brand-1);
+  animation: demo-embed-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-embed__spinner {
+    animation: none;
+  }
+}
+
+@keyframes demo-embed-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

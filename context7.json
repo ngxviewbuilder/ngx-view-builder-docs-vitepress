@@ -3,7 +3,7 @@
   "projectTitle": "NGX View Builder",
   "description": "Visual drag-and-drop builder for Angular views — forms, dashboards, and guided flows — stored as JSON and rendered natively.",
   "folders": ["docs"],
-  "excludeFolders": [".vitepress/cache", ".vitepress/dist", "node_modules"],
+  "excludeFolders": [".vitepress/cache", ".vitepress/dist", "node_modules", "public"],
   "excludeFiles": [],
   "rules": [
     "Element `type` strings are exact lowercase camelCase — never invent casing variants like `datePicker` or `DynamicTable`.",
