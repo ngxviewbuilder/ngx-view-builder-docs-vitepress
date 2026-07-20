@@ -222,7 +222,7 @@ export default defineConfig({
     footer: {
       message:
         'Documentation for NGX View Builder. Found a bug or have an idea? <a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/issues" target="_blank" rel="noopener">Open an issue</a>. ' +
-        '<a href="/developers/licensing">License</a> · <a href="/privacy">Privacy</a> · <a href="mailto:support@ngxviewbuilder.io">support@ngxviewbuilder.io</a>',
+        '<a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/releases" target="_blank" rel="noopener">Releases</a> · <a href="/developers/licensing">License</a> · <a href="/privacy">Privacy</a> · <a href="mailto:support@ngxviewbuilder.io">support@ngxviewbuilder.io</a>',
       copyright: `Copyright © ${new Date().getFullYear()} NGX View Builder`,
     },
   },
