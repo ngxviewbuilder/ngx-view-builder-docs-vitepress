@@ -1,16 +1,64 @@
 import { defineConfig } from "vitepress";
+import { GA_ID } from "./theme/analytics";
+
+const SITE_URL = "https://ngxviewbuilder.io";
+const SITE_DESCRIPTION =
+  "NGX View Builder is a visual, drag-and-drop form and view builder for Angular. Design forms, dashboards, and data tables as JSON in a low-code builder, and render them natively with a full Angular runtime.";
+const OG_IMAGE = `${SITE_URL}/LOGO.png`;
+
+const STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "NGX View Builder",
+  description: SITE_DESCRIPTION,
+  url: SITE_URL,
+  image: OG_IMAGE,
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web",
+  sameAs: ["https://github.com/ngxviewbuilder/ngx-view-builder-community"],
+};
 
 export default defineConfig({
   lang: "en-US",
   title: "NGX View Builder",
-  description: "Create, integrate, and ship dynamic Angular views.",
+  description: SITE_DESCRIPTION,
   cleanUrls: true,
   lastUpdated: true,
+  sitemap: {
+    hostname: SITE_URL,
+  },
   head: [
     ["link", { rel: "icon", href: "/brand-mark.svg" }],
     ["meta", { name: "theme-color", content: "#1554ff" }],
-    // Google Analytics is loaded client-side from theme/analytics.ts, gated
-    // behind the cookie-consent banner — see theme/components/CookieConsent.vue.
+    ["meta", { name: "google-site-verification", content: "Gu0m-v64N5w1PHAX9p0uPPm-epZSUrNr1v-IZqBGLdw" }],
+    ["meta", { name: "keywords", content: "Angular form builder, drag-and-drop form builder, low-code Angular, JSON schema forms, Angular dashboard builder, visual view builder" }],
+    // Open Graph
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "NGX View Builder" }],
+    ["meta", { property: "og:title", content: "NGX View Builder — the visual builder for complete Angular views" }],
+    ["meta", { property: "og:description", content: SITE_DESCRIPTION }],
+    ["meta", { property: "og:image", content: OG_IMAGE }],
+    ["meta", { property: "og:url", content: SITE_URL }],
+    // Twitter card
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:title", content: "NGX View Builder — the visual builder for complete Angular views" }],
+    ["meta", { name: "twitter:description", content: SITE_DESCRIPTION }],
+    ["meta", { name: "twitter:image", content: OG_IMAGE }],
+    // Structured data so answer engines (Perplexity, Google AI Overviews, etc.)
+    // can identify what this product is without parsing prose.
+    ["script", { type: "application/ld+json" }, JSON.stringify(STRUCTURED_DATA)],
+    // gtag.js bootstrap — loads on every page like any standard gtag.js setup
+    // (loading the library alone sends nothing, sets no cookie). Consent
+    // defaults to denied here; theme/analytics.ts flips it to granted (and
+    // only then calls `config`, which is what actually starts sending
+    // measurement requests) once the visitor accepts the cookie banner — see
+    // theme/components/CookieConsent.vue.
+    ["script", { async: "", src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}` }],
+    [
+      "script",
+      {},
+      `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=gtag;gtag('js',new Date());gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});`,
+    ],
   ],
   themeConfig: {
     // Full logotype in the navbar (name is part of the image, so no text title).
