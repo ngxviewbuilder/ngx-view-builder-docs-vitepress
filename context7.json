@@ -1,15 +1,15 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "NGX View Builder",
-  "description": "Visual drag-and-drop builder for Angular views — forms, dashboards, and guided flows — stored as JSON and rendered natively.",
+  "description": "Visual drag-and-drop builder for Angular views (forms, dashboards, and guided flows) stored as JSON and rendered natively.",
   "folders": ["docs"],
   "excludeFolders": [".vitepress/cache", ".vitepress/dist", "node_modules", "public"],
   "excludeFiles": [],
   "rules": [
-    "Element `type` strings are exact lowercase camelCase — never invent casing variants like `datePicker` or `DynamicTable`.",
-    "Use `visibleIf` (not `hideIf`) to show or hide an element — it is the native field; `hideIf` is only a legacy input alias.",
-    "Expressions use JEXL syntax: `&&`, `||`, `!`, `==`, `!=`, ternary `cond ? a : b`, and functions like `isEmpty()`, `notEmpty()`, `toNumber()` — never `and`/`or`/`iif(...)`.",
-    "Validators only allow `type`, `value`, `message`, `condition`, `applyIf` — never place `expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, or `resetIf` inside a validator object.",
+    "Element `type` strings are exact lowercase camelCase; never invent casing variants like `datePicker` or `DynamicTable`.",
+    "Use `visibleIf` (not `hideIf`) to show or hide an element. It is the native field; `hideIf` is only a legacy input alias.",
+    "Expressions use JEXL syntax: `&&`, `||`, `!`, `==`, `!=`, ternary `cond ? a : b`, and functions like `isEmpty()`, `notEmpty()`, `toNumber()`; never `and`/`or`/`iif(...)`.",
+    "Validators only allow `type`, `value`, `message`, `condition`, `applyIf`. Never place `expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, or `resetIf` inside a validator object.",
     "`table.columnsConfig[*]` entries use `key`, not `name`, or the column will not render."
   ]
 }

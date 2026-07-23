@@ -18,7 +18,7 @@ This page defines which expression fields the agent may use and which rules it m
 | `resetIf` | Clear an element under a condition | `true` or `false` |
 | `expression` | Compute and write a value | `string`, `number`, `boolean`, `array`, or `object` |
 | `validators[].applyIf` | Enable a validator conditionally | `true` or `false` |
-| `validators[].condition` | Failing check — error shown while `true` | `true` or `false` |
+| `validators[].condition` | Failing check, error shown while `true` | `true` or `false` |
 
 ## Other expression usage points
 

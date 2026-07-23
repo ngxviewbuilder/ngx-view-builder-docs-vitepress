@@ -1,25 +1,25 @@
 ---
 title: Feedback & status
-description: Badge, Message card, Toast, Stats card, Progress bar, and Stepper/Timeline — with full property tables.
+description: Badge, Message card, Toast, Stats card, Progress bar, and Stepper/Timeline, with full property tables.
 ---
 
 # Feedback & status
 
 ## Badge (`badge`)
 
-A small colored label — `Active`, `Draft`, `Overdue`.
+A small colored label: `Active`, `Draft`, `Overdue`.
 
 | Property | What it does |
 | --- | --- |
 | **Text** | The label. |
 | **Tone** | Semantic shade: `info`, `success`, `warning`, `risk`, `neutral`. |
 | **Pill** | Fully rounded corners. |
-| **Variant expression / Icon expression** | Drive the look from data — e.g. value `overdue` → risk tone. |
+| **Variant expression / Icon expression** | Drive the look from data, e.g. value `overdue` → risk tone. |
 | **Link URL** | Make the badge clickable. |
 
 ## Message card (`messageCard`)
 
-A highlighted box with icon, title, and text — for inline notices ("Your application is being reviewed").
+A highlighted box with icon, title, and text, for inline notices ("Your application is being reviewed").
 
 | Property | What it does |
 | --- | --- |
@@ -37,7 +37,7 @@ visibleIf: {status} == "rejected"
 
 ## Toast (`toast`)
 
-A temporary notification. Usually you don't place this element — toasts are shown by [actions](../events-actions) (`showToastAfter` or a `toast` action). Place a Toast element only when you need a persistent, configured message area.
+A temporary notification. Usually you don't place this element, because toasts are shown by [actions](../events-actions) (`showToastAfter` or a `toast` action). Place a Toast element only when you need a persistent, configured message area.
 
 | Property | What it does |
 | --- | --- |
@@ -58,7 +58,7 @@ A KPI tile: big number, label, and optional trend. Feed the value with an expres
 
 ## Progress bar (`progressBar`)
 
-A completion indicator. Value 0–100 from a fixed number or expression:
+A completion indicator. Value 0-100 from a fixed number or expression:
 
 ```text
 Expression: len({completedSteps}) / 5 * 100
@@ -86,12 +86,12 @@ Element-level properties:
 | Property | What it does |
 | --- | --- |
 | **Active index** | Default active step. |
-| **Active step expression** | Calculate the active step from data — for business conditions across several fields. |
+| **Active step expression** | Calculate the active step from data, for business conditions across several fields. |
 | **Active step data path** | Read the active index from external state. |
 | **Steps data path** | Load the step list from data or a source response (`data.steps`). |
 | **Show numbers / Show connector** | Numbering and the connecting line. |
 | **Allow manual navigation** | Users can click between steps themselves. |
-| **Step template / Step template ref** | Fully custom step markup — inline or from the [template library](../templates). |
+| **Step template / Step template ref** | Fully custom step markup, inline or from the [template library](../templates). |
 
 The current step is readable in expressions:
 

@@ -23,7 +23,7 @@ function decline(): void {
   <div v-if="visible" class="cookie-consent" role="dialog" aria-label="Cookie consent">
     <p class="cookie-consent__text">
       We use Google Analytics to see how these docs are used. Nothing is loaded or set until you
-      accept — see the <a href="/privacy">privacy policy</a>.
+      accept. See the <a href="/privacy">privacy policy</a>.
     </p>
     <div class="cookie-consent__actions">
       <button type="button" class="cookie-consent__decline" @click="decline">Decline</button>
@@ -47,7 +47,7 @@ function decline(): void {
   margin: 0 auto;
   padding: 14px 18px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--vp-c-bg-soft);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
 }
@@ -75,7 +75,7 @@ function decline(): void {
 .cookie-consent__decline,
 .cookie-consent__accept {
   padding: 6px 16px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;

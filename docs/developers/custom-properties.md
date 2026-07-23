@@ -1,6 +1,6 @@
 ---
 title: Custom properties
-description: Add or override properties in the sidebar — per element type or globally.
+description: Add or override properties in the sidebar, per element type or globally.
 ---
 
 # Custom properties
@@ -49,7 +49,7 @@ Runtime equivalents: `api.registerElementProperties(type, props)`, `api.register
 | `order` | Position within the category |
 | `hint` | Help text under the editor |
 | `choices` | Options for `select`-style editors (`{ label, value }[]`) |
-| `hiddenIf` | Expression over sibling properties — hides the editor conditionally (e.g. `!maskType \|\| maskType.value != "custom"`) |
+| `hiddenIf` | Expression over sibling properties that hides the editor conditionally (e.g. `!maskType \|\| maskType.value != "custom"`) |
 | `applyConditions` | Other property keys to re-evaluate when this one changes |
 | `section` | Optional sub-grouping inside a category |
 | `component` | A custom Angular editor component (fully custom editors) |
@@ -77,7 +77,7 @@ The `type` string picks one of the built-in attribute editors:
 | `file` | file picker |
 | `checklist`, `logic`, `templateName`, `sourceName`, and others | specialised editors used by built-in elements |
 
-For anything unique, supply your own `component` — it receives the property and element context and writes the value back like any built-in editor.
+For anything unique, supply your own `component`. It receives the property and element context and writes the value back like any built-in editor.
 
 ## How values reach the element
 
@@ -88,6 +88,6 @@ A property with key `analyticsEvent` is stored on the element JSON as `"analytic
 To only *clarify* existing properties (no structural change), set hint texts from the host:
 
 ```ts
-api.setPropertyHints({ name: 'Unique key — becomes the data field name.' });
+api.setPropertyHints({ name: 'Unique key, becomes the data field name.' });
 api.setPropertyTypeHints({ sourceMapper: 'Binds this element to a data source.' });
 ```

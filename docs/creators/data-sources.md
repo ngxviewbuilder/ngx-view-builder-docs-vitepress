@@ -1,11 +1,11 @@
 ---
 title: Data sources
-description: Every field of the DataSources editor and the element binding panel — REST, route, and local sources.
+description: Every field of the DataSources editor and the element binding panel, for REST, route, and local sources.
 ---
 
 # Data sources
 
-A data source is a named connection to data — usually an API endpoint. You define sources once per view in the bottom **DataSources** tab, then bind elements to them. Sources are referenced everywhere by **name**.
+A data source is a named connection to data, usually an API endpoint. You define sources once per view in the bottom **DataSources** tab, then bind elements to them. Sources are referenced everywhere by **name**.
 
 ## The source editor
 
@@ -21,12 +21,12 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 
 | Field | What it does |
 | --- | --- |
-| **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required — actions using a URL-less REST source warn in the editor. |
-| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST` — a special method for a **Table**'s data source: sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
-| **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}` — use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
+| **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required: actions using a URL-less REST source warn in the editor. |
+| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST`, a special method for a **Table**'s data source that sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
+| **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 
-`{placeholders}` are filled from the request params you map on the element or action. If a required placeholder has no value yet, the request is skipped — a city list bound to `{countryId}` simply stays empty until a country is picked.
+`{placeholders}` are filled from the request params you map on the element or action. If a required placeholder has no value yet, the request is skipped: a city list bound to `{countryId}` stays empty until a country is picked.
 
 ### Route data
 
@@ -52,7 +52,7 @@ For non-trivial JSON, the **Object creator** dialog builds a valid object visual
 | **Root type** | Whether the root is an object or array. |
 | **Add root field / Add field / Add nested field** | Grow the structure; objects and arrays can contain nested fields. |
 | **Field name** | The JSON key. |
-| **Type** | `Object`, `Array`, `Property` — or a plain value (`Text`, `Number`, `Boolean`, `Null`). |
+| **Type** | `Object`, `Array`, `Property`, or a plain value (`Text`, `Number`, `Boolean`, `Null`). |
 | **Value / other field name** | The literal value, or a reference to another field. |
 | **Binding path** | Use `{path}` to bind to live form data, or a static value. |
 | **JSON preview** → **Insert into JSON** | Review the generated JSON, then insert it into the source. |
@@ -64,16 +64,16 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | Field | What it does |
 | --- | --- |
 | **Data source** | Which source feeds this element. Dependent fields are supported via the param map and refresh paths. |
-| **Use as** | `Option` — the source loads selectable options (select, radio, checkbox); `Value` — the source loads the field's value. |
+| **Use as** | `Option` loads selectable options (select, radio, checkbox); `Value` loads the field's own value. |
 | **Option value key / Option label key** | Which response fields become the stored value and the visible label. |
 | **Items path** | Where the array lives in the response (e.g. `data.items`). |
-| **Filter options by** | Legacy conditional filter — leave empty if unused. Prefer the *Filter if equal / not equal* option properties. |
+| **Filter options by** | Legacy conditional filter, leave empty if unused. Prefer the *Filter if equal / not equal* option properties. |
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |
 | **Reload source when mapped question value changes** (*React to change*) | Auto-reload when a mapped param's value changes. |
 | **Listen fields** | Comma-separated extra paths to watch (e.g. `el1` or `panel.userId`). If empty, the system auto-detects from URL placeholders and the param mapping. |
-| **Lazy load** | Fetch on demand — tables load per page/sort, autocomplete loads as the user types. |
+| **Lazy load** | Fetch on demand: tables load per page/sort, autocomplete loads as the user types. |
 
-## Example — country → city dropdowns
+## Example: country → city dropdowns
 
 1. Define sources: `loadCountries` (`GET /api/countries`) and `loadCities` (`GET /api/cities?country={countryId}`).
 2. Element `country` (Select): data source `loadCountries`, use as `Option`, value key `code`, label key `name`.
@@ -91,4 +91,4 @@ Saving goes through [actions](./events-actions): a button's `dataSource` action 
 
 ## Reloading from expressions
 
-`runDataSource("loadUsers")` inside any expression re-runs a source — occasionally useful in advanced logic. Prefer element bindings with **React to change** for normal flows.
+`runDataSource("loadUsers")` inside any expression re-runs a source, which is occasionally useful in advanced logic. Prefer element bindings with **React to change** for normal flows.

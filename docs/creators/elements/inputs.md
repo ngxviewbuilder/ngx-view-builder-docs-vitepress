@@ -21,7 +21,7 @@ Specific properties:
 | **Show max length counter** | Live character counter under the field |
 | **Spellcheck** | Browser spellcheck on/off |
 
-Example — a Lithuanian company code field:
+Example: a Lithuanian company code field:
 
 - *Name*: `companyCode`, *Input mode*: `numeric`, *Max length*: `9`
 - *Validators*: `pattern` = `^[0-9]{9}$`, message `Company code is 9 digits`
@@ -36,7 +36,7 @@ Numeric input that stores a number (or a formatted string when configured).
 
 | Property | What it does |
 | --- | --- |
-| **Use visual number format** | Locale-aware display formatting (e.g. US: `12,345.67`) — the stored value stays a clean number |
+| **Use visual number format** | Locale-aware display formatting (e.g. US: `12,345.67`). The stored value stays a clean number |
 | **Format locale** | Locale override; empty = *Form settings → Locale* |
 | **Min / Max fraction digits** | Digits shown after the decimal point |
 | **Thousand separators** | Group digits by locale |
@@ -45,7 +45,7 @@ Numeric input that stores a number (or a formatted string when configured).
 | **Number placeholder text** | Placeholder for the empty state |
 | **Min / Max value** | Numeric bounds |
 
-Use Number whenever the value is used in calculations — `{price} * {quantity}` works without conversion.
+Use Number whenever the value is used in calculations, so `{price} * {quantity}` works without conversion.
 
 ## Number stepper (`numberStepper`)
 
@@ -57,7 +57,7 @@ Phone number with country-code selection and formatting.
 
 | Property | What it does |
 | --- | --- |
-| **Default country code** | Pre-selected country — useful when most users share one market (e.g. `US`, `LT`) |
+| **Default country code** | Pre-selected country, worth setting when most users share one market (e.g. `US`, `LT`) |
 | **Allowed country codes** | Restrict the selector to specific markets |
 | **Enable country search** | Search box inside the country dropdown |
 | **Return country ISO code** | Store the ISO code together with the number |
@@ -78,6 +78,6 @@ Drag to pick a number within a range. Good for ratings and percentage-style answ
 | --- | --- |
 | Any free text | Text |
 | Value used in math | Number |
-| Quantity 0–20 | Number stepper |
+| Quantity 0-20 | Number stepper |
 | Approximate value in a known range | Slider |
 | Phone number | Phone input (not Text) |

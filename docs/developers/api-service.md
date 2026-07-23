@@ -32,7 +32,7 @@ When several runtime views render at once (e.g. a view inside a dialog), each ge
 | `patchSettings(patch: Record<string, unknown>): boolean` | Sets several settings at once; keys may be nested paths. |
 | `replaceSettings(settings): boolean` | Replaces the settings object wholesale. |
 | `updateSettings(updater: (settings) => void): boolean` | Mutates settings via callback. |
-| `notifyStructureChanged(): void` | Emits `onStructureChanged` manually (rarely needed — mutation methods call it for you). |
+| `notifyStructureChanged(): void` | Emits `onStructureChanged` manually (rarely needed, since mutation methods call it for you). |
 | `captureStructureSource(structure): void` | Stores a structure snapshot used as the mutable source for `updateStructure`/`setSetting`. Called automatically by `setStructure`. |
 | `clearCapturedStructureSource(): void` | Drops the captured snapshot. |
 | `markPristine(): void` | Resets the dirty flag (e.g. right after saving). |
@@ -102,11 +102,11 @@ api.updateElement('summaryPanel', (el: any) => { el.title = 'Order summary'; });
 
 | Method | Description |
 | --- | --- |
-| `validateData(formJson, dataJson, options?): Promise<INgxViewBuilderValidationEvent>` | **Headless validation**: builds the structure, applies data, evaluates expressions and validators, and returns `{ isValid, issues[] }` — no UI needed. See [Headless validation](./validator). |
+| `validateData(formJson, dataJson, options?): Promise<INgxViewBuilderValidationEvent>` | **Headless validation**: builds the structure, applies data, evaluates expressions and validators, and returns `{ isValid, issues[] }`, with no UI needed. See [Headless validation](./validator). |
 | `showToast(payload: INgxViewBuilderToastPayload): void` | Shows a runtime toast (`title`, `message`, `variant`, `position`, `autoHideMs`, `icon`…). |
 | `notifyValidationResult(isValid, issues): void` | Emits `onValidated`/`onValidating` and fires the `validated` platform trigger. Called by the runtime after UI validation. |
 | `notifyComplete(isValid, data, issues): void` | Emits `onComplete` and the `completed` trigger. Called on Submit. |
-| `notifySaveRequested(source?): void` | Emits `onSaveRequested` (`source`: `'header' \| 'api'`) — a programmatic "Save" click. |
+| `notifySaveRequested(source?): void` | Emits `onSaveRequested` (`source`: `'header' \| 'api'`), a programmatic "Save" click. |
 | `notifyBeforeRender(tab)` / `notifyRender(tab)` / `notifyAfterRender(tab)` | Emit the render-phase events and matching `beforeLoad`/`onLoad`/`afterLoad` triggers. The builder/runtime call these; hosts rarely need to. |
 | `notifyTabChanged(tab): void` | Announces that the builder tab changed (emits `onTabChanged`). |
 | `notifyCurrentPageChanged(pageIndex, pageName): void` | Announces a page switch (emits `onCurrentPageChanged` + `pageChanged` trigger). |
@@ -179,7 +179,7 @@ const handle = api.startLanguageSync({
 | --- | --- |
 | `setThemeMode(theme: 'light' \| 'dark'): void` | Switches light/dark mode. |
 | `getThemeMode(): 'light' \| 'dark' \| null` | Current mode (null until first set). |
-| `setTheme(theme): void` | Accepts either a mode string (`'dark'`) or a CSS-variable map — one call for both cases. |
+| `setTheme(theme): void` | Accepts either a mode string (`'dark'`) or a CSS-variable map, one call for both cases. |
 | `setCustomTheme(theme): void` | Registers a custom theme: `{ mergeWithDefaults?, shared?, light?, dark? }` variable maps. Re-applies variables for the active mode. |
 | `getCustomTheme(): INgxViewBuilderCustomThemeDefinition \| null` | Current custom theme. |
 | `setCssVariables(cssVariables): void` | Sets raw CSS custom properties (names are auto-prefixed with `--`). |
@@ -212,7 +212,7 @@ Everything from [`provideNgxViewBuilderExtensions`](./extensions) is also callab
 | `registerSvgIconDirectory(config): Promise<{ loaded, failed }>` | Loads a directory of `.svg` files by URL manifest. |
 | `registerSvgIconDirectories(configs): Promise<...[]>` | Several directories at once. |
 | `getTableHeaderCenterExtensions(): INgxViewBuilderCustomElementDefinition[]` | Custom elements flagged `allowInTableHeader` (usable in table header bars). |
-| `attachBuilderAdapter(adapter): void` | Internal bridge between this service and the builder UI — the builder component attaches itself; hosts don't call this. |
+| `attachBuilderAdapter(adapter): void` | Internal bridge between this service and the builder UI. The builder component attaches itself; hosts don't call this. |
 
 ## Templates & sidebar library
 
@@ -252,6 +252,6 @@ Use together with the table events to persist per-user column layouts and saved 
 | Method | Description |
 | --- | --- |
 | `switchToTab(tab): void` | Switches the builder to a tab (`'editor'`, `'preview'`, `'jsonEditor'`, `'formSettings'`, `'translations'`, `'variables'`, or a plugin tab code). |
-| `requestTabChange(tab): void` | Emits `onTabChangeRequested` — the builder decides whether to honour it (useful when the host wraps tab navigation). |
+| `requestTabChange(tab): void` | Emits `onTabChangeRequested`. The builder decides whether to honour it (useful when the host wraps tab navigation). |
 | `setAiAssistantConfig(config): void` | Sets the [AI assistant](./ai-chat) backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
 | `getAiAssistantConfig(): INgxViewBuilderAiAssistantConfig` | Current AI assistant config. |

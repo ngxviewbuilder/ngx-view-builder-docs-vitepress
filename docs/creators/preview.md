@@ -5,7 +5,7 @@ description: Test the view like an end user before handing it off.
 
 # Preview & testing
 
-The **Preview** tab runs the view with the real runtime engine — the same code end users get. Nothing is simulated: logic, validation, data sources, and actions all execute for real.
+The **Preview** tab runs the view with the real runtime engine, the same code end users get. Nothing is simulated: logic, validation, data sources, and actions all execute for real.
 
 ## Viewports
 
@@ -15,14 +15,14 @@ Switch between **desktop / tablet / mobile** widths to verify responsive setting
 
 Work through this list on every view:
 
-- **Empty submit** — required messages appear, the issues modal (if enabled) lists them all.
-- **Conditional paths** — flip every field referenced by a `visibleIf`/`requireIf` and watch dependent sections appear, become required, and reset.
-- **Wrong input** — invalid email, out-of-range numbers, bad patterns; every validator shows its own message.
-- **Long values** — a 200-character name, a long option label; layout should not break.
-- **Data sources** — dropdowns fill, dependent lists reload, tables page and search.
-- **Actions** — buttons navigate, save, confirm, and toast as configured.
-- **Languages** — switch each configured language; check for missing translations and overflowing texts.
-- **All viewports** — especially multi-column rows on mobile.
+- **Empty submit**: required messages appear, the issues modal (if enabled) lists them all.
+- **Conditional paths**: flip every field referenced by a `visibleIf`/`requireIf` and watch dependent sections appear, become required, and reset.
+- **Wrong input**: invalid email, out-of-range numbers, bad patterns; every validator shows its own message.
+- **Long values**: a 200-character name, a long option label; layout should not break.
+- **Data sources**: dropdowns fill, dependent lists reload, tables page and search.
+- **Actions**: buttons navigate, save, confirm, and toast as configured.
+- **Languages**: switch each configured language; check for missing translations and overflowing texts.
+- **All viewports**: especially multi-column rows on mobile.
 
 ## Inspecting the data
 

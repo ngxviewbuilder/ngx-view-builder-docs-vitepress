@@ -1,11 +1,11 @@
 ---
 title: AI assistant backend
-description: Wire the builder's AI chat panel to your own AI service — configuration, protocol, models, and the reference backend.
+description: Wire the builder's AI chat panel to your own AI service, covering configuration, protocol, models, and the reference backend.
 ---
 
 # AI assistant backend
 
-The builder ships with an [AI chat panel](../creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only** — it speaks a small HTTP + WebSocket protocol to a backend that *you* host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
+The builder ships with an [AI chat panel](../creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that *you* host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
 
 ## Enabling and configuring
 
@@ -32,7 +32,7 @@ builderSettings: INgxViewBuilderBuilderSettings = {
 | `enabled` | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set. |
 | `backendUrl` | Base URL of your AI service. Trailing slashes are stripped. |
 | `defaultModel` | Pre-selected model id in the picker. |
-| `models` | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend — it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
+| `models` | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
 
 The backend URL can also be set (or changed) at runtime through the API service:
 
@@ -48,7 +48,7 @@ Until a URL is known, the panel shows *"Host application has not provided AI ass
 
 The panel makes exactly two kinds of connections:
 
-### 1. Create a session — `POST {backendUrl}/ai/session`
+### 1. Create a session: `POST {backendUrl}/ai/session`
 
 ```jsonc
 // request
@@ -57,14 +57,14 @@ The panel makes exactly two kinds of connections:
 { "session_id": "..." }
 ```
 
-### 2. Chat — `WS {backendUrl → ws(s)}/ai/ws/{session_id}`
+### 2. Chat: `WS {backendUrl → ws(s)}/ai/ws/{session_id}`
 
 The `http(s)` scheme is swapped for `ws(s)` automatically.
 
 **Client → server messages:**
 
 ```jsonc
-// sent right after the socket opens — the current view definition
+// sent right after the socket opens: the current view definition
 { "type": "set_context", "context": { "structure": { /* IStructure */ } } }
 
 // one per user message
@@ -73,13 +73,13 @@ The `http(s)` scheme is swapped for `ws(s)` automatically.
   "text": "Add a client details panel",
   "language": "lt",
   "agent": { "model": "gemini-2.5-flash" },           // present when a model is picked
-  "context": { "structure": { /* current IStructure */ } }, // always sent — never stale
+  "context": { "structure": { /* current IStructure */ } }, // always sent, never stale
   "images": [ { "mediaType": "image/png", "dataUrl": "data:image/png;base64,..." } ],
-  "files":  [ { "name": "requirements.md", "content": "..." } ]
+  "files":  [ { "name": "requirements.docx", "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "size": 18234, "data": "UEsDBBQ..." } ]
 }
 ```
 
-Notes: images arrive as data URLs; text/`.docx` files arrive as extracted text (the panel truncates single files at ~40k chars and the total at ~100k).
+Notes: images arrive as data URLs. Files arrive as **raw bytes**, base64-encoded in `data` (no data-URL prefix), with the original `name`, `mimeType`, and `size`. The panel does not parse or convert anything, so your backend is responsible for reading each file (extracting text from `.docx`, decoding `.txt`/`.csv`, and so on). The panel rejects a single file over 10 MB and stops attaching once the batch passes 25 MB.
 
 **Server → client messages:**
 
@@ -90,7 +90,7 @@ Notes: images arrive as data URLs; text/`.docx` files arrive as extracted text (
 | `assistant_done` | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
 | `error` | `{ "message": "..." }` | Shown as the error banner; loading state ends. |
 
-That's the whole contract. Any backend that implements these five message types works — language, framework, and AI provider are entirely your choice.
+That's the whole contract. Any backend that implements these five message types works; language, framework, and AI provider are entirely your choice.
 
 ## The reference backend (`ngx-view-builder-ai-agent`)
 
@@ -122,15 +122,19 @@ curl http://localhost:8000/health
 | `NVB_AI_DEFAULT_MODEL` | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message. |
 | `NVB_AI_WORKSPACE_ROOT` | Folder containing all `ngx-view-builder*` projects (defaults to two levels above `src/`). Used to resolve the knowledge-base files. |
 | `NVB_AI_REFERENCE_MAP` | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`). |
-| `NVB_AI_DOCS_URL` | Optional live-docs URL injected into prompts. Off by default — the local retrieval-map sources are the primary reference. |
+| `NVB_AI_DOCS_SOURCE` | Where documentation pages are read from: `auto` (default — local file, published site as fallback), `local`, or `remote`. |
+| `NVB_AI_DOCS_LLMS_URL` | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`). |
+| `NVB_AI_DOCS_URL` | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference. |
+
+Because the agent resolves `docs:` sources from disk *or* from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
 
 The provider is also inferred from the model id: `gemini-*` always routes to Gemini regardless of `NVB_AI_PROVIDER`. Legacy `PF_AI_*` variable names still work as a fallback.
 
 ### How it builds answers
 
-- Its knowledge base is the **[AI reference](../ai/) section of this documentation**, indexed by [`retrieval-map.json`](../ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a *selected* slice of docs pages, library interfaces, enums, and property datasets into the prompt — not the whole repo, so prompts stay small.
+- Its knowledge base is the **[AI reference](../ai/) section of this documentation**, indexed by [`retrieval-map.json`](../ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a *selected* slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
 - It is not limited to generating JSON: **developer questions** (what an API method does, what it returns, how an event works, how to embed the builder) are answered in prose from the developer documentation via the map's `developer` source group.
-- `GET /health` reports `reference_map_loaded`, `reference_sources_total`, and `reference_sources_missing` — check it after moving any docs files.
+- `GET /health` reports `reference_map_loaded`, `reference_sources_total`, and `reference_sources_missing`; check it after moving any docs files.
 - Responses stream as `assistant_json_delta` chunks and finish with `assistant_done` carrying the generated/updated structure.
 
 ### Where to customise
@@ -148,7 +152,7 @@ The provider is also inferred from the model id: `gemini-*` always routes to Gem
 
 ## Adding models & providers
 
-**Models in the picker** are pure configuration — extend `aiAssistant.models` with any `{ id, label }` pairs and make sure the backend maps those ids to a provider call:
+**Models in the picker** are pure configuration. Extend `aiAssistant.models` with any `{ id, label }` pairs and make sure the backend maps those ids to a provider call:
 
 ```ts
 aiAssistant: {
@@ -162,11 +166,11 @@ aiAssistant: {
 }
 ```
 
-With the reference backend, switching **provider** is one env var (`NVB_AI_PROVIDER`); with your own backend you can route each model id to a different provider — the panel doesn't care, it only ever sends the id.
+With the reference backend, switching **provider** is one env var (`NVB_AI_PROVIDER`); with your own backend you can route each model id to a different provider. The panel doesn't care; it only ever sends the id.
 
 ## Security checklist
 
-- Host the backend yourself and keep **API keys server-side only** — the panel never handles provider keys.
+- Host the backend yourself and keep **API keys server-side only**. The panel never handles provider keys.
 - Put the endpoint behind your normal authentication (cookies/headers pass through the browser's `fetch` + WebSocket as usual for same-site setups).
-- Remember that the **whole view structure** is sent with every message — treat the AI backend with the same data-protection rules as the rest of your app.
+- Remember that the **whole view structure** is sent with every message, so treat the AI backend with the same data-protection rules as the rest of your app.
 - Validate/limit the structures your backend returns: whatever comes back in `assistant_done.structure` is applied to the canvas.

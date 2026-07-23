@@ -1,6 +1,6 @@
 ---
 title: "AI: Legacy form migration"
-description: How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON — element, property, and expression mapping.
+description: How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON, covering element, property, and expression mapping.
 ---
 
 # AI: Legacy form migration
@@ -36,7 +36,7 @@ This page is intended for the AI agent when a user asks to convert a form define
 
 ## Property map
 
-- `visibleIf` maps directly to `visibleIf` — same field name, same polarity, no inversion needed.
+- `visibleIf` maps directly to `visibleIf`: same field name, same polarity, no inversion needed.
 - `enableIf` is typically mapped to `disableIf`, but the logic must be inverted.
 - `requiredIf` maps to `requireIf`.
 - `resetValueIf` maps to `resetIf`.
@@ -82,7 +82,7 @@ In the final NGX View Builder JSON, use NGX View Builder / `JEXL`-style syntax.
 
 - Do not use source-library property names in the final NGX View Builder JSON if NGX View Builder does not have that property.
 - Do not use `and`, `or`, `notempty`, `empty`, `<>`, or `iif(...)` in final NGX View Builder expression strings.
-- Do not use self-reference expressions — a field must not reference itself in a fallback branch.
+- Do not use self-reference expressions. A field must not reference itself in a fallback branch.
 - If `expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, or `resetIf` is added, `logicExecutionMode: "onChange"` is typically required.
 
 ## When a 1:1 mapping is not possible

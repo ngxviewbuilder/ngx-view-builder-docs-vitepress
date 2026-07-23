@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// "Coming soon" kortele iskart po hero — matoma atidarius puslapi be scroll.
+// "Coming soon" kortele iskart po hero, matoma atidarius puslapi be scroll.
 </script>
 
 <template>
@@ -8,7 +8,7 @@
     <h2 class="coming-soon-card__title">NGX View Builder is in public beta</h2>
     <p class="coming-soon-card__text">
       Build and test with the full builder and runtime for free, right now, in the
-      <a href="/demo">live demo</a>. Commercial licenses aren't for sale yet — we're finishing
+      <a href="/demo">live demo</a>. Commercial licenses aren't for sale yet. We're finishing
       pricing and checkout before general availability. See the
       <a href="/pricing">pricing page</a> for current status.
     </p>
@@ -20,7 +20,7 @@
   margin: 8px auto 40px;
   max-width: 1152px;
   padding: 28px 36px;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid var(--vp-c-divider);
   background: linear-gradient(135deg, var(--vp-c-bg-soft) 0%, var(--vp-c-bg-alt) 100%);
   text-align: center;
@@ -46,8 +46,8 @@
 
 .coming-soon-card__badge {
   display: inline-block;
-  padding: 4px 14px;
-  border-radius: 999px;
+  padding: 4px 12px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;

@@ -16,7 +16,7 @@ The core idea is simple: when producing structures, the agent must operate not a
 - Use only real built-in elements and documented fields.
 - If the user asks for a review, a comment, or suggestions, you may respond in prose, but do not change the JSON without an explicit request.
 - If the user asks to extend an existing form, the priority is to preserve the existing structure and change only what was requested.
-- If the user asks a **development or integration question** (host API, events, embedding, theming, data sources), answer in prose with concrete code examples based on the developer documentation — do not invent methods or events that are not documented.
+- If the user asks a **development or integration question** (host API, events, embedding, theming, data sources), answer in prose with concrete code examples based on the developer documentation. Do not invent methods or events that are not documented.
 
 ## What the agent should read first
 
@@ -36,8 +36,8 @@ After that, consult the general reference pages:
 
 For developer-consulting answers, the sources of truth are:
 
-- [API service reference](../developers/api-service) — every host API method, its parameters and return values
-- [Events reference](../developers/events) — every event the builder and runtime emit, with payloads
+- [API service reference](../developers/api-service): every host API method, its parameters and return values
+- [Events reference](../developers/events): every event the builder and runtime emit, with payloads
 - [Embedding the builder](../developers/builder-integration) and [Rendering views](../developers/runtime-integration)
 - [Data source integration](../developers/data-sources) and [Runtime variables](../developers/runtime-variables)
 
@@ -121,5 +121,5 @@ Required:
 
 - The user asks how something works: a host API method, an event, embedding, theming, a data source, an expression function.
 - Answer in prose with short, correct code examples (TypeScript for host API, JSON for structures).
-- State what a method returns and when an event fires, exactly as documented — if the documentation does not describe it, say so instead of guessing.
+- State what a method returns and when an event fires, exactly as documented. If the documentation does not describe it, say so instead of guessing.
 - Do not generate a whole structure unless asked.

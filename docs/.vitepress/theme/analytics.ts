@@ -1,5 +1,5 @@
 // gtag.js itself loads unconditionally from every page (see the static
-// bootstrap script in .vitepress/config.mts `head`) — that's the pattern
+// bootstrap script in .vitepress/config.mts `head`). That's the pattern
 // Google's own docs and every working gtag.js setup use, and loading the
 // library alone sends nothing and sets no cookie. What's gated on consent
 // here is the actual reporting: analytics_storage stays 'denied' and no
@@ -32,7 +32,7 @@ function enableReporting(): void {
   reportingEnabled = true;
   window.gtag('consent', 'update', { analytics_storage: 'granted' });
   // Pageviews are reported explicitly via trackPageView (below) instead of
-  // GA4's automatic one — this SPA never reloads on navigation, so the
+  // GA4's automatic one, because this SPA never reloads on navigation, so the
   // automatic pageview would only ever see the very first page of a visit.
   window.gtag('config', GA_ID, { send_page_view: false });
   trackPageView(window.location.pathname + window.location.search);

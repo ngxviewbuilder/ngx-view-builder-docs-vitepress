@@ -1,5 +1,6 @@
 ---
 title: Privacy Policy
+description: How ngxviewbuilder.io handles analytics, cookies, and the data you enter in the live demo.
 sidebar: false
 ---
 
@@ -21,13 +22,13 @@ This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (togethe
 
 | Name | Purpose | Set when |
 | --- | --- | --- |
-| `nvb-analytics-consent` | Remembers your cookie-banner choice | Always (strictly necessary — this is not a tracking cookie) |
+| `nvb-analytics-consent` | Remembers your cookie-banner choice | Always (strictly necessary, and not a tracking cookie) |
 | Google Analytics cookies (`_ga`, `_ga_*`) | Distinguish visitors and sessions for analytics | Only after you accept |
 | Demo structure (`localStorage`) | Auto-saves what you build in the live demo | When you use `/demo` |
 
 ## Legal basis
 
-Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you can withdraw at any time by clearing your browser's site data for this domain — the banner will reappear on your next visit. Responding to emails relies on our **legitimate interest** in providing support.
+Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you can withdraw at any time by clearing your browser's site data for this domain, after which the banner reappears on your next visit. Responding to emails relies on our **legitimate interest** in providing support.
 
 ## Third parties
 
@@ -39,7 +40,7 @@ Analytics data is retained according to our Google Analytics account settings. E
 
 ## Your rights
 
-Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**. You may also lodge a complaint with your local data protection authority — in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
+Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**. You may also lodge a complaint with your local data protection authority: in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
 
 ## Children
 

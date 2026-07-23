@@ -5,7 +5,7 @@ description: Translate the builder interface itself (tabs, buttons, property lab
 
 # UI translations
 
-Two translation systems exist — don't mix them up:
+Two translation systems exist. Don't mix them up:
 
 | System | Translates | Managed by |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ providers: [
 
 ## Starting from the built-in English dictionary
 
-The library exports its own complete English dictionary — every translatable key with its default text — so you don't have to hunt them down one by one:
+The library exports its own complete English dictionary, every translatable key with its default text, so you don't have to hunt them down one by one:
 
 ```ts
 import { EN_UI_DICTIONARY } from 'ngx-view-builder';
@@ -47,7 +47,7 @@ export const DE_UI_DICTIONARY: Record<string, string> = {
 };
 ```
 
-This is also the fastest way to spot **missing** translations in a dictionary you already maintain — diff its keys against `Object.keys(EN_UI_DICTIONARY)`.
+This is also the fastest way to spot **missing** translations in a dictionary you already maintain: diff its keys against `Object.keys(EN_UI_DICTIONARY)`.
 
 A dictionary is a nested/flat map of key → text, keyed by language code. Other channels:
 
@@ -65,7 +65,7 @@ Host UI that lives next to the builder (header actions, toolbars) can reuse the 
 label: this.api.translateUi('host.actions.save.label', 'Save'),
 ```
 
-`translateUi(key, fallback)` returns the fallback when the key is missing — safe to call always. A `uiTranslate` pipe is exported for templates.
+`translateUi(key, fallback)` returns the fallback when the key is missing, so it is always safe to call. A `uiTranslate` pipe is exported for templates.
 
 ## Language resolution & sync
 
@@ -86,7 +86,7 @@ One-off resolution: `api.resolveHostLanguage(...)` / `api.applyHostLanguage(...)
 
 ## Workflow for a new language
 
-1. Start from `EN_UI_DICTIONARY` (exported by the library — see above), or the demo app's complete `lt` dictionary in `projects/test-app/.../lt.ts` for a worked example.
+1. Start from `EN_UI_DICTIONARY` (exported by the library, see above), or the demo app's complete `lt` dictionary in `projects/test-app/.../lt.ts` for a worked example.
 2. Translate the values; keep the keys.
 3. Register via the provider; set `language` or wire `startLanguageSync`.
 4. Untranslated keys fall back to built-in English texts.

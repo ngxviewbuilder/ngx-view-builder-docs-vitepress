@@ -7,7 +7,7 @@ description: Ship your own builder tab as a reusable package.
 
 A plugin is just a package (or app module) that calls `provideNgxViewBuilderExtensions()` with a **feature pack**: an id, optional capabilities, and one or more builder tabs backed by Angular components.
 
-## Anatomy — the real Templates plugin
+## Anatomy: the real Templates plugin
 
 ```ts
 import { EnvironmentProviders } from '@angular/core';
@@ -37,7 +37,7 @@ export function provideAcmeAuditStudio(): EnvironmentProviders {
 }
 ```
 
-That's the whole registration — the official Templates plugin (`ngx-view-builder-plugin-templates`) is exactly this thin.
+That's the whole registration. The official Templates plugin (`ngx-view-builder-plugin-templates`) is exactly this thin.
 
 ## The tab component
 
@@ -60,20 +60,20 @@ export class MyStudio {
 
 Useful building blocks:
 
-- `api.getStructure()` / `api.updateStructure(fn)` — read/write the view (updates flow to Undo history and `structureChanged`).
-- `api.onStructureChanged.add(...)` — refresh when the creator edits elsewhere.
-- Custom data can live in `structure.settings` under your own key — unknown settings keys are preserved by the core.
-- `api.translateUi(key, fallback)` + `uiDictionaries` in your extensions config — localise your tab.
+- `api.getStructure()` / `api.updateStructure(fn)`: read/write the view (updates flow to Undo history and `structureChanged`).
+- `api.onStructureChanged.add(...)`: refresh when the creator edits elsewhere.
+- Custom data can live in `structure.settings` under your own key, and unknown settings keys are preserved by the core.
+- `api.translateUi(key, fallback)` + `uiDictionaries` in your extensions config: localise your tab.
 - Tab labels starting with `tab.` resolve through UI dictionaries automatically.
 
 ## Capabilities
 
-`capabilities` are opaque strings other code can require. Property definitions support `requiredFeaturePacks` / `requiredCapabilities` — a property (or other gated UI) shows only when a matching pack is registered. Use this to make core-side features light up when your plugin is installed.
+`capabilities` are opaque strings other code can require. Property definitions support `requiredFeaturePacks` / `requiredCapabilities`: a property (or other gated UI) shows only when a matching pack is registered. Use this to make core-side features light up when your plugin is installed.
 
 ## Packaging checklist
 
 - [ ] Ship as an Angular library with a single `provideX()` entry point.
 - [ ] Peer-depend on `ngx-view-builder` (never bundle it).
 - [ ] Version-lock releases to the core version you built against.
-- [ ] Keep tab `id` stable — hosts may persist the active tab.
+- [ ] Keep tab `id` stable, since hosts may persist the active tab.
 - [ ] Style with the design tokens so themes work ([Theming](./theming)).

@@ -17,7 +17,7 @@ All visuals derive from CSS custom properties (design tokens): color scales, fon
 | Success / Info | `--color-success-*`, `--color-info-*` | positive & informational states |
 | Typography | `--nvb-font-family-base` | base font stack |
 
-Values are `oklch(...)` colors on an 050–950 scale (050 lightest). Components mix tokens with `color-mix()`, so overriding a scale re-colors everything consistently.
+Values are `oklch(...)` colors on an 050-950 scale (050 lightest). Components mix tokens with `color-mix()`, so overriding a scale re-colors everything consistently.
 
 ## Light / dark mode
 
@@ -30,7 +30,7 @@ or `api.setThemeMode('dark')`. Creators can also set a default in Form settings.
 
 ## Overriding tokens
 
-**Quick overrides** — a flat map applied on top of the active theme:
+**Quick overrides**, a flat map applied on top of the active theme:
 
 ```ts
 api.setCssVariables({
@@ -41,7 +41,7 @@ api.setCssVariables({
 
 or declaratively: `[cssVariables]="{ '--color-primary-500': '...' }"`.
 
-**Full custom theme** — per-mode token sets:
+**Full custom theme**, with per-mode token sets:
 
 ```ts
 api.setCustomTheme({
@@ -66,10 +66,10 @@ Write custom element styles against the tokens and they follow every theme autom
 }
 ```
 
-Never hardcode hex colors in element components — dark mode will break.
+Never hardcode hex colors in element components; dark mode will break.
 
 ## Related events
 
-`onThemeModeChanged`, `onCustomThemeChanged`, `onCssVariablesChanged` fire on every change — useful to sync the host app's own chrome.
+`onThemeModeChanged`, `onCustomThemeChanged`, `onCssVariablesChanged` fire on every change, which is handy for syncing the host app's own chrome.
 
 For per-view CSS (rather than tokens), see [Custom CSS](./custom-css).

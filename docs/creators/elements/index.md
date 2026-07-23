@@ -5,7 +5,7 @@ description: The full element catalogue, grouped by purpose.
 
 # Elements overview
 
-Elements are the building blocks of every view. This page is the index — each group has its own page with per-element details.
+Elements are the building blocks of every view. This page is the index; each group has its own page with per-element details.
 
 ## Which element do I need?
 
@@ -16,7 +16,7 @@ Elements are the building blocks of every view. This page is the index — each 
 | A number | Number, Number stepper, Slider | [Text & number inputs](./inputs) |
 | A phone number | Phone input | [Text & number inputs](./inputs) |
 | A date | Datepicker | [Date & time](./date-time) |
-| A period (from–to) | Date range | [Date & time](./date-time) |
+| A period (from/to) | Date range | [Date & time](./date-time) |
 | A time | Time picker | [Date & time](./date-time) |
 | One choice from a list | Select, Radio, Select button | [Choice inputs](./choices) |
 | Many choices from a list | Multi-select, Checkbox group, List box | [Choice inputs](./choices) |
@@ -24,7 +24,7 @@ Elements are the building blocks of every view. This page is the index — each 
 | Search-as-you-type choice | Autocomplete | [Choice inputs](./choices) |
 | A clickable action | Button | [Buttons & actions](./buttons) |
 | Group fields visually | Panel, Tabs, Accordion | [Containers](./containers) |
-| Repeatable entries (0–n) | Dynamic panel, Dynamic table | [Containers](./containers) / [Tables](./tables) |
+| Repeatable entries (0 to n) | Dynamic panel, Dynamic table | [Containers](./containers) / [Tables](./tables) |
 | A modal window | Dialog | [Containers](./containers) |
 | Read-only data rows | Table | [Tables & lists](./tables) |
 | Card-style records | List grid | [Tables & lists](./tables) |

@@ -17,7 +17,7 @@ api.onValueChanged.remove(handler);
 These are library emitters (not RxJS): `subscribe` returns `{ unsubscribe, closed }`. Always detach in `ngOnDestroy`.
 
 ::: tip Events work the same in the runtime and renderer
-`<ngx-view-builder-runtime>` and `<ngx-view-builder-renderer>` run on an isolated internal API instance, but every event they fire is automatically forwarded to the root `NgxViewBuilderApiService` your application injects — so the subscriptions below work identically on builder and runtime pages. (If you embed several runtimes on one page, use the payload's `elementName`/`elementDataPath` to tell them apart, or bridge instances yourself with the exported `bridgeNgxViewBuilderApiEvents(source, target)`.)
+`<ngx-view-builder-runtime>` and `<ngx-view-builder-renderer>` run on an isolated internal API instance, but every event they fire is automatically forwarded to the root `NgxViewBuilderApiService` your application injects, so the subscriptions below work identically on builder and runtime pages. (If you embed several runtimes on one page, use the payload's `elementName`/`elementDataPath` to tell them apart, or bridge instances yourself with the exported `bridgeNgxViewBuilderApiEvents(source, target)`.)
 :::
 
 ## Values & data
@@ -133,7 +133,7 @@ api.onDataSourceLoadFailed.add(({ sourceName, errorMessage }) =>
 | `onTriggerHandling` / `onTriggerHandled` | platform triggers execute |
 | `onRuleEvaluating` / `onRuleEvaluated` | rules engine runs (`executedBranch`) |
 
-## Example — full save pipeline
+## Example: full save pipeline
 
 ```ts
 ngOnInit(): void {

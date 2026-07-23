@@ -5,21 +5,21 @@ description: Build a working client registration form in ten minutes.
 
 # Your first form
 
-This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day — placing elements, naming them, adding logic, and previewing.
+This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
 ## 1. Place the fields
 
 From the **Single line inputs** group, drag onto the canvas:
 
-- **Text** — set *Label* to `First name`, *Name* to `firstName`.
-- **Text** — set *Label* to `Email`, *Name* to `email`.
+- **Text**: set *Label* to `First name`, *Name* to `firstName`.
+- **Text**: set *Label* to `Email`, *Name* to `email`.
 
 From the **Choice inputs** group:
 
-- **Radio** — set *Label* to `Client type`, *Name* to `clientType`. In the **Options** category add two options: `Private person` (value `person`) and `Company` (value `company`).
+- **Radio**: set *Label* to `Client type`, *Name* to `clientType`. In the **Options** category add two options: `Private person` (value `person`) and `Company` (value `company`).
 
 ::: tip
-Drag two elements next to each other to place them side by side in one row. Set their *Width* in the **Design** category — for example `50%` each.
+Drag two elements next to each other to place them side by side in one row. Set their *Width* in the **Design** category, for example `50%` each.
 :::
 
 ## 2. Make fields required
@@ -38,9 +38,9 @@ Select the panel and in the **Logic** category set:
 visibleIf:  {clientType} == "company"
 ```
 
-The panel now appears only when *Company* is selected. Expressions in `{curly braces}` reference other fields by name — see [Expressions basics](./expressions).
+The panel now appears only when *Company* is selected. Expressions in `{curly braces}` reference other fields by name; see [Expressions basics](./expressions).
 
-Make the company code mandatory only when visible — on the `companyCode` field set:
+Make the company code mandatory only when visible. On the `companyCode` field set:
 
 ```
 requireIf:  {clientType} == "company"
@@ -52,9 +52,9 @@ From **Actions**, drag a **Button**. Set *Label* to `Register`. In the **Actions
 
 - **Trigger**: `click`
 - **Validate form**: on
-- **Type**: `toast` — title `Done`, message `Registration saved`, variant `success`
+- **Type**: `toast` with title `Done`, message `Registration saved`, variant `success`
 
-In a real project the button would call a data source (`Type: dataSource`) to send the data to a server — see [Events & actions](./events-actions).
+In a real project the button would call a data source (`Type: dataSource`) to send the data to a server; see [Events & actions](./events-actions).
 
 ## 5. Preview
 
@@ -81,6 +81,6 @@ Every key is the `name` you gave an element. This is what the application receiv
 
 ## Next steps
 
-- [Pages & navigation](./pages) — split long forms into steps.
-- [Validation](./validation) — all validator types.
-- [Data sources](./data-sources) — load the client types from an API instead of hardcoding them.
+- [Pages & navigation](./pages): split long forms into steps.
+- [Validation](./validation): all validator types.
+- [Data sources](./data-sources): load the client types from an API instead of hardcoding them.

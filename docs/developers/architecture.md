@@ -20,7 +20,7 @@ ngx-view-builder
    └─ shared/     both sides: models, elements, services, providers, expressions
 ```
 
-Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register builder tabs and feature packs through the extensions API — the core never auto-loads them.
+Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register builder tabs and feature packs through the extensions API. The core never auto-loads them.
 
 ## Key concepts
 

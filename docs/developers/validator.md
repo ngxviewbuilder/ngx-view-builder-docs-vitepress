@@ -22,7 +22,7 @@ const result = await this.api.validateData({
 
 ## Standalone: `<ngx-view-builder-validator>`
 
-A component with no visible UI that loads a structure + data, runs the full runtime validation (including expressions), and emits the result. Designed for validation services — e.g. a small Angular app rendered server-side or in a headless browser that your backend calls to verify submissions with the *same* rules the form used.
+A component with no visible UI that loads a structure + data, runs the full runtime validation (including expressions), and emits the result. Designed for validation services, e.g. a small Angular app rendered server-side or in a headless browser that your backend calls to verify submissions with the *same* rules the form used.
 
 ```html
 <ngx-view-builder-validator
@@ -36,12 +36,12 @@ A component with no visible UI that loads a structure + data, runs the full runt
 
 | Input | Default | Purpose |
 | --- | --- | --- |
-| `pageJson` / `dataJson` | — | Structure and data to validate |
+| `pageJson` / `dataJson` | - | Structure and data to validate |
 | `autoValidateOnInit` | `true` | Validate immediately |
 | `backendUrl` / `validatePath` | `http://127.0.0.1:8010` / `/validate` | Remote validation endpoint mode |
 | `waitMs` / `timeoutMs` | `300` / `45000` | Stabilisation delay and timeout |
 | `headlessApiKey` | `__NGX_VIEW_BUILDER__` | Global API key for headless drivers |
-| `sessionHeaderName` / `sessionKey` / `requestHeaders` | — | Auth headers for the remote mode |
+| `sessionHeaderName` / `sessionKey` / `requestHeaders` | - | Auth headers for the remote mode |
 
 You can also call `validate()` on the component instance for on-demand runs.
 
@@ -60,4 +60,4 @@ The driver (Playwright, Puppeteer…) can then invoke validation through `window
 
 ## Why server-side validation matters
 
-Client-side rules protect UX, not integrity. Re-run the same structure + data through the validator on trusted infrastructure before persisting anything — the definitions are identical, so rules never drift between client and server.
+Client-side rules protect UX, not integrity. Re-run the same structure + data through the validator on trusted infrastructure before persisting anything. The definitions are identical, so rules never drift between client and server.

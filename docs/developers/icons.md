@@ -46,7 +46,7 @@ Multiple folders via `svgIconDirectories: [...]`. Runtime loading (`await api.re
 
 ## SVG guidelines
 
-- Use `viewBox`, no fixed `width`/`height` — the host sizes the icon.
+- Use `viewBox` and no fixed `width`/`height`; the host sizes the icon.
 - Use `currentColor` for strokes/fills so icons follow text color and theme.
 - Keep markup minimal; icons are inlined into the DOM.
-- Registered SVG is sanitised — keep icons to plain vector markup (no scripts/foreignObject).
+- Registered SVG is sanitised, so keep icons to plain vector markup (no scripts or foreignObject).

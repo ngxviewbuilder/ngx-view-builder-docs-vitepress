@@ -49,7 +49,7 @@ This page defines how an agent must construct NGX View Builder JSON.
 
 ## Element type name rules
 
-**Type strings are exact — copy them exactly.** Never invent casing variants.
+**Type strings are case-sensitive. Copy them exactly.** Never invent casing variants.
 
 | Correct | Wrong (do not use) |
 |---|---|
@@ -155,9 +155,9 @@ Validators are separate sub-objects in the `validators` array. They have their o
 | `element.requireIf` | `validator.applyIf` |
 | `element.expression` | _(does not exist on validators)_ |
 
-Never put `visibleIf`, `requireIf`, `readonlyIf`, `disableIf`, `expression`, or `resetIf` inside a validator object. Never use the field name `expression` on a validator — the correct field is `condition`.
+Never put `visibleIf`, `requireIf`, `readonlyIf`, `disableIf`, `expression`, or `resetIf` inside a validator object. Never use the field name `expression` on a validator; the correct field is `condition`.
 
-**Polarity:** `condition` is the *failing* check — the validator error is shown while `condition` evaluates to `true`. Use `applyIf` to run a validator only in certain cases (it runs while `applyIf` is truthy).
+**Polarity:** `condition` is the *failing* check. The validator error is shown while `condition` evaluates to `true`. Use `applyIf` to run a validator only in certain cases (it runs while `applyIf` is truthy).
 
 Correct:
 
@@ -190,4 +190,4 @@ Correct:
 5. Is the correct element chosen for the task.
 6. Are there no unnecessary properties added.
 7. Are all `type` strings exact-cased (e.g. `datepicker`, not `datePicker`)?
-8. Do validators use `condition` (error when `true`) and `applyIf` — not `expression`, `visibleIf`, or other element-level field names?
+8. Do validators use `condition` (error when `true`) and `applyIf`, rather than `expression`, `visibleIf`, or other element-level field names?

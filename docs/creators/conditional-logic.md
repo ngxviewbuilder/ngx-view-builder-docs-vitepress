@@ -60,7 +60,7 @@ Clears stale answers when their premise disappears:
 !contains({supportTypes}, "training")   clear trainingDate if training unselected
 ```
 
-Without a reset rule, a hidden field keeps its old value — which would still be submitted.
+Without a reset rule, a hidden field keeps its old value, and that value is still submitted.
 
 ## Complete example
 

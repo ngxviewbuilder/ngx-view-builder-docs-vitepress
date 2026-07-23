@@ -47,7 +47,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 - Use for small bounded quantities with increment/decrement buttons (passengers, rooms, items).
 - Value shape: `number`.
-- Use `min`/`max` to bound it. Do not use for large or precise numeric ranges — prefer `number`.
+- Use `min`/`max` to bound it. Do not use for large or precise numeric ranges; prefer `number`.
 
 ### `signaturePad`
 
@@ -70,7 +70,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `fileUpload`
 
 - Use for file uploads.
-- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`) — never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`), never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
 - Do not treat it as a plain text URL field.
 - Consulting mode: for the exact upload/download/delete request and response contract, see [Properties reference](./properties-reference#fileupload) and [File upload requests](../developers/data-sources#file-upload-requests).
 
@@ -128,7 +128,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 ### `datepicker`
 
-- **Exact type string: `"datepicker"`** (all lowercase — never `datePicker`, `DatePicker`, or `date-picker`).
+- **Exact type string: `"datepicker"`** (all lowercase, never `datePicker`, `DatePicker`, or `date-picker`).
 - Single date.
 - Value shape is typically a date string or documented date format.
 - Do not use for a date range.
@@ -185,7 +185,7 @@ Canonical example:
 
 ### `selectButton`
 
-- A row of connected buttons — a visual alternative to `radio` for 2–4 short options.
+- A row of connected buttons, a visual alternative to `radio` for 2-4 short options.
 - Value shape: single value, or array when `multiple` is `true`.
 - Do not use for long option lists; prefer `radio` or `select`.
 
@@ -204,7 +204,7 @@ Canonical example:
 - Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
-- Server-side paging/search (`lazyLoad: true` + a `TABLE-POST` datasource method) has its own request/response contract — do not invent one. Consulting mode: see [Properties reference](./properties-reference#table) and [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post).
+- Server-side paging/search (`lazyLoad: true` + a `TABLE-POST` datasource method) has its own request/response contract, so do not invent one. Consulting mode: see [Properties reference](./properties-reference#table) and [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post).
 - If `key` is empty or absent, the column will not be rendered at runtime.
 - This is not an editable `dynamicTable`.
 
@@ -346,9 +346,9 @@ Canonical example:
 
 ### `progressBar`
 
-- Completion indicator; value 0–100 (or a custom `max`) from `expression`, `defaultValue`, or a bound datasource.
+- Completion indicator; value 0-100 (or a custom `max`) from `expression`, `defaultValue`, or a bound datasource.
 - Value shape: `number`.
-- Not for step/page navigation — use `progressFlow` for that.
+- Not for step/page navigation; use `progressFlow` for that.
 
 ## Validators
 
@@ -359,8 +359,8 @@ interface IValidator {
   type: string;       // validator type (required)
   value?: string | number;   // threshold (minLength, maxLength, min, max, minDate, maxDate, etc.)
   message?: string;   // error text shown to user
-  condition?: string; // expression — the FAILING check; the error is shown while it evaluates to true
-  applyIf?: string;   // expression — validator only runs while this evaluates to true
+  condition?: string; // expression, the FAILING check; the error is shown while it evaluates to true
+  applyIf?: string;   // expression, validator only runs while this evaluates to true
 }
 ```
 
@@ -401,7 +401,7 @@ Correct usage:
 }
 ```
 
-Wrong — do not do this:
+Wrong, do not do this:
 
 ```json
 {

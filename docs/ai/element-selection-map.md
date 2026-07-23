@@ -34,7 +34,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | File upload | `fileUpload` | Do not use for plain link text |
 | Triggering an action | `button` | Do not use for data input |
 | Code or JSON fragment | `code` | Do not use for plain text |
-| Small bounded quantity with +/- buttons | `numberStepper` | Do not use for large or precise ranges — prefer `number` |
+| Small bounded quantity with +/- buttons | `numberStepper` | Do not use for large or precise ranges; prefer `number` |
 | Handwritten signature capture | `signaturePad` | Do not use for typed text |
 
 ## Choice elements
@@ -52,8 +52,8 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Date range | `dateRange` | Do not use for a single date |
 | Time of day | `timePicker` | Combine with `datepicker` if both are needed |
 | Simple dropdown menu | `dropdown` | Do not use as a substitute for table row actions |
-| Always-visible scrollable selection list | `listBox` | Do not use if a compact closed control is preferred — use `select` |
-| Connected button row for 2–4 short options | `selectButton` | Do not use for long option lists — prefer `radio` or `select` |
+| Always-visible scrollable selection list | `listBox` | Do not use if a compact closed control is preferred; use `select` |
+| Connected button row for 2-4 short options | `selectButton` | Do not use for long option lists; prefer `radio` or `select` |
 
 ## Tables and repeating data
 
@@ -96,7 +96,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Informational card | `messageCard` | Message, warning, info |
 | Statistics card | `statsCard` | KPI or summary |
 | Toast notification | `toast` | Temporary notifications |
-| Completion percentage | `progressBar` | Not for step/page navigation — use `progressFlow` |
+| Completion percentage | `progressBar` | Not for step/page navigation; use `progressFlow` |
 
 ## Internal or system types
 

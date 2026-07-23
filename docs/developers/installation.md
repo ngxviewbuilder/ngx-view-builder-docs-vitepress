@@ -41,7 +41,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Component styles ship with the components themselves — no global stylesheet import is required. Standalone CSS entry points are exported for advanced setups (e.g. styling outside the components):
+Component styles ship with the components themselves, so no global stylesheet import is required. Standalone CSS entry points are exported for advanced setups (e.g. styling outside the components):
 
 ```css
 @import 'ngx-view-builder/styles/index.css';
@@ -79,7 +79,7 @@ Options:
 
 ## Registering plugins
 
-Installing a plugin package does nothing by itself — register its provider:
+Installing a plugin package does nothing by itself. Register its provider:
 
 ```ts
 import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';

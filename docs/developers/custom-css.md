@@ -28,8 +28,8 @@ Declarative equivalents exist on `runtimeSettings` (`customCss`, `customCssUrls`
 
 ## Targeting elements
 
-- Elements render with stable identity hooks — prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
-- Template HTML ([template library](../creators/templates)) carries its own scoped CSS — for card layouts, prefer a template's CSS over global custom CSS.
+- Elements render with stable identity hooks, so prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
+- Template HTML ([template library](../creators/templates)) carries its own scoped CSS, so for card layouts prefer a template's CSS over global custom CSS.
 - Custom-HTML elements can include class names that your custom CSS styles.
 
 ## Sanitisation

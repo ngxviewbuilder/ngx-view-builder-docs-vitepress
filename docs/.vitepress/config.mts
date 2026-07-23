@@ -6,21 +6,39 @@ const SITE_DESCRIPTION =
   "NGX View Builder is a visual, drag-and-drop form and view builder for Angular. Design forms, dashboards, and data tables as JSON in a low-code builder, and render them natively with a full Angular runtime.";
 const OG_IMAGE = `${SITE_URL}/LOGO.png`;
 
+// Keyword-forward title for the home page and its social cards. The brand name
+// alone ("NGX View Builder") is not something people search for, so the home
+// <title> leads with the generic terms it should rank for.
+const HOME_TITLE = "Angular Form, View & Dashboard Builder | NGX View Builder";
+
 const STRUCTURED_DATA = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "NGX View Builder",
+  alternateName: "Angular Form & View Builder",
   description: SITE_DESCRIPTION,
   url: SITE_URL,
   image: OG_IMAGE,
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Web",
+  keywords:
+    "Angular form builder, Angular view builder, Angular dashboard builder, low-code Angular, drag-and-drop form builder, JSON schema forms",
+  featureList: [
+    "Drag-and-drop visual form and view builder for Angular",
+    "55+ elements: inputs, choices, data tables, charts, KPI cards, tabs, steppers",
+    "No-code conditional logic, validation, and expression language",
+    "Live REST/route data sources with dependent fields and server-side tables",
+    "Native Angular runtime with a typed API service and 50+ events",
+  ],
   sameAs: ["https://github.com/ngxviewbuilder/ngx-view-builder-community"],
 };
 
 export default defineConfig({
   lang: "en-US",
   title: "NGX View Builder",
+  // Inner pages get "<Page title> | NGX View Builder". The home page overrides
+  // this with `titleTemplate: false` in its own frontmatter (see index.md).
+  titleTemplate: ":title | NGX View Builder",
   description: SITE_DESCRIPTION,
   cleanUrls: true,
   lastUpdated: true,
@@ -31,27 +49,24 @@ export default defineConfig({
     ["link", { rel: "icon", href: "/brand-mark.svg" }],
     ["meta", { name: "theme-color", content: "#1554ff" }],
     ["meta", { name: "google-site-verification", content: "Gu0m-v64N5w1PHAX9p0uPPm-epZSUrNr1v-IZqBGLdw" }],
-    ["meta", { name: "keywords", content: "Angular form builder, drag-and-drop form builder, low-code Angular, JSON schema forms, Angular dashboard builder, visual view builder" }],
-    // Open Graph
+    ["meta", { name: "keywords", content: "Angular form builder, Angular view builder, Angular dashboard builder, drag-and-drop form builder, low-code Angular, JSON schema forms, visual view builder, Angular data table builder, Angular low-code builder" }],
+    // Site-wide Open Graph. Per-page og:title / og:description / og:url and the
+    // canonical link are added in transformPageData below so every page reflects
+    // its own content instead of the home page's.
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "NGX View Builder" }],
-    ["meta", { property: "og:title", content: "NGX View Builder — the visual builder for complete Angular views" }],
-    ["meta", { property: "og:description", content: SITE_DESCRIPTION }],
     ["meta", { property: "og:image", content: OG_IMAGE }],
-    ["meta", { property: "og:url", content: SITE_URL }],
-    // Twitter card
+    // Twitter card (per-page title/description added in transformPageData)
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
-    ["meta", { name: "twitter:title", content: "NGX View Builder — the visual builder for complete Angular views" }],
-    ["meta", { name: "twitter:description", content: SITE_DESCRIPTION }],
     ["meta", { name: "twitter:image", content: OG_IMAGE }],
     // Structured data so answer engines (Perplexity, Google AI Overviews, etc.)
     // can identify what this product is without parsing prose.
     ["script", { type: "application/ld+json" }, JSON.stringify(STRUCTURED_DATA)],
-    // gtag.js bootstrap — loads on every page like any standard gtag.js setup
+    // gtag.js bootstrap, loads on every page like any standard gtag.js setup
     // (loading the library alone sends nothing, sets no cookie). Consent
     // defaults to denied here; theme/analytics.ts flips it to granted (and
     // only then calls `config`, which is what actually starts sending
-    // measurement requests) once the visitor accepts the cookie banner — see
+    // measurement requests) once the visitor accepts the cookie banner. See
     // theme/components/CookieConsent.vue.
     ["script", { async: "", src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}` }],
     [
@@ -60,6 +75,34 @@ export default defineConfig({
       `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=gtag;gtag('js',new Date());gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});`,
     ],
   ],
+  // Emit a correct canonical URL and per-page Open Graph / Twitter tags for
+  // every page. Without this, all pages would share the home page's og:url and
+  // have no canonical, which weakens indexing of the individual doc pages.
+  transformPageData(pageData) {
+    const rel = pageData.relativePath;
+    const isHome = rel === "index.md";
+
+    let route: string;
+    if (isHome) route = "/";
+    else if (rel.endsWith("/index.md"))
+      route = "/" + rel.slice(0, -"index.md".length); // e.g. "/developers/"
+    else route = "/" + rel.replace(/\.md$/, ""); // e.g. "/developers/installation"
+
+    // Trailing slash on "/" matches what VitePress emits in sitemap.xml.
+    const canonical = `${SITE_URL}${route}`;
+    const title = isHome ? HOME_TITLE : `${pageData.title} | NGX View Builder`;
+    const description = pageData.description || SITE_DESCRIPTION;
+
+    pageData.frontmatter.head ??= [];
+    pageData.frontmatter.head.push(
+      ["link", { rel: "canonical", href: canonical }],
+      ["meta", { property: "og:url", content: canonical }],
+      ["meta", { property: "og:title", content: title }],
+      ["meta", { property: "og:description", content: description }],
+      ["meta", { name: "twitter:title", content: title }],
+      ["meta", { name: "twitter:description", content: description }],
+    );
+  },
   themeConfig: {
     // Full logotype in the navbar (name is part of the image, so no text title).
     logo: { src: "/logo-header.png", alt: "NGX View Builder" },
@@ -232,6 +275,10 @@ export default defineConfig({
             {
               text: "Custom properties",
               link: "/developers/custom-properties",
+            },
+            {
+              text: "Custom validator types",
+              link: "/developers/custom-validators",
             },
             { text: "Custom SVG icons", link: "/developers/icons" },
           ],

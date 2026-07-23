@@ -1,7 +1,7 @@
 // Regenerates docs/public/llms.txt and docs/public/llms-full.txt from the
 // current docs/**/*.md source, following the llmstxt.org convention:
-//   - llms.txt      — a short linked index (title + one-line description per page)
-//   - llms-full.txt — the full text of every page concatenated, for tools/agents
+//   - llms.txt      : a short linked index (title + one-line description per page)
+//   - llms-full.txt : the full text of every page concatenated, for tools/agents
 //                      that fetch a single URL instead of crawling links
 // Run via `npm run generate:llms`, or automatically before `docs:build`.
 
@@ -18,18 +18,18 @@ const SUMMARY =
   'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app.';
 
 // A few top-level pages use VitePress's `home`/`page` layouts instead of plain
-// prose and have no `description:` frontmatter — described by hand instead.
+// prose and have no `description:` frontmatter, so they are described by hand instead.
 const MANUAL_DESCRIPTIONS = {
-  'index.md': 'Product homepage — what NGX View Builder is, key features, and links to get started.',
+  'index.md': 'Product homepage: what NGX View Builder is, key features, and links to get started.',
   'demo.md':
-    'Live, interactive demo — build a view in the Builder tab and see it rendered in the Runtime tab, right in the browser.',
+    'Live, interactive demo: build a view in the Builder tab and see it rendered in the Runtime tab, right in the browser.',
   'pricing.md': 'Licensing plans and pricing.',
   'privacy.md': 'Privacy policy.',
 };
 
 // `index.md` uses VitePress's `hero:` block (no plain `title:` or `# heading`).
 const MANUAL_TITLES = {
-  'index.md': 'NGX View Builder — the visual builder for complete Angular views',
+  'index.md': 'NGX View Builder: the visual builder for complete Angular views',
 };
 
 const AI_PAGE_ORDER = [
@@ -129,7 +129,7 @@ function parsePage(filePath) {
     title = h1Match ? h1Match[1].trim() : (MANUAL_TITLES[relFromDocs] ?? relFromDocs);
   }
 
-  // Strip raw <style>...</style> blocks (page-local CSS) — noise for an AI corpus.
+  // Strip raw <style>...</style> blocks (page-local CSS), which is noise for an AI corpus.
   body = body.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').trim();
 
   return { relFromDocs, title, description, body, url: toUrl(relFromDocs) };
@@ -156,7 +156,7 @@ const allFiles = walkMarkdownFiles(DOCS_DIR).sort();
 const pages = allFiles.map(parsePage);
 
 const groups = [
-  { title: 'AI reference (machine-first — start here)', pages: orderAiPages(pagesUnder('ai/', pages)) },
+  { title: 'AI reference (machine-first, start here)', pages: orderAiPages(pagesUnder('ai/', pages)) },
   { title: 'Developer documentation', pages: pagesUnder('developers/', pages) },
   { title: 'Creator documentation', pages: pagesUnder('creators/', pages) },
   {

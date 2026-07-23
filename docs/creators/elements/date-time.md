@@ -1,6 +1,6 @@
 ---
 title: Date & time inputs
-description: Datepicker, Date range, and Time picker — with full property tables.
+description: Datepicker, Date range, and Time picker, with full property tables.
 ---
 
 # Date & time inputs
@@ -13,7 +13,7 @@ A calendar picker that stores a single date, a date-time, or a time.
 | --- | --- |
 | **Picker mode** | `date` only, `date + time`, or `time` only. |
 | **Output format** | Storage format, e.g. `YYYY-MM-DD`, `YYYY-MM-DD HH:mm:ss`, `HH:mm`. Empty = the mode's default. |
-| **Min value (optional) / Max value (optional)** | Limit the selectable range — fixed dates or expressions. |
+| **Min value (optional) / Max value (optional)** | Limit the selectable range with fixed dates or expressions. |
 | **Include seconds** | Allows seconds in time/datetime modes. |
 
 Common patterns:
@@ -32,7 +32,7 @@ Message:   "Delivery must be within 30 days"
 
 ## Date range (`dateRange`)
 
-Two connected calendars that store a from–to pair. Use for booking periods, report filters, vacations.
+Two connected calendars that store a from/to pair. Use for booking periods, report filters, vacations.
 
 The value is an object with a start and end date; expressions can reference the parts through the element name.
 
@@ -52,7 +52,7 @@ The expression language has ready-made date functions ([full list](../functions)
 | `isWeekend(date)` | `visibleIf: isWeekend({deliveryDate})` |
 | `weekDay(date)` | Display the weekday name |
 
-Example — validate that the end date follows the start date. On `endDate` add a custom validator whose condition flags the **error**:
+Example: validate that the end date follows the start date. On `endDate` add a custom validator whose condition flags the **error**:
 
 ```text
 dateDiffDays({startDate}, {endDate}) < 1

@@ -7,7 +7,7 @@ description: The Button element and how it triggers actions.
 
 ## Button (`button`)
 
-A button does nothing by itself — its behaviour comes from the **actions** you attach in the **Actions** category. One button can run several actions in order.
+A button does nothing by itself. Its behaviour comes from the **actions** you attach in the **Actions** category. One button can run several actions in order.
 
 ### Content properties
 
@@ -49,7 +49,7 @@ The **Dropdown actions** property turns the button into a menu: each entry is it
 **Delete button**
 
 - Tone `risk`.
-- Action: type `dataSource` with **Confirm enabled** — title `Delete client?`, message `This cannot be undone.`
+- Action: type `dataSource` with **Confirm enabled**, title `Delete client?`, message `This cannot be undone.`
 
 ## Conditional buttons
 
@@ -60,4 +60,4 @@ visibleIf:  {status} == "draft"        → show only for drafts
 disableIf:  !{agreeTerms}              → inactive until terms accepted
 ```
 
-For the full action reference — triggers, action types, confirmations, and response handling — see [Events & actions](../events-actions).
+For the full action reference (triggers, action types, confirmations, and response handling) see [Events & actions](../events-actions).

@@ -70,7 +70,7 @@ runtimeSettings = {
 };
 ```
 
-## Typical pattern — route-driven edit form
+## Typical pattern: route-driven edit form
 
 ```ts
 // /clients/:id/edit
@@ -86,4 +86,4 @@ Inside the view: a data source `GET /api/clients/{id}` with param `id = {__varia
 
 ## Timing
 
-Set context **before** the view renders (constructor / `ngOnInit` ahead of passing `pageJson`). Later updates propagate — expressions referencing `__variables` re-evaluate on change — but avoid churn during initial load.
+Set context **before** the view renders (constructor / `ngOnInit` ahead of passing `pageJson`). Later updates propagate (expressions referencing `__variables` re-evaluate on change) but avoid churn during initial load.

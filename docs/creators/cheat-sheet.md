@@ -1,5 +1,5 @@
 ---
-title: Cheat sheet
+title: Expression cheat sheet
 description: The most common expression patterns, copy-paste ready.
 ---
 

@@ -23,7 +23,7 @@ Every element has three width properties in the **Design** category:
 | Tablet width | Tablet viewport |
 | Mobile width | Mobile viewport |
 
-Use `%` for fluid layouts (`50%`, `33%`) or `px` for fixed sizes. **Fit content** makes the element only as wide as its content — useful for buttons.
+Use `%` for fluid layouts (`50%`, `33%`) or `px` for fixed sizes. **Fit content** makes the element only as wide as its content, which suits buttons.
 
 Test each breakpoint with the viewport switcher in [Preview](./preview).
 
@@ -34,7 +34,7 @@ Test each breakpoint with the viewport switcher in [Preview](./preview).
 | **Panel** | Grouping related fields under a heading, with background/border styling |
 | **Tabs** / **Tabs Pro** | Switching between sections without leaving the page |
 | **Accordion** | Collapsible sections |
-| **Dynamic panel** | A repeatable group — user adds/removes entries (e.g. several addresses) |
+| **Dynamic panel** | A repeatable group where the user adds and removes entries (e.g. several addresses) |
 | **Dialog** | Content that opens in a modal window |
 | **Splitter** | Two resizable side-by-side areas |
 | **Spacer** | Empty vertical space |
@@ -48,7 +48,7 @@ The global gap between rows is set in **Form settings → Element spacing**. Pan
 
 ## Practical guidelines
 
-- Group related fields into panels — users scan grouped forms faster.
+- Group related fields into panels; users scan grouped forms faster.
 - Prefer 2 columns maximum on data-entry forms; more becomes hard to scan.
 - Set mobile widths to `100%` for nearly everything.
 - Use a Dynamic panel instead of duplicating the same fields ("Address 1", "Address 2"…).

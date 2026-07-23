@@ -20,12 +20,12 @@ The builder screen has four working areas:
 
 Elements are grouped so you can scan them quickly:
 
-- **Single line inputs** — text, number, date, phone, and other typed fields.
-- **Choice inputs** — dropdowns, checkboxes, radios, toggles.
-- **Actions** — buttons and action-style controls.
-- **Containers** — panels, tabs, accordions, dialogs, splitters.
-- **Content** — text, images, video, icons, badges, cards.
-- **Tables** — data tables, dynamic tables, list grids.
+- **Single line inputs**: text, number, date, phone, and other typed fields.
+- **Choice inputs**: dropdowns, checkboxes, radios, toggles.
+- **Actions**: buttons and action-style controls.
+- **Containers**: panels, tabs, accordions, dialogs, splitters.
+- **Content**: text, images, video, icons, badges, cards.
+- **Tables**: data tables, dynamic tables, list grids.
 
 Use the search box at the top of the sidebar to filter by name. Drag any element into a row on the canvas or into a container.
 
@@ -35,7 +35,7 @@ You can also save your own configured elements (or whole groups of elements) bac
 
 The canvas shows the current page. Elements are placed in **rows**; each row holds one or more **columns**, and each column holds one element. Drag elements to reorder them, drop them next to each other to share a row, or drop them inside containers.
 
-Selecting an element highlights it and opens its settings on the right. The footer below the canvas lists all pages of the view — click to switch, add, or reorder pages.
+Selecting an element highlights it and opens its settings on the right. The footer below the canvas lists all pages of the view: click to switch, add, or reorder pages.
 
 ## Properties sidebar
 
@@ -69,7 +69,7 @@ Only the categories relevant to the selected element are shown. See [Common prop
 
 Developers can add more tabs through plugins. If you see extra tabs, they come from plugins installed in your application.
 
-The header also has an **AI** button — it opens the [AI assistant](./ai-assistant) panel in place of the properties sidebar, where you can describe changes in plain language and let AI edit the view for you.
+The header also has an **AI** button that opens the [AI assistant](./ai-assistant) panel in place of the properties sidebar, where you can describe changes in plain language and let AI edit the view for you.
 
 ## Undo and history
 

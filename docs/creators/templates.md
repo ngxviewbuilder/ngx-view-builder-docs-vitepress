@@ -24,26 +24,26 @@ Simple logic is supported in template blocks:
 ```
 
 ::: tip Single vs. double braces
-`{name}` (single) is for **expressions** — logic properties, conditions, params.
-<code v-pre>{{name}}</code> (double) is for **text templates** — content that renders on screen.
+`{name}` (single) is for **expressions**: logic properties, conditions, params.
+<code v-pre>{{name}}</code> (double) is for **text templates**: content that renders on screen.
 :::
 
 ## The template library
 
-The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name** — no copy-pasting HTML between views.
+The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
 A template has:
 
 | Field | What it is |
 | --- | --- |
-| **Name** | The identifier elements reference. Must be unique — the editor rejects duplicates. |
+| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
 | **Title** | Human-friendly display title. |
 | **Description** | What the template is for. |
 | **Tags (comma separated)** | For finding it later. |
 | **HTML content** | The markup, with <code v-pre>{{placeholders}}</code>. Required. A **Format template** button tidies the HTML. |
 | **CSS** | Styles scoped to the template, with its own **Format CSS** button. |
 | **Template fields** | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots. |
-| **Preview JSON object** | Sample data used to preview the template inside the editor — edit and format it via *Edit preview JSON*. Must be a JSON object (or array for list-style templates). |
+| **Preview JSON object** | Sample data used to preview the template inside the editor. Edit and format it via *Edit preview JSON*. Must be a JSON object (or array for list-style templates). |
 
 ### Storage settings
 
@@ -57,7 +57,7 @@ At the top of the tab, **Storage mode** decides where saved templates live:
 | **Templates path (optional)** | Where the template array lives in the source response. |
 | **Load from data source** | Re-fetches templates from the source. |
 
-### Example — client card
+### Example: client card
 
 Template `clientCard`:
 
@@ -83,4 +83,4 @@ Depending on the **Storage mode** above, templates live in browser localStorage 
 
 ## Template actions
 
-Templates can contain clickable areas that trigger data sources (the template action map). If your project uses them, buttons inside template HTML can call server functions — ask your developer which action names are wired up.
+Templates can contain clickable areas that trigger data sources (the template action map). If your project uses them, buttons inside template HTML can call server functions; ask your developer which action names are wired up.

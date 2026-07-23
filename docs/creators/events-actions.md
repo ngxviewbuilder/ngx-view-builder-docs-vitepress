@@ -1,6 +1,6 @@
 ---
 title: Events & actions
-description: Every field of the action editor — triggers, action types, confirmation, response handling, toasts — with JSON examples.
+description: Every field of the action editor (triggers, action types, confirmation, response handling, toasts) with JSON examples.
 ---
 
 # Events & actions
@@ -29,7 +29,7 @@ In the view JSON every action is one object in the element's `events` array (or 
 
 ## Triggers
 
-**Trigger** — *when to run the action* (JSON key: `trigger`).
+**Trigger** is *when to run the action* (JSON key: `trigger`).
 
 | Trigger | Fires when |
 | --- | --- |
@@ -46,14 +46,14 @@ In the view JSON every action is one object in the element's `events` array (or 
 | --- | --- | --- |
 | **Action** | `type` | What the action will do: `navigate`, `dataSource`, `setValue`, `setOptions`, `reloadElements`, `toast`, `dialog`, `validate`, `submit`. |
 | **Label** | `label` | Short action label shown in the action list and on generated buttons. Example: *Update table*. |
-| **Action code** | `actionCode` | Optional technical code for the action — useful when the host app or templates refer to actions by name (`action('Open dialog')`). |
+| **Action code** | `actionCode` | Optional technical code for the action. Useful when the host app or templates refer to actions by name (`action('Open dialog')`). |
 | **Icon** | `icon` | Material Symbols icon code shown on the generated button. Example: `refresh`, `save`, `visibility`. |
 | **Hide text, show icon only** | `hideText` | Renders the action as an icon-only button. |
 | **Use custom button style** | `useCustomButtonStyle` | Unlocks the two style fields below instead of the default styling. |
 | **Button style** | `buttonVariant` | `filled`, `outlined`, or `text`. |
 | **Button tone** | `buttonTone` | `primary`, `risk` (destructive), or `neutral`. |
-| **Visible if** | `condition` | Expression — the action runs (and its button is shown) only while true. Example: `{el1} == "ok"` or `{row.status} != "draft"`. |
-| **Debounce (ms)** | `debounceMs` | Delay between the trigger and execution — essential for `input`/`change` triggers. Example: `300`. |
+| **Visible if** | `condition` | Expression. The action runs (and its button is shown) only while true. Example: `{el1} == "ok"` or `{row.status} != "draft"`. |
+| **Debounce (ms)** | `debounceMs` | Delay between the trigger and execution. Essential for `input`/`change` triggers. Example: `300`. |
 | **Validate whole form before action** | `validateForm` | Runs validation first; the action is aborted when the form is invalid. |
 
 ### Confirmation fields
@@ -61,7 +61,7 @@ In the view JSON every action is one object in the element's `events` array (or 
 | Field | JSON key | What it does |
 | --- | --- | --- |
 | **Ask confirmation before action** | `confirmEnabled` | Shows an *"Are you sure?"* dialog before running. |
-| **Confirm only when form has changes** | `confirmOnDirty` | Ask only if the form has unsaved changes — great for *Cancel*/*Leave* buttons. |
+| **Confirm only when form has changes** | `confirmOnDirty` | Ask only if the form has unsaved changes. Handy for *Cancel*/*Leave* buttons. |
 | **Confirmation title (optional)** | `confirmTitle` | Dialog title. Example: *Confirm deletion?* |
 | **Confirmation message (optional)** | `confirmMessage` | Dialog body text. Example: *This action will change table data.* |
 | **Confirm button label** | `confirmConfirmLabel` | Example: *Yes, continue*. |
@@ -88,10 +88,10 @@ Opens a URL or app route. Tokens in `{…}` are resolved from form data, row con
 | Field | JSON key | What it does |
 | --- | --- | --- |
 | **Navigate to** | `navigateTo` | Route or URL. Example: `/orders/{row.id}` or `https://example.com?id={item.id}`. |
-| **Open in new tab** | `openInNewTab` | Opens the target in a new browser tab — the user keeps the current form context. |
-| **Run data source before navigation** | `beforeNavigateDataSourceName` | An additional data source that runs **before** leaving — e.g. save a draft, resolve an ID, log the click. Example: `loadOrderDraft`. |
+| **Open in new tab** | `openInNewTab` | Opens the target in a new browser tab, so the user keeps the current form context. |
+| **Run data source before navigation** | `beforeNavigateDataSourceName` | An additional data source that runs **before** leaving, e.g. save a draft, resolve an ID, log the click. Example: `loadOrderDraft`. |
 | **Response data path (optional)** | `responseDataPath` | Which part of the before-navigate response to keep. Example: `data`, `result.item`, `payload`. |
-| **Use response path before navigation** | `responseTargetPath` | Variable or data path where the before-navigate response is stored *before* navigating — so the target page (or the return trip) can use it. Example: `__variables.customerDraft` or `customerDraft`. |
+| **Use response path before navigation** | `responseTargetPath` | Variable or data path where the before-navigate response is stored *before* navigating, so the target page (or the return trip) can use it. Example: `__variables.customerDraft` or `customerDraft`. |
 | **Reload elements on return** | `reloadOnReturnElementNames` | Elements refreshed when the user comes back from the navigation or dialog. Example: `filesTable`. |
 
 ```json
@@ -109,16 +109,16 @@ Opens a URL or app route. Tokens in `{…}` are resolved from form data, row con
 
 ## Action type: `dataSource`
 
-Calls a [data source](./data-sources) — the workhorse for saving and loading.
+Calls a [data source](./data-sources). This is the workhorse for saving and loading.
 
 | Field | JSON key | What it does |
 | --- | --- | --- |
-| **Data source** | `dataSourceName` | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you — set it in the DataSources tab. |
+| **Data source** | `dataSourceName` | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the DataSources tab. |
 | **Placeholder mapping (URL/body)** | `params` | Maps each `{placeholder}` in the source URL/body to a context path or plain value. Example: body `{selectedRows}` → `__table.el1.selectedRows`, URL `{id}` → `row.id`. Shown only when the source actually has placeholders. |
 | **Response action** | `responseMode` | What to do with the response: `none` (do nothing), `download` (save response as a file), `setValue` (write response into an element). |
 | **Response data path (optional)** | `responseDataPath` | Which part of the response to use. Example: `data`, `result.item`, `payload.items`. |
 | **Target element** | `responseTargetElement` | Element that receives the response when `responseMode` = `setValue`. |
-| **Target data path (optional)** | `responseTargetPath` | Alternative to a target element — write the response to any data path or variable. |
+| **Target data path (optional)** | `responseTargetPath` | Alternative to a target element: write the response to any data path or variable. |
 | **Download file name (optional)** | `responseFileName` | File name for `responseMode` = `download`. Tokens allowed: `report-{__variables.route.id}.pdf`. |
 | **Reload current element data after success** | `reloadCurrentElementAfterSuccess` | The element that fired the action reloads its own data source afterwards. |
 | **Reload data sources after success** | `reloadDataSourceNames` | Comma-separated source names re-fetched after success. Example: `loadPersons, loadSummary`. |
@@ -145,7 +145,7 @@ Writes a value into any field or variable.
 | --- | --- | --- |
 | **Target variable or data path** | `setValueTargetPath` | Where to write. Use a variable name or `__variables.name` for variables, or any data path. Example: `__variables.selectedRow`, `selectedRow`, `client.id`. |
 | **Value source** | `setValueMode` | How the value is produced: `contextPath` (copy from another path), `template` (text with tokens), `json` (object/array literal). |
-| **Value** | `setValueValue` | The value itself, interpreted per mode — see below. |
+| **Value** | `setValueValue` | The value itself, interpreted per mode, see below. |
 
 | Mode | Value example |
 | --- | --- |
@@ -168,7 +168,7 @@ Values written to variables can then feed dialogs, expressions, and data source 
 
 ## Action type: `setOptions`
 
-Replaces the option list of a choice element — build dependent dropdowns without a server round-trip.
+Replaces the option list of a choice element, so you can build dependent dropdowns without a server round-trip.
 
 | Field | JSON key | What it does |
 | --- | --- | --- |
@@ -238,7 +238,7 @@ Opens, closes, or toggles a named [Dialog element](./elements/containers#dialog-
 
 | Field | JSON key | What it does |
 | --- | --- | --- |
-| **Dialog name** | `dialogName` | The `name` of the Dialog element. The editor lists existing dialogs — if it says *No dialogs yet*, drop a Dialog element onto the canvas first. |
+| **Dialog name** | `dialogName` | The `name` of the Dialog element. The editor lists existing dialogs; if it says *No dialogs yet*, drop a Dialog element onto the canvas first. |
 | **Dialog operation** | `dialogOperation` | `open`, `close`, or `toggle`. |
 
 ```json
@@ -247,7 +247,7 @@ Opens, closes, or toggles a named [Dialog element](./elements/containers#dialog-
 
 ## Action type: `validate`
 
-Validates the whole form and shows field errors — the same check the built-in **Validate** toolbar button runs, available as an action on any button. No extra fields. Fires the host app's `onValidating`/`onValidated` events.
+Validates the whole form and shows field errors, the same check the built-in **Validate** toolbar button runs, available as an action on any button. No extra fields. Fires the host app's `onValidating`/`onValidated` events.
 
 ```json
 { "trigger": "click", "type": "validate", "label": "Check for errors" }
@@ -255,7 +255,7 @@ Validates the whole form and shows field errors — the same check the built-in 
 
 ## Action type: `submit`
 
-Validates the form, then fires the host app's `onComplete` event with `{ isValid, data, issues }` — the same behaviour as the built-in **Submit** toolbar button, available as an action on any button (a custom-styled submit button inside a panel, for example). No extra fields.
+Validates the form, then fires the host app's `onComplete` event with `{ isValid, data, issues }`, the same behaviour as the built-in **Submit** toolbar button, available as an action on any button (a custom-styled submit button inside a panel, for example). No extra fields.
 
 ```json
 { "trigger": "click", "type": "submit", "label": "Submit application" }
@@ -273,7 +273,7 @@ Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowAct
 | `{checked}` | Toggle/checkbox state (in interactive columns) |
 | `{__table.<name>.selectedRows}` | Selected rows of a table |
 
-Tables also offer **quick action** presets — *View*, *Edit*, *Copy*, *Delete* — which pre-fill a row action for you.
+Tables also offer **quick action** presets (*View*, *Edit*, *Copy*, *Delete*) that pre-fill a row action for you.
 
 ## Recipes
 
@@ -288,7 +288,7 @@ Tables also offer **quick action** presets — *View*, *Edit*, *Copy*, *Delete* 
 }
 ```
 
-**Dependent dropdowns** (country select, `change`): call `loadCities` with param `countryId = {country}` and `responseMode: "setValue"` into the city element — or bind the city element's own data source with **React to change** on `{country}`.
+**Dependent dropdowns** (country select, `change`): call `loadCities` with param `countryId = {country}` and `responseMode: "setValue"` into the city element, or bind the city element's own data source with **React to change** on `{country}`.
 
 **Delete with confirmation** (table row action):
 
@@ -302,4 +302,4 @@ Tables also offer **quick action** presets — *View*, *Edit*, *Copy*, *Delete* 
 }
 ```
 
-**Navigate with a saved draft** (button, `click`): `navigate` to `/orders/new` with **Run data source before navigation** = `saveOrderDraft` and **Use response path before navigation** = `__variables.orderDraft` — the draft is stored before the user leaves, and `reloadOnReturnElements` refreshes the list when they come back.
+**Navigate with a saved draft** (button, `click`): `navigate` to `/orders/new` with **Run data source before navigation** = `saveOrderDraft` and **Use response path before navigation** = `__variables.orderDraft`. The draft is stored before the user leaves, and `reloadOnReturnElements` refreshes the list when they come back.

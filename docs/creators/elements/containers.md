@@ -1,11 +1,11 @@
 ---
 title: Containers
-description: Panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider — with full property tables.
+description: Panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
 ---
 
 # Containers
 
-Containers hold other elements. Most produce no data themselves — the exceptions are **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
+Containers hold other elements. Most produce no data themselves; the exceptions are **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
 
 ## Panel (`panel`)
 
@@ -27,7 +27,7 @@ A titled box that groups related fields.
 | **Flex direction / Content gap / Content justify / Content align / Content wrap / Align content / Row & column gap** | Flex composition of the children. |
 | **Grid columns / Grid rows / Grid auto rows** | Grid composition, e.g. `repeat(2, minmax(0, 1fr))`, `minmax(120px, auto)`. |
 
-A panel's `visibleIf` hides the whole group at once — usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
+A panel's `visibleIf` hides the whole group at once, which is usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
 
 ## Tabs (`tabs`) and Tabs Pro (`tabsPro`)
 
@@ -35,7 +35,7 @@ Horizontal tabs, each with its own rows of elements. Tabs Pro adds richer header
 
 | Property | What it does |
 | --- | --- |
-| **Tabs** | The tab list — `value` is the tab ID, `label` the name, `visibleIf` hides a tab conditionally. |
+| **Tabs** | The tab list: `value` is the tab ID, `label` the name, `visibleIf` hides a tab conditionally. |
 | **Tabs data path** | Load the tab list dynamically from data or a source response. |
 | **Active tab data path** | Data path that stores/controls the active tab from outside. |
 | **Tabs position** | Headers on `top` or at the sides (left/right). |
@@ -43,7 +43,7 @@ Horizontal tabs, each with its own rows of elements. Tabs Pro adds richer header
 | **Full width tabs** | Tab buttons fill the row in equal blocks. |
 | **Open first** | First tab opens automatically. |
 | **Lazy content** | Tab content renders only when the user opens it. |
-| **Tab template / Tab template ref** | Fully custom tab header markup — inline or from the [template library](../templates). |
+| **Tab template / Tab template ref** | Fully custom tab header markup, inline or from the [template library](../templates). |
 
 The active tab is available to expressions:
 
@@ -52,7 +52,7 @@ The active tab is available to expressions:
 {myTabs.selectedTabIndex}     → active tab index
 ```
 
-Example: show a hint only on the second tab — `visibleIf: {myTabs.selectedTabIndex} == 1`.
+Example: show a hint only on the second tab with `visibleIf: {myTabs.selectedTabIndex} == 1`.
 
 ## Accordion (`accordion`)
 
@@ -80,7 +80,7 @@ A repeatable group. You design the fields once; users add, remove, and reorder e
 | --- | --- |
 | **Add row button text / Remove row button text** | Button captions. |
 | **Disallow adding / deleting rows** | Lock the entry count. |
-| **Max rows** | Upper limit — the add button disables at the limit. |
+| **Max rows** | Upper limit. The add button disables once it is reached. |
 | **Confirm row deletion** (+ title, message, button texts) | Ask before removing an entry. |
 | **Empty state text** | Shown when the panel has no entries. |
 
@@ -92,7 +92,7 @@ Inside a dynamic panel, expressions get extra context:
 | `panel.index` | This entry's position (0-based) |
 | `parentIndex` | Index of the surrounding repeater when nested |
 
-Example — inside each address entry: `visibleIf: panel.country == "LT"`.
+Example, inside each address entry: `visibleIf: panel.country == "LT"`.
 
 Aggregate over all entries from outside the panel: `sumInArray({orderLines}, "amount")`.
 
@@ -107,12 +107,12 @@ A modal window designed in the builder like a normal container. It stays hidden 
 | --- | --- |
 | **Dialog mode** | `modal`, `draggable`, or `fullscreen`. |
 | **Dialog width / height / max width / max height** | Sizing (e.g. `720px`, `90%`, `90vh`). |
-| **Title heading level** | `h1`–`h3` for the dialog title. |
+| **Title heading level** | `h1` to `h3` for the dialog title. |
 | **Show close button** | X in the header. |
 | **Close on backdrop** | Clicking outside closes the dialog. |
 | **Initially open** | Open by default when the view loads. |
 | **Open if** | Expression that opens the dialog while true. |
-| **Open data path** | A boolean data path that controls opening — set it from actions or the host app. |
+| **Open data path** | A boolean data path that controls opening. Set it from actions or the host app. |
 | **Show trigger button** | A built-in button that opens the dialog. |
 | **Trigger text / icon / icon position / icon only / variant / color / text color / width / mobile width / alignment** | Full styling of that trigger button. |
 
@@ -125,7 +125,7 @@ Two or more resizable side-by-side areas. Useful for list-detail layouts.
 | Property | What it does |
 | --- | --- |
 | **Orientation** | `horizontal` or `vertical`. |
-| **Panels** | The panel list — each `value` is the panel key and content identifier. |
+| **Panels** | The panel list: each `value` is the panel key and content identifier. |
 | **Show panel headers** | A header for each panel. |
 | **Allow resize** | Users drag the handle to resize. |
 | **Gutter size** | Gap/handle size in pixels. |

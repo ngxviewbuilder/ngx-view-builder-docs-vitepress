@@ -276,11 +276,11 @@ Never invent capitalization variants. Copy from the list above.
 ```
 
 Exact fields allowed on a validator:
-- `type` — validator type string (required)
-- `value` — threshold value when applicable (`number | string`)
-- `message` — error message shown to user
-- `condition` — JEXL expression; the *failing* check — when it evaluates to `true` the validator error is shown
-- `applyIf` — JEXL expression; validator runs only when this is truthy
+- `type`: validator type string (required)
+- `value`: threshold value when applicable (`number | string`)
+- `message`: error message shown to user
+- `condition`: JEXL expression, the *failing* check. The validator error is shown while it evaluates to `true`
+- `applyIf`: JEXL expression, the validator runs only when this is truthy
 
 **Never use `expression`, `visibleIf`, `disableIf`, or any other logic field on a validator object.**
 
@@ -327,11 +327,11 @@ Element-level logic (`visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `reset
 ### Problem
 
 - There is no `logic` key in the NGX View Builder element schema.
-- The renderer ignores the `logic` wrapper — the expression will never execute.
+- The renderer ignores the `logic` wrapper, so the expression never runs.
 
 ### Correct
 
-Logic fields are **direct element-level properties** — never nested:
+Logic fields are **direct element-level properties**, never nested:
 
 ```json
 {
@@ -356,4 +356,4 @@ Before returning a response, the agent must verify:
 6. Are there no invented properties.
 7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
 8. Is the existing form context preserved.
-9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element — not inside a `logic` wrapper.
+9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper.

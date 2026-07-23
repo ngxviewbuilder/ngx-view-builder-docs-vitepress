@@ -17,7 +17,7 @@ Wrap an element **name** in curly braces to get its current value:
 {price} * {quantity}         math
 ```
 
-If the referenced field is empty, the token resolves to an empty value — use `isEmpty()` / `notEmpty()` to test for that.
+If the referenced field is empty, the token resolves to an empty value, so use `isEmpty()` / `notEmpty()` to test for that.
 
 ## Operators
 
@@ -74,7 +74,7 @@ An expression re-evaluates automatically whenever any field it references change
 
 ## Debugging
 
-Wrap any part in `dbg(value, "label")` — it logs the value to the browser console and passes it through unchanged:
+Wrap any part in `dbg(value, "label")`. It logs the value to the browser console and passes it through unchanged:
 
 ```text
 visibleIf: dbg({clientType}, "clientType") == "company"

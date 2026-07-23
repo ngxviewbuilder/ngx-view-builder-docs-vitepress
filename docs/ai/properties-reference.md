@@ -1,6 +1,6 @@
 ---
 title: "AI: Canonical properties reference"
-description: The authoritative property reference for AI JSON generation — only properties listed here are supported.
+description: The authoritative property reference for AI JSON generation. Only properties listed here are supported.
 ---
 
 # AI: Canonical properties reference
@@ -39,14 +39,14 @@ Additional base properties available on all element types:
 
 ---
 
-## Logic fields (element level only — never inside validators)
+## Logic fields (element level only, never inside validators)
 
 These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 | Field | Return type | Behavior |
 |---|---|---|
 | `visibleIf` | `boolean` | Element visible when `true` (native field) |
-| `hideIf` | `boolean` | Element hidden when `true` — auto-converted to `visibleIf: !(expr)` |
+| `hideIf` | `boolean` | Element hidden when `true`. Auto-converted to `visibleIf: !(expr)` |
 | `disableIf` | `boolean` | Element disabled when `true` |
 | `requireIf` | `boolean` | Element required when `true` |
 | `readonlyIf` | `boolean` | Element readonly when `true` (also `readOnlyIf`) |
@@ -76,8 +76,8 @@ interface IValidator {
   type?: string;         // validator type (required)
   message?: string;      // error message shown to user
   value?: string | number; // threshold (minLength, maxLength, min, max, minDate, maxDate)
-  condition?: string;    // JEXL — the FAILING check; error shown while this evaluates to true
-  applyIf?: string;      // JEXL — validator runs only when this is truthy
+  condition?: string;    // JEXL, the FAILING check; error shown while this evaluates to true
+  applyIf?: string;      // JEXL, validator runs only when this is truthy
 }
 ```
 
@@ -108,7 +108,7 @@ interface IValidator {
 | `type` | `string` | `navigate` `dataSource` `setValue` `setOptions` `reloadElements` `toast` `dialog` `validate` `submit` |
 | `label` | `string` | Button label (when rendered as action button) |
 | `icon` | `string` | Icon name |
-| `condition` | `string` | JEXL — action runs only when truthy |
+| `condition` | `string` | JEXL, action runs only when truthy |
 | `validateForm` | `boolean` | Validate before executing |
 | `confirmEnabled` | `boolean` | Show confirmation dialog before action |
 | `confirmTitle` | `string` | Confirm dialog title |
@@ -130,9 +130,9 @@ interface IValidator {
 
 `reloadElements`: `reloadElementNames` (comma-separated)
 
-`validate`: no extra fields — validates the whole form and shows field errors, same as the built-in Validate toolbar button
+`validate`: no extra fields. Validates the whole form and shows field errors, same as the built-in Validate toolbar button
 
-`submit`: no extra fields — validates the form, then fires `onComplete` with `{ isValid, data, issues }`, same as the built-in Submit toolbar button
+`submit`: no extra fields. Validates the form, then fires `onComplete` with `{ isValid, data, issues }`, same as the built-in Submit toolbar button
 
 Button appearance for action: `buttonVariant` (`filled` `outlined` `text`), `buttonTone` (`primary` `risk` `neutral`), `hideText`, `useCustomButtonStyle`
 
@@ -259,10 +259,10 @@ Value shape: `boolean`
 | `maxFiles` | `number` | Max number of attached files (default `5`) |
 | `maxFileSizeMb` | `number` | Max file size **in megabytes**, not bytes |
 | `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources; empty `uploadDataSourceName` means files never leave the browser (local metadata only) |
-| `uploadFormFieldName` | `string` | `multipart/form-data` field name for the file (default `file`) — upload always sends single-field `FormData`, never JSON/base64 |
+| `uploadFormFieldName` | `string` | `multipart/form-data` field name for the file (default `file`). Upload always sends single-field `FormData`, never JSON/base64 |
 | `fileKeyField` / `fileNameField` / `fileTypeField` / `fileSizeField` | `string` | Field names read from the server's response object (defaults `key`, `name`, `contentType`, `size`; the older `fil_key`/`fil_name`/`fil_content_type`/`fil_size` names are still recognized as fallback aliases) |
 
-Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name` — never file bytes/base64. Full request/response wire contract: [File upload requests](../developers/data-sources#file-upload-requests).
+Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name`, never file bytes/base64. Full request/response wire contract: [File upload requests](../developers/data-sources#file-upload-requests).
 
 ### `panel`
 
@@ -303,7 +303,7 @@ Same as `panel` plus inherits repeatable container behavior. Value shape: array 
 | `confirmDeleteMessage` | `string` | |
 | `confirmDeleteConfirmLabel` | `string` | |
 | `confirmDeleteCancelLabel` | `string` | |
-| `hideRowIf` | `string` | JEXL — hides individual rows |
+| `hideRowIf` | `string` | JEXL, hides individual rows |
 | `columns` | `IDynamicTableColumn[]` | Column definitions |
 | `dataSource` | `IElementDataSource` | Pre-populate from datasource |
 
@@ -325,15 +325,15 @@ Column type values: `text` `number` `date` `boolean` `html` `status` `toggleSwit
 
 | Property | Type | Notes |
 |---|---|---|
-| `columnsConfig` | `ITableColumnConfig[]` | Column definitions — use `key` not `name` |
-| `dataSource` | `IElementDataSource` | Client-side table only (`lazyLoad: false`) — must return **all** rows in one response; the table paginates/sorts/filters in the browser |
-| `tableDataSourceName` | `string` | Server-side table (`lazyLoad: true`) — the source referenced must accept the `TABLE-POST` paging/filter contract below |
+| `columnsConfig` | `ITableColumnConfig[]` | Column definitions, use `key` not `name` |
+| `dataSource` | `IElementDataSource` | Client-side table only (`lazyLoad: false`). Must return **all** rows in one response; the table paginates/sorts/filters in the browser |
+| `tableDataSourceName` | `string` | Server-side table (`lazyLoad: true`). The source referenced must accept the `TABLE-POST` paging/filter contract below |
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
-| `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count; both optional — common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
+| `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
-| `rowActions` | `ITableRowActionConfig[]` | Row action buttons — go through the generic action/data-source pipeline, not this contract |
+| `rowActions` | `ITableRowActionConfig[]` | Row action buttons. These go through the generic action/data-source pipeline, not this contract |
 
-**Do not use `ITableDataSourceConfig`** — it exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
+**Do not use `ITableDataSourceConfig`.** It exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
 
 When `lazyLoad: true` and the data source's `method` is the literal string `TABLE-POST` (sent over the wire as a real `POST`), NGX View Builder auto-merges the current page/sort/search state into the request body:
 
@@ -516,7 +516,7 @@ Value shape: single value, or array when `multiple` is `true`.
 |---|---|---|
 | `min` / `max` | `number` | Value bounds |
 | `expression` | `string` | Computes the current value |
-| `dataSource` / `progressDataPath` / `progressValuePath` / `progressMaxPath` | — | Drive the value from a datasource |
+| `dataSource` / `progressDataPath` / `progressValuePath` / `progressMaxPath` | - | Drive the value from a datasource |
 | `displayType` | `string` | `linear` or `circular` |
 | `valueLabelMode` | `string` | `percent` `value` `fraction` |
 

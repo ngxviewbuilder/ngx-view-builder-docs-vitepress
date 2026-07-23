@@ -1,16 +1,16 @@
 ---
-title: Developers
-description: Integrate, extend, and theme NGX View Builder in an Angular application.
+title: Angular form & view builder for developers
+description: Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
 ---
 
 # Introduction for developers
 
 NGX View Builder is an Angular library with two halves:
 
-- **Builder** — the visual editor your creators use to design views.
-- **Runtime** — the engine that renders a saved view definition (JSON) to end users.
+- **Builder**: the visual editor your creators use to design views.
+- **Runtime**: the engine that renders a saved view definition (JSON) to end users.
 
-You embed one or both as standalone components, persist the JSON wherever you like, and control everything else — data, theming, custom elements, plugins — through providers and a typed API service.
+You embed one or both as standalone components, persist the JSON wherever you like, and control everything else (data, theming, custom elements, plugins) through providers and a typed API service.
 
 ## The five components
 
@@ -51,7 +51,7 @@ Your app (via outputs and NgxViewBuilderApiService)
 
 ## Reading order
 
-1. [Installation](./installation) — package, providers, initialization.
+1. [Installation](./installation): package, providers, initialization.
 2. [Embedding the builder](./builder-integration) and [Rendering views](./runtime-integration).
-3. [API service overview](./api-service) — the programmatic surface.
-4. [Extensions overview](./extensions) — one config object for everything custom.
+3. [API service overview](./api-service): the programmatic surface.
+4. [Extensions overview](./extensions): one config object for everything custom.

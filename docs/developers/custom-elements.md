@@ -1,13 +1,13 @@
 ---
 title: Custom elements
-description: Build your own element — model, component, properties — and register it.
+description: Build your own element (model, component, properties) and register it.
 ---
 
 # Custom elements
 
 A custom element is three parts:
 
-1. a **model** class extending `ElementBaseModel` — the element's data/config fields,
+1. a **model** class extending `ElementBaseModel` holding the element's data/config fields,
 2. a **component** that renders it (receives the model as an input),
 3. a **registration** describing type, label, icon, sidebar group, and editable properties.
 
@@ -121,7 +121,7 @@ provideNgxViewBuilderExtensions({
 });
 ```
 
-`properties` drives the properties sidebar — each key maps a model field to an editor. Available editor `type`s and categories: [Custom properties](./custom-properties).
+`properties` drives the properties sidebar; each key maps a model field to an editor. Available editor `type`s and categories: [Custom properties](./custom-properties).
 
 Optional registration fields: `aliases` (alternative type ids), `order` (position in group), `allowInTableHeader`.
 
@@ -132,7 +132,7 @@ Once registered, the element supports everything generic: drag & drop, responsiv
 ## Checklist
 
 - [ ] `type` is unique and stable (it lives in saved JSON forever).
-- [ ] Model defaults are sensible — the element must look right when first dropped.
+- [ ] Model defaults are sensible, so the element looks right when first dropped.
 - [ ] Component is `OnPush` and reacts to value/property change events.
 - [ ] Colors use the library's CSS variables so light/dark themes work ([Theming](./theming)).
 - [ ] `properties` covers every model field creators should edit.

@@ -1,6 +1,6 @@
 ---
 title: Calculated values
-description: Expression and Default value — computing field values from other fields.
+description: Expression and Default value, for computing field values from other fields.
 ---
 
 # Calculated values
@@ -20,7 +20,7 @@ sumInArray({orderLines}, "total")               sum over table rows
 
 Rules of thumb:
 
-- A field with an Expression is effectively computed — combine with **Read only** so users don't fight the recalculation.
+- A field with an Expression is effectively computed, so combine it with **Read only** and users won't fight the recalculation.
 - Never reference the field itself; self-referencing expressions are skipped with a console warning.
 - On **Number** elements the result respects the element's formatting settings (fraction digits, locale).
 - If the expression errors or returns nothing, the value is cleared.
@@ -54,7 +54,7 @@ Common defaults:
 | User can override | no (recalculated) | yes |
 | Use for | totals, derived fields | sensible starting values |
 
-## Worked example — invoice line
+## Worked example: invoice line
 
 | Element | Type | Setup |
 | --- | --- | --- |

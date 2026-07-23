@@ -15,7 +15,7 @@ const runtimeFrame = ref<HTMLIFrameElement | null>(null);
 // Resolved on mount (client only): localhost docs → local demo app, prod docs → hosted demo.
 const base = ref('');
 
-// The demo app is a real Angular bundle behind the iframe — it needs a moment
+// The demo app is a real Angular bundle behind the iframe and it needs a moment
 // to boot, which otherwise shows as a blank/white flash before the form
 // appears. A brief, deliberate spinner reads as "loading" instead of "broken".
 const MIN_LOADER_MS = 1500;
@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
         ref="builderFrame"
         class="demo-embed__frame"
         :src="builderSrc"
-        title="NGX View Builder — Builder"
+        title="NGX View Builder Builder"
         allow="clipboard-read; clipboard-write"
         @load="onBuilderLoad"
       />
@@ -164,7 +164,7 @@ onBeforeUnmount(() => {
         :key="runtimeKey"
         class="demo-embed__frame"
         :src="runtimeSrc"
-        title="NGX View Builder — Runtime"
+        title="NGX View Builder Runtime"
         allow="clipboard-read; clipboard-write"
         @load="onRuntimeLoad"
       />
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
 
 .demo-embed__tab {
   padding: 5px 14px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   color: var(--vp-c-text-2);
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
 
 .demo-embed__fullscreen {
   padding: 5px 12px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 13px;
   color: var(--vp-c-text-2);
   border: 1px solid var(--vp-c-divider);

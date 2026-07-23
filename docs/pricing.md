@@ -1,5 +1,6 @@
 ---
 title: Pricing
+description: The builder and runtime are free to use during public beta, up to the 1.0.0 release. Commercial licensing starts at 1.0.0, and anything you build before then keeps working.
 sidebar: false
 ---
 
@@ -7,28 +8,30 @@ sidebar: false
 
 # Pricing
 
-<p class="pricing-page__badge">Public beta — not for sale yet</p>
+<p class="pricing-page__badge">Free during public beta</p>
 
-NGX View Builder is currently in public beta. Commercial licenses aren't for sale yet — we're finishing pricing tiers and checkout before general availability.
+**The entire builder and runtime are completely free while NGX View Builder is in public beta, all the way up to the 1.0.0 release.** No cost, no license to buy, no feature gating. Build real apps with it today.
 
-## What you can do today, for free
+Commercial licensing starts at 1.0.0. Until then, everything works, and anything you build keeps working. We're taking the beta period to finish pricing tiers and checkout, so you have plenty of time to try it in real projects before anything is charged.
 
-- **[Try the live demo](/demo)** — the complete builder and runtime, nothing to install.
-- **Evaluate in your own project.** Install `ngx-view-builder` from npm and use it without a license key: fully functional, with a watermark on the builder canvas. Runtime output shown to your end users is never watermarked. See [Licensing](/developers/licensing).
+## What's free right now
 
-## What a paid license unlocks at launch
+- **[Try the live demo](/demo).** The complete builder and runtime, nothing to install.
+- **Use it in your own project.** Install `ngx-view-builder` from npm and ship with it. Every pre-1.0.0 version is free to use in production. See [Licensing](/developers/licensing).
 
-- Removes the evaluation watermark from the builder.
-- **[Perpetual coverage](/developers/licensing#version-coverage-perpetual-fallback)** — every version released during your license term keeps working forever, even after the license lapses.
-- Client and agency work included — either side of a contract-work relationship can hold the key. See the [full license terms](/developers/licensing).
+## What changes at 1.0.0
 
-Final plans, prices, and checkout will be published on this page at general availability.
+- Commercial licenses go on sale. Pre-1.0.0 versions stay free to keep using.
+- **[Perpetual coverage](/developers/licensing#version-coverage-perpetual-fallback):** every version released during your license term keeps working forever, even after the license lapses.
+- Client and agency work is included, so either side of a contract-work relationship can hold the key. See the [full license terms](/developers/licensing).
+
+Final plans, prices, and checkout will be published on this page at the 1.0.0 launch.
 
 ## Questions?
 
-Email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)** — happy to talk through your use case ahead of launch.
+Email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**. Happy to talk through your use case ahead of launch.
 
-<p class="pricing-page__note">For bigger conversations — strategic partnerships, exclusive licensing, or acquiring the product outright — the same address reaches us directly.</p>
+<p class="pricing-page__note">For bigger conversations (strategic partnerships, exclusive licensing, or acquiring the product outright) the same address reaches us directly.</p>
 
 </div>
 
@@ -39,8 +42,8 @@ Email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)** — happ
 
 .pricing-page__badge {
   display: inline-block;
-  padding: 4px 14px;
-  border-radius: 999px;
+  padding: 4px 12px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;

@@ -1,6 +1,6 @@
 ---
 title: Form settings
-description: Every field of the Settings tab — status, language, width, header, navigation, buttons, and dialog mode.
+description: Every field of the Settings tab, from status and language to width, header, navigation, buttons, and dialog mode.
 ---
 
 # Form settings
@@ -11,7 +11,7 @@ The **Settings** tab holds everything that applies to the whole view rather than
 
 | Setting | What it does |
 | --- | --- |
-| **Status** | `Default` (editable) or `Read only` — a read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
+| **Status** | `Default` (editable) or `Read only`. A read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
 | **Current language** | The content language shown right now in the builder and preview. |
 | **Default language** | The language the view starts in at runtime. |
 | **Supported languages (comma separated)** | Languages the view offers, e.g. `en, lt, de`. Texts for them are managed in the [Translations](./translations) tab. |
@@ -26,7 +26,7 @@ The optional header block rendered above the first page.
 | Setting | What it does |
 | --- | --- |
 | **Show logo** | Toggles the logo. |
-| **Logo URL or base64** | Image source — a URL or an inline base64 data URI. |
+| **Logo URL or base64** | Image source: a URL or an inline base64 data URI. |
 | **Upload logo file as base64** (*Add file*) | Pick a local file; it is embedded into the view JSON as base64. A **logo preview** is shown below. |
 | **Logo alignment** | `Left`, `Center`, or `Right`. |
 | **Show title** + **Title text** | The header heading. |
@@ -52,14 +52,14 @@ See [Pages & navigation](./pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow) or `Dialog` — the whole view opens as a modal. |
+| **Render mode** | `Page` (normal, in the document flow) or `Dialog`, where the whole view opens as a modal. |
 | **Dialog header title** / **Dialog header description** | Modal header texts. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
 | **Dialog padding** | Inner padding of the modal content. |
 | **Dialog font size** | Base font size inside the modal. |
 | **Show close button** | Adds an X to the modal header. |
-| **Close button actions** | Actions to run when the close button is pressed (same editor as [Events & actions](./events-actions)) — e.g. confirm unsaved changes, notify the host. |
+| **Close button actions** | Actions to run when the close button is pressed (same editor as [Events & actions](./events-actions)), e.g. confirm unsaved changes, notify the host. |
 | **Dialog footer actions** | Buttons rendered in the modal footer, each a full action definition. |
 | **Dialog footer alignment** | `Left`, `Center`, or `Right`. |
 

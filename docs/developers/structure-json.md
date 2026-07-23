@@ -1,11 +1,11 @@
 ---
 title: Structure JSON
-description: The IStructure document — settings, pages, elements, data sources, localization.
+description: The IStructure document, covering settings, pages, elements, data sources, and localization.
 ---
 
 # Structure JSON
 
-`IStructure` is the single document that defines a view. The builder produces it; the runtime consumes it. It is plain JSON — safe to store in a database column, version, and diff.
+`IStructure` is the single document that defines a view. The builder produces it; the runtime consumes it. It is plain JSON, safe to store in a database column, version, and diff.
 
 ```ts
 interface IStructure {
@@ -18,7 +18,7 @@ interface IStructure {
 }
 ```
 
-## `pages` — layout
+## `pages`: layout
 
 Layout is a tree of rows and columns; columns point at elements by name:
 
@@ -39,7 +39,7 @@ Layout is a tree of rows and columns; columns point at elements by name:
 - Container columns nest their own `rows` (tabs use `tabRows` keyed by tab).
 - Pages can carry `status`, `disabled`, `readOnly`.
 
-## `elements` — configuration
+## `elements`: configuration
 
 A flat map keyed by element name. Every entry has at least `name`, `label`, `type`; everything else depends on the type:
 
@@ -56,7 +56,7 @@ A flat map keyed by element name. Every entry has at least `name`, `label`, `typ
 
 Common keys across types: `width`/`tabletWidth`/`mobileWidth`, `hidden`, `disabled`, `readOnly`, `required`, logic strings (`visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `expression`, `defaultValue`), `validators`, `events`, `logicExecutionMode`, `validationExecutionMode`, `inheritParentState`. Element `type` values match `ElementTypesEnum` (`text`, `select`, `dynamicPanel`, `table`, …).
 
-## `settings` — view-wide configuration
+## `settings`: view-wide configuration
 
 Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
 
@@ -103,5 +103,5 @@ api.setStructure(newStructure);
 ## Versioning advice
 
 - Treat the JSON as an artifact: store immutable versions, publish explicitly.
-- Element **names are contracts** — renaming one changes the submitted data shape and breaks expressions referencing it.
+- Element **names are contracts**. Renaming one changes the submitted data shape and breaks expressions referencing it.
 - Validate JSON against a staging runtime before publishing to production.

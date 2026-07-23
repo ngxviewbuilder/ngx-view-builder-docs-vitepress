@@ -54,9 +54,9 @@ export class ClientFormComponent {
 
 Three complementary channels:
 
-1. **Snapshot** — `runtime.getDataSnapshot()` whenever you need the current object.
-2. **Outputs** — `(valueChanged)` per-field, `(structureChanged)` if the runtime mutates structure.
-3. **API service** — the full event set:
+1. **Snapshot**: `runtime.getDataSnapshot()` whenever you need the current object.
+2. **Outputs**: `(valueChanged)` per-field, `(structureChanged)` if the runtime mutates structure.
+3. **API service**: the full event set:
 
 ```ts
 import { NgxViewBuilderApiService } from 'ngx-view-builder';
@@ -75,7 +75,7 @@ ngOnInit(): void {
 
 `onComplete` fires when the built-in Submit button finishes; it carries validity, the data object, and any issues. Full list: [Events reference](./events).
 
-The runtime keeps its own isolated API instance internally, but every event it fires is forwarded to the root `NgxViewBuilderApiService` automatically — the root-injected subscriptions above receive everything, including render lifecycle (`onAfterRender`, `onElementAfterRender`) and element interaction events (`onDynamicTableRowAdded`, `onDynamicPanelItemRemoved`, …).
+The runtime keeps its own isolated API instance internally, but every event it fires is forwarded to the root `NgxViewBuilderApiService` automatically, so the root-injected subscriptions above receive everything, including render lifecycle (`onAfterRender`, `onElementAfterRender`) and element interaction events (`onDynamicTableRowAdded`, `onDynamicPanelItemRemoved`, …).
 
 ## Programmatic control
 

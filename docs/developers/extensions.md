@@ -1,6 +1,6 @@
 ---
 title: Extensions overview
-description: One config object registers everything custom — elements, functions, properties, icons, tabs.
+description: One config object registers everything custom, from elements and functions to properties, icons, and tabs.
 ---
 
 # Extensions overview
@@ -23,7 +23,7 @@ providers: [
 ]
 ```
 
-The provider also accepts a factory (sync or async) — handy when config comes from an API:
+The provider also accepts a factory (sync or async), which helps when the config comes from an API:
 
 ```ts
 provideNgxViewBuilderExtensions(async () => {
@@ -39,7 +39,7 @@ api.registerExtensions(config);
 await api.registerExtensionsAsync(config);   // resolves icon directories etc.
 ```
 
-Multiple `provideNgxViewBuilderExtensions(...)` calls compose — plugins use the same mechanism.
+Multiple `provideNgxViewBuilderExtensions(...)` calls compose; plugins use the same mechanism.
 
 ## What the config can contain
 
@@ -57,7 +57,7 @@ Multiple `provideNgxViewBuilderExtensions(...)` calls compose — plugins use th
 | `uiDictionaries` | builder UI translations | [UI translations](./ui-translations) |
 | `triggers` / `rules` / `process` / `fragments` | automation definitions | consumed by the automation plugins |
 
-## Example — a project preset
+## Example: a project preset
 
 ```ts
 provideNgxViewBuilderExtensions({
@@ -76,4 +76,4 @@ provideNgxViewBuilderExtensions({
 });
 ```
 
-Everything a creator then sees — the ACME group, the elements, the `vatAmount()` function, the extra property — comes from this one object.
+Everything a creator then sees (the ACME group, the elements, the `vatAmount()` function, the extra property) comes from this one object.

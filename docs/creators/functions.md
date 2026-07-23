@@ -1,11 +1,11 @@
 ---
-title: Function reference
+title: Expression functions
 description: All built-in expression functions with examples.
 ---
 
 # Function reference
 
-All functions available in expressions, grouped by purpose. Your project may add [custom functions](../developers/custom-functions) on top — check the expression editor's help panel for the live list.
+All functions available in expressions, grouped by purpose. Your project may add [custom functions](../developers/custom-functions) on top; check the expression editor's help panel for the live list.
 
 ## Emptiness & text
 
@@ -67,7 +67,7 @@ For dynamic panel / dynamic table values (arrays of objects). `selector` is the 
 
 ## Data & element control
 
-Advanced — these reach outside the current field:
+Advanced. These reach outside the current field:
 
 | Function | Does | Example |
 | --- | --- | --- |
