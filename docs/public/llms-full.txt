@@ -3972,6 +3972,8 @@ Source: https://ngxviewbuilder.io/developers/licensing
 
 > NGX View Builder is in public beta, so licenses aren't for sale yet. See [Pricing](https://ngxviewbuilder.io/pricing) for current status. Everything below describes the license model you'll buy into at launch.
 
+**The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
+
 ## Is this open source?
 
 **No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). The npm package ships readable, unminified TypeScript output, which you can read the way you'd read any installed dependency, but that readability grants no open-source rights. There's no license to fork, redistribute, or build a competing product from it.
@@ -7628,21 +7630,22 @@ Source: https://ngxviewbuilder.io/pricing
 
 # Pricing
 
-<p class="pricing-page__badge">Free during public beta</p>
+<p class="pricing-page__badge">Runtime always free · Builder free during beta</p>
 
-**The entire builder and runtime are completely free while NGX View Builder is in public beta, all the way up to the 1.0.0 release.** No cost, no license to buy, no feature gating. Build real apps with it today.
+**The runtime, the part that renders your views in production, is free. Always.** That's not a beta promotion, it never requires a license key, in any version, before or after 1.0.0.
 
-Commercial licensing starts at 1.0.0. Until then, everything works, and anything you build keeps working. We're taking the beta period to finish pricing tiers and checkout, so you have plenty of time to try it in real projects before anything is charged.
+**The builder**, the visual editor you use to design views, is also completely free right now, during public beta, all the way up to the 1.0.0 release. No cost, no license to buy, no feature gating. Build real apps with it today. Starting at 1.0.0, the builder becomes a commercial, licensed product. The runtime is unaffected by that change.
 
 ## What's free right now
 
 - **[Try the live demo](https://ngxviewbuilder.io/demo).** The complete builder and runtime, nothing to install.
-- **Use it in your own project.** Install `ngx-view-builder` from npm and ship with it. Every pre-1.0.0 version is free to use in production. See [Licensing](https://ngxviewbuilder.io/developers/licensing).
+- **Use it in your own project.** Install `ngx-view-builder` from npm and ship with it. The runtime never needs a license, in any version. The builder is free to use pre-1.0.0. See [Licensing](https://ngxviewbuilder.io/developers/licensing).
 
 ## What changes at 1.0.0
 
-- Commercial licenses go on sale. Pre-1.0.0 versions stay free to keep using.
-- **[Perpetual coverage](https://ngxviewbuilder.io/developers/licensing#version-coverage-perpetual-fallback):** every version released during your license term keeps working forever, even after the license lapses.
+- The builder starts requiring a paid license key. **The runtime is not affected and never will be** — rendering views in production stays free and unlicensed.
+- Pre-1.0.0 builder versions stay free to keep using.
+- **[Perpetual coverage](https://ngxviewbuilder.io/developers/licensing#version-coverage-perpetual-fallback):** every builder version released during your license term keeps working forever, even after the license lapses.
 - Client and agency work is included, so either side of a contract-work relationship can hold the key. See the [full license terms](https://ngxviewbuilder.io/developers/licensing).
 
 Final plans, prices, and checkout will be published on this page at the 1.0.0 launch.

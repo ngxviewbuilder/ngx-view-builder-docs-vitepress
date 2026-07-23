@@ -7,6 +7,8 @@ description: Supplying and validating the license key.
 
 > NGX View Builder is in public beta, so licenses aren't for sale yet. See [Pricing](/pricing) for current status. Everything below describes the license model you'll buy into at launch.
 
+**The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
+
 ## Is this open source?
 
 **No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). The npm package ships readable, unminified TypeScript output, which you can read the way you'd read any installed dependency, but that readability grants no open-source rights. There's no license to fork, redistribute, or build a competing product from it.
