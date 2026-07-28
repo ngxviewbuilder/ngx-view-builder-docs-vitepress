@@ -7,8 +7,8 @@ description: Install the package, register providers, and initialize the runtime
 
 ## Requirements
 
-- Angular 21+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies)
-- Node.js 20+
+- Angular 22+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies)
+- Node.js 22.22+ (or 24.15+ / 26+)
 
 The library works with zoneless change detection and standalone components.
 

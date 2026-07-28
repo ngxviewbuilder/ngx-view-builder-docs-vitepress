@@ -19,13 +19,13 @@ providers: [ provideNgxViewBuilderTemplates() ],
 
 ## Official plugins
 
-| Package | Provider | Adds |
-| --- | --- | --- |
-| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](../creators/templates) used by option templates, card templates, row templates, and header templates |
+| Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
+| ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](../creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](./plugin-templates) |
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the *Option template* property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
+A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 
 ## Version rule
 

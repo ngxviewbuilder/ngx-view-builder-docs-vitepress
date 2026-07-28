@@ -33,6 +33,7 @@
 - [Installation](https://ngxviewbuilder.io/developers/installation): Install the package, register providers, and initialize the runtime.
 - [Licensing](https://ngxviewbuilder.io/developers/licensing): Supplying and validating the license key.
 - [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development): Ship your own builder tab as a reusable package.
+- [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates): Full syntax reference for the Templates plugin  control flow, translations, click actions  plus how to persist templates to your own database.
 - [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official Templates plugin and how the plugin system works.
 - [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved view definitions to end users and collect their data.
 - [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Inject route params, user context, and derived values into views.
@@ -79,7 +80,7 @@
 
 - [Live demo](https://ngxviewbuilder.io/demo): Try the Angular form and view builder in your browser. Build a view in the Builder tab, then switch to Runtime to see it exactly as your end users would.
 - [Angular Form, View & Dashboard Builder | NGX View Builder](https://ngxviewbuilder.io/): Product homepage: what NGX View Builder is, key features, and links to get started.
-- [Pricing](https://ngxviewbuilder.io/pricing): The builder and runtime are free to use during public beta, up to the 1.0.0 release. Commercial licensing starts at 1.0.0, and anything you build before then keeps working.
+- [Pricing](https://ngxviewbuilder.io/pricing): The runtime that renders your views is free, always, no license required, ever. The builder is free during public beta and becomes a commercial product at the 1.0.0 release.
 - [Privacy Policy](https://ngxviewbuilder.io/privacy): How ngxviewbuilder.io handles analytics, cookies, and the data you enter in the live demo.
 
 - [Machine index](https://ngxviewbuilder.io/ai/retrieval-map.json): JSON map of request profiles to source files

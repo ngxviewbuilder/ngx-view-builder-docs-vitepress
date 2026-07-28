@@ -298,6 +298,10 @@ export default defineConfig({
           items: [
             { text: "Using plugins", link: "/developers/plugins" },
             {
+              text: "Templates plugin reference",
+              link: "/developers/plugin-templates",
+            },
+            {
               text: "Building a plugin",
               link: "/developers/plugin-development",
             },

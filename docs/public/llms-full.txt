@@ -2305,7 +2305,7 @@ Source: https://ngxviewbuilder.io/developers/ai-chat
 
 # AI assistant backend
 
-The builder ships with an [AI chat panel](https://ngxviewbuilder.io/creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that *you* host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
+The builder ships with an [AI chat panel](https://ngxviewbuilder.io/creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that _you_ host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
 
 ## Enabling and configuring
 
@@ -2316,23 +2316,23 @@ builderSettings: INgxViewBuilderBuilderSettings = {
   // master switch (root-level alias: enableAiAssistant)
   aiAssistant: {
     enabled: true,
-    backendUrl: 'https://ai.example.com',   // default: http://localhost:8000
-    defaultModel: 'gemini-2.5-flash',
+    backendUrl: "https://ai.example.com", // default: http://localhost:8000
+    defaultModel: "gemini-2.5-flash",
     models: [
-      { id: 'gemini-2.5-pro',        label: 'Gemini 2.5 Pro' },
-      { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash' },
-      { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+      { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+      { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite" },
     ],
   },
 };
 ```
 
-| Option | What it does |
-| --- | --- |
-| `enabled` | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set. |
-| `backendUrl` | Base URL of your AI service. Trailing slashes are stripped. |
-| `defaultModel` | Pre-selected model id in the picker. |
-| `models` | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
+| Option         | What it does                                                                                                                                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`      | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set.                                                                                                                                          |
+| `backendUrl`   | Base URL of your AI service. Trailing slashes are stripped.                                                                                                                                                                                                                                   |
+| `defaultModel` | Pre-selected model id in the picker.                                                                                                                                                                                                                                                          |
+| `models`       | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
 
 The backend URL can also be set (or changed) at runtime through the API service:
 
@@ -2342,7 +2342,7 @@ api.getAiAssistantConfig();               // { backendUrl }
 api.onAiAssistantConfigChanged.add(({ config }) => ...);
 ```
 
-Until a URL is known, the panel shows *"Host application has not provided AI assistant backend URL via API yet."*
+Until a URL is known, the panel shows _"Host application has not provided AI assistant backend URL via API yet."_
 
 ## The wire protocol
 
@@ -2383,12 +2383,12 @@ Notes: images arrive as data URLs. Files arrive as **raw bytes**, base64-encoded
 
 **Server → client messages:**
 
-| Type | Payload | Panel behaviour |
-| --- | --- | --- |
-| `status` | `{ "message": "Generating structure…" }` | Shown as the live status line. |
-| `assistant_json_delta` | `{ "chunk": "..." }` | Streamed JSON fragments, buffered by the panel (keeps the socket alive on long generations). |
-| `assistant_done` | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
-| `error` | `{ "message": "..." }` | Shown as the error banner; loading state ends. |
+| Type                   | Payload                                                                        | Panel behaviour                                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`               | `{ "message": "Generating structure…" }`                                       | Shown as the live status line.                                                                                                                                             |
+| `assistant_json_delta` | `{ "chunk": "..." }`                                                           | Streamed JSON fragments, buffered by the panel (keeps the socket alive on long generations).                                                                               |
+| `assistant_done`       | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
+| `error`                | `{ "message": "..." }`                                                         | Shown as the error banner; loading state ends.                                                                                                                             |
 
 That's the whole contract. Any backend that implements these five message types works; language, framework, and AI provider are entirely your choice.
 
@@ -2414,41 +2414,41 @@ curl http://localhost:8000/health
 
 ### Environment variables
 
-| Variable | What it does |
-| --- | --- |
-| `NVB_AI_PROVIDER` | Default provider: `gemini` (Google AI Studio, the default) or `openai` (any OpenAI-compatible endpoint). |
-| `NVB_AI_GEMINI_API_KEY` | Key for the Gemini provider (Google AI Studio → *Get API key*; the free tier works). |
-| `NVB_AI_OPENAI_API_KEY` | Key for the OpenAI-compatible provider. |
-| `NVB_AI_DEFAULT_MODEL` | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message. |
+| Variable                | What it does                                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `NVB_AI_PROVIDER`       | Default provider: `gemini` (Google AI Studio, the default) or `openai` (any OpenAI-compatible endpoint).                            |
+| `NVB_AI_GEMINI_API_KEY` | Key for the Gemini provider (Google AI Studio → _Get API key_; the free tier works).                                                |
+| `NVB_AI_OPENAI_API_KEY` | Key for the OpenAI-compatible provider.                                                                                             |
+| `NVB_AI_DEFAULT_MODEL`  | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message.        |
 | `NVB_AI_WORKSPACE_ROOT` | Folder containing all `ngx-view-builder*` projects (defaults to two levels above `src/`). Used to resolve the knowledge-base files. |
-| `NVB_AI_REFERENCE_MAP` | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`). |
-| `NVB_AI_DOCS_SOURCE` | Where documentation pages are read from: `auto` (default — local file, published site as fallback), `local`, or `remote`. |
-| `NVB_AI_DOCS_LLMS_URL` | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`). |
-| `NVB_AI_DOCS_URL` | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference. |
+| `NVB_AI_REFERENCE_MAP`  | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`).       |
+| `NVB_AI_DOCS_SOURCE`    | Where documentation pages are read from: `auto` (default local file, published site as fallback), `local`, or `remote`.             |
+| `NVB_AI_DOCS_LLMS_URL`  | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`).                     |
+| `NVB_AI_DOCS_URL`       | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference.          |
 
-Because the agent resolves `docs:` sources from disk *or* from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
+Because the agent resolves `docs:` sources from disk _or_ from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
 
 The provider is also inferred from the model id: `gemini-*` always routes to Gemini regardless of `NVB_AI_PROVIDER`. Legacy `PF_AI_*` variable names still work as a fallback.
 
 ### How it builds answers
 
-- Its knowledge base is the **[AI reference](https://ngxviewbuilder.io/ai/) section of this documentation**, indexed by [`retrieval-map.json`](https://ngxviewbuilder.io/ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a *selected* slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
+- Its knowledge base is the **[AI reference](https://ngxviewbuilder.io/ai/) section of this documentation**, indexed by [`retrieval-map.json`](https://ngxviewbuilder.io/ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a _selected_ slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
 - It is not limited to generating JSON: **developer questions** (what an API method does, what it returns, how an event works, how to embed the builder) are answered in prose from the developer documentation via the map's `developer` source group.
 - `GET /health` reports `reference_map_loaded`, `reference_sources_total`, and `reference_sources_missing`; check it after moving any docs files.
 - Responses stream as `assistant_json_delta` chunks and finish with `assistant_done` carrying the generated/updated structure.
 
 ### Where to customise
 
-| Concern | File |
-| --- | --- |
+| Concern                             | File                                               |
+| ----------------------------------- | -------------------------------------------------- |
 | Which docs/sources feed the prompts | `retrieval-map.json` in the docs repo (`docs/ai/`) |
-| LLM prompts & request profiling | `src/prompts.js` |
-| Reference-context loading & budgets | `src/reference-context.js` |
-| Gemini (Google AI Studio) API call | `src/gemini.js` |
-| OpenAI-compatible API call | `src/openai.js` |
-| Session storage | `src/session-store.js` |
-| Response JSON parsing | `src/documentation.js` |
-| Routes & WebSocket wiring | `src/server.js` |
+| LLM prompts & request profiling     | `src/prompts.js`                                   |
+| Reference-context loading & budgets | `src/reference-context.js`                         |
+| Gemini (Google AI Studio) API call  | `src/gemini.js`                                    |
+| OpenAI-compatible API call          | `src/openai.js`                                    |
+| Session storage                     | `src/session-store.js`                             |
+| Response JSON parsing               | `src/documentation.js`                             |
+| Routes & WebSocket wiring           | `src/server.js`                                    |
 
 ## Adding models & providers
 
@@ -3265,9 +3265,9 @@ Source: https://ngxviewbuilder.io/developers/custom-validators
 
 # Custom validator types
 
-The built-in validator types (`required`, `minLength`, `pattern`, `email`, …) are deliberately generic. Anything country-specific — a personal code, a tax ID, a phone number, a bank account — differs per market, so those rules live in *your* application, not in the library.
+The built-in validator types (`required`, `minLength`, `pattern`, `email`, …) are deliberately generic. Anything country-specific a personal code, a tax ID, a phone number, a bank account differs per market, so those rules live in _your_ application, not in the library.
 
-A registered type appears in the builder's **Type** list next to the built-ins, and from then on a creator picks *LT personal code* the same way they pick *email*. No regular expression, no expression language.
+A registered type appears in the builder's **Type** list next to the built-ins, and from then on a creator picks _LT personal code_ the same way they pick _email_. No regular expression, no expression language.
 
 ## Registration
 
@@ -3275,66 +3275,68 @@ A registered type appears in the builder's **Type** list next to the built-ins, 
 import {
   provideNgxViewBuilderExtensions,
   INgxViewBuilderValidatorTypeRegistration,
-} from 'ngx-view-builder';
+} from "ngx-view-builder";
 
 const validatorTypes: INgxViewBuilderValidatorTypeRegistration[] = [
   {
-    type: 'ltPersonalCode',
-    label: 'LT personal code',
-    defaultMessage: 'Invalid personal code',
-    appliesTo: ['text'],
-    isValid: ({ value }) => isValidLtPersonalCode(String(value ?? '')),
+    type: "ltPersonalCode",
+    label: "LT personal code",
+    defaultMessage: "Invalid personal code",
+    appliesTo: ["text"],
+    isValid: ({ value }) => isValidLtPersonalCode(String(value ?? "")),
   },
   {
-    type: 'minWords',
-    label: 'Minimum words',
-    defaultMessage: 'Please write at least {value} words',
+    type: "minWords",
+    label: "Minimum words",
+    defaultMessage: "Please write at least {value} words",
     hasValue: true,
-    valueLabel: 'Words',
-    valuePlaceholder: '20',
-    appliesTo: ['textarea'],
+    valueLabel: "Words",
+    valuePlaceholder: "20",
+    appliesTo: ["textarea"],
     isValid: ({ value, validatorValue }) =>
-      String(value ?? '').trim().split(/\s+/).filter(Boolean).length >= Number(validatorValue || 0),
+      String(value ?? "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean).length >= Number(validatorValue || 0),
   },
 ];
 
-providers: [
-  provideNgxViewBuilderExtensions({ validatorTypes }),
-]
+providers: [provideNgxViewBuilderExtensions({ validatorTypes })];
 ```
 
-Or at runtime: `api.registerValidatorType(definition)` / `api.registerValidatorTypes(definitions)`. Register early — in an `APP_INITIALIZER` or the host component's `ngOnInit` — so the types exist before a view is rendered.
+Or at runtime: `api.registerValidatorType(definition)` / `api.registerValidatorTypes(definitions)`. Register early in an `APP_INITIALIZER` or the host component's `ngOnInit` so the types exist before a view is rendered.
 
 ## Registration fields
 
-| Field | Purpose |
-| --- | --- |
-| `type` | The identifier stored in the view JSON. Lower-cased on save, so `ltPersonalCode` and `ltpersonalcode` are the same rule. Built-in names cannot be overridden |
-| `isValid` | The check. **Returns `true` when the value is valid** — the opposite polarity of a `custom` rule's condition. May return a `Promise` |
-| `label` | Text shown in the Type list (defaults to `type`) |
-| `defaultMessage` | Pre-filled into the rule's *Error message* field when a creator picks the type, and used at runtime when the message is left empty |
-| `hasValue` | Set `true` when the rule needs a setting, which shows the **Value** input (like `minLength`) |
-| `valueLabel` / `valuePlaceholder` | Label and placeholder for that Value input |
-| `appliesTo` | Element types the rule is offered for, e.g. `['text', 'textarea']`. Omit to offer it everywhere |
-| `validateEmpty` | By default an empty value passes (matching `email` and `pattern`) so the rule stays optional; set `true` to check empty values too |
+| Field                             | Purpose                                                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `type`                            | The identifier stored in the view JSON. Lower-cased on save, so `ltPersonalCode` and `ltpersonalcode` are the same rule. Built-in names cannot be overridden |
+| `isValid`                         | The check. **Returns `true` when the value is valid** the opposite polarity of a `custom` rule's condition. May return a `Promise`                           |
+| `label`                           | Text shown in the Type list (defaults to `type`)                                                                                                             |
+| `defaultMessage`                  | Pre-filled into the rule's _Error message_ field when a creator picks the type, and used at runtime when the message is left empty                           |
+| `hasValue`                        | Set `true` when the rule needs a setting, which shows the **Value** input (like `minLength`)                                                                 |
+| `valueLabel` / `valuePlaceholder` | Label and placeholder for that Value input                                                                                                                   |
+| `appliesTo`                       | Element types the rule is offered for, e.g. `['text', 'textarea']`. Omit to offer it everywhere                                                              |
+| `validateEmpty`                   | By default an empty value passes (matching `email` and `pattern`) so the rule stays optional; set `true` to check empty values too                           |
 
 ::: warning Polarity
-`isValid` returns **true = valid**. A `custom` rule's *Condition* field is the other way round — it describes the **error** and fires while it is true. The names match the behaviour in both cases; do not copy a condition expression into an `isValid` handler unchanged.
+`isValid` returns **true = valid**. A `custom` rule's _Condition_ field is the other way round it describes the **error** and fires while it is true. The names match the behaviour in both cases; do not copy a condition expression into an `isValid` handler unchanged.
 :::
 
 ## What `isValid` receives
 
 ```ts
-isValid: ({ value, validatorValue, validator, element, data }) => boolean | Promise<boolean>
+isValid: ({ value, validatorValue, validator, element, data }) =>
+  boolean | Promise<boolean>;
 ```
 
-| Field | Contents |
-| --- | --- |
-| `value` | The current value of the field being validated |
-| `validatorValue` | The rule's **Value** setting (present when `hasValue` is on) |
-| `validator` | The whole rule object (`type`, `message`, `value`, `condition`, `applyIf`) |
-| `element` | The element model being validated |
-| `data` | The full runtime data object, for rules that depend on other fields |
+| Field            | Contents                                                                   |
+| ---------------- | -------------------------------------------------------------------------- |
+| `value`          | The current value of the field being validated                             |
+| `validatorValue` | The rule's **Value** setting (present when `hasValue` is on)               |
+| `validator`      | The whole rule object (`type`, `message`, `value`, `condition`, `applyIf`) |
+| `element`        | The element model being validated                                          |
+| `data`           | The full runtime data object, for rules that depend on other fields        |
 
 Everything else keeps working as usual: the creator can still set a per-rule error message, translate it, and guard the rule with **Apply if**.
 
@@ -3358,7 +3360,7 @@ If you do this, set the element's **Validation execution mode** to `onBlur` (the
 
 ## Portability
 
-The rule *definition* lives in your application; the view JSON only stores the name:
+The rule _definition_ lives in your application; the view JSON only stores the name:
 
 ```json
 { "type": "ltPersonalCode", "message": "Invalid personal code" }
@@ -3370,16 +3372,16 @@ If several applications share views, register the shared types from one small li
 
 ## Guidelines
 
-- **Be forgiving with input.** Creators and users will hand you `null`, `''`, and stray whitespace. Coerce (`String(value ?? '').trim()`) instead of throwing — a handler that throws is treated as invalid and logs an error.
+- **Be forgiving with input.** Creators and users will hand you `null`, `''`, and stray whitespace. Coerce (`String(value ?? '').trim()`) instead of throwing a handler that throws is treated as invalid and logs an error.
 - **Keep the message useful.** `Company code must be 9 digits` beats `Invalid value`. See [good error messages](https://ngxviewbuilder.io/creators/validation#good-error-messages).
 - **Namespace country rules** by prefix (`ltPersonalCode`, `lvPersonalCode`) so the Type list stays readable as it grows.
 - **Do not re-implement the built-ins.** Length, range, pattern, and email are already there; a custom type is for logic those cannot express.
 
 ## Related
 
-- [Validation](https://ngxviewbuilder.io/creators/validation) — how creators use validators, including `custom` conditions and *Apply if*
-- [Custom expression functions](https://ngxviewbuilder.io/developers/custom-functions) — when the rule is better expressed as an expression creators can reuse
-- [Headless validation](https://ngxviewbuilder.io/developers/validator) — running the same rules outside the UI
+- [Validation](https://ngxviewbuilder.io/creators/validation) how creators use validators, including `custom` conditions and _Apply if_
+- [Custom expression functions](https://ngxviewbuilder.io/developers/custom-functions) when the rule is better expressed as an expression creators can reuse
+- [Headless validation](https://ngxviewbuilder.io/developers/validator) running the same rules outside the UI
 
 ---
 
@@ -3874,8 +3876,8 @@ Source: https://ngxviewbuilder.io/developers/installation
 
 ## Requirements
 
-- Angular 21+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies)
-- Node.js 20+
+- Angular 22+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies)
+- Node.js 22.22+ (or 24.15+ / 26+)
 
 The library works with zoneless change detection and standalone components.
 
@@ -4115,6 +4117,268 @@ Useful building blocks:
 
 ---
 
+## Templates plugin reference
+
+Source: https://ngxviewbuilder.io/developers/plugin-templates
+
+# Templates plugin reference
+
+`ngx-view-builder-plugin-templates` adds the **Templates** tab: a library of reusable HTML/CSS snippets that List grid card templates, Select option templates, row templates, and header templates reference by name. The [creator guide](https://ngxviewbuilder.io/creators/templates) covers the tab from a form-builder's point of view; this page is the developer reference the exact template syntax, how the plugin decides where templates are read from, and (the part hosts always ask about) how to wire template Save/Delete to your own backend and database.
+
+## Install & register
+
+```bash
+npm install ngx-view-builder-plugin-templates
+```
+
+```ts
+import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+
+providers: [ provideNgxViewBuilderTemplates() ],
+```
+
+That's the whole plugin: one feature pack (`ngx-view-builder-templates`), one capability (`templates`), one builder tab (tab code `templates`). See [Using plugins](https://ngxviewbuilder.io/developers/plugins) for the general install/registration mechanism.
+
+## Template syntax
+
+A template's **HTML content** is rendered by a small purpose-built engine, not the real Angular compiler it accepts an Angular-flavoured syntax (so it looks familiar to anyone who knows Angular templates) but only understands what's documented below.
+
+### Interpolation <code v-pre>{{ expression }}</code>
+
+```html
+<strong>{{ item.name }}</strong>
+<span>Row {{ index + 1 }} of {{ $count }}</span>
+```
+
+The expression runs against the template's runtime context: `item` / `row` / `value` (the bound record all three names point at the same object), `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+
+### Legacy single-brace tokens `{path}`
+
+`{status.code}` also works as a shorthand for a plain data-path lookup (no operators allowed). Prefer <code v-pre>{{ }}</code> for anything that isn't a bare path <code v-pre>{{ }}</code> supports real expressions, `{ }` doesn't.
+
+### Translations `[[ key ]]` and `t()` / `tr()`
+
+```html
+<h4>[[ card.title | Card title ]]</h4>
+<button>{{ t('actions.approve') }}</button>
+```
+
+- `[[ key | fallback ]]` looks the key up in the view's `localization.texts` for the active language (falling back to the default language, then the fallback text, then the raw key). See [Translations](https://ngxviewbuilder.io/creators/translations) for how `localization` gets populated.
+- `t('key')` / `tr('key', 'fallback')` do the same lookup from inside any expression position <code v-pre>{{ }}</code>, `@if (...)`, `@switch (...)`, click handlers.
+- `[[ someField ]]` (no literal key) evaluates `someField` as an expression first if the data has a value there, _that value_ becomes the translation key, so `[[ status ]]` looks up whatever `status` currently holds (e.g. `"ACTIVE"`). Use a path that resolves to nothing when you want a literal key instead of a dynamic one.
+
+### Control flow `@if` / `@for` / `@switch` / `@let`
+
+```html
+@if (item.status == "Active") {
+<span class="ok">Active</span>
+} @else if (item.status == "Pending") {
+<span class="pending">Pending</span>
+} @else {
+<span class="muted">{{ item.status }}</span>
+} @for (line of item.lines; track $index) {
+<li>{{ line.label }} {{ line.qty }}</li>
+} @empty {
+<li class="muted">No lines</li>
+} @switch (item.tier) { @case ('gold') {
+<span class="tier tier--gold">Gold</span> } @case ('silver') {
+<span class="tier tier--silver">Silver</span> } @default {
+<span class="tier">Standard</span> } } @let total = sumInArray(item.lines,
+'qty'); <span>Total: {{ total }}</span>
+```
+
+Loop variables inside `@for`: `$index`, `$count`, `$first`, `$last`, `$even`, `$odd`, plus any `let x = expr` aliases declared in the loop header. Conditions and iterable expressions use the same expression language as **Visible if** / logic properties elsewhere in the builder see [Expressions basics](https://ngxviewbuilder.io/creators/expressions) evaluated against the runtime context above.
+
+`===` / `!==` are accepted and treated as `==` / `!=`; `?.` is treated as `.`. There's no real Angular pipe system, no `*ngIf` / `*ngFor`, no arbitrary JavaScript only the constructs on this page.
+
+### Conditional classes `[class.name]="expr"`
+
+```html
+<div
+  [class.overdue]="item.dueDate < today()"
+  [class.paid]="item.status == 'paid'"
+>
+  {{ item.label }}
+</div>
+```
+
+Each matching class is added to the element's `class` attribute when its expression is truthy; the binding itself is stripped from the rendered output.
+
+### Click actions `(click)="..."`
+
+```html
+<button (click)="approve(item.id)">Approve</button>
+```
+
+`(click)` is rewritten to a `data-nvb-event-click` attribute at render time and intercepted by the engine directly (no Angular event binding involved). See [Wiring template actions](https://ngxviewbuilder.io/developers/plugin-templates#wiring-template-actions-to-your-backend) below for what the call inside the quotes can do.
+
+### Icons `<nvb-icon>`
+
+```html
+<nvb-icon name="check_circle"></nvb-icon>
+```
+
+Renders the same inline SVG set used by the rest of the builder (see [Custom SVG icons](https://ngxviewbuilder.io/developers/icons)); the `name` / `icon` / `data-icon` attribute or the tag's own text content picks the icon. Legacy `<span class="material-symbols-outlined">check_circle</span>` markup is upgraded automatically too.
+
+### CSS the template's own `<style>` block
+
+Write the **CSS** field as plain CSS, with SCSS-like nesting if you want it:
+
+```css
+.client-card {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  .badge {
+    color: #0a7;
+    font-size: 12px;
+  }
+  &:hover {
+    border-color: #0a7;
+  }
+}
+@media (max-width: 480px) {
+  .client-card {
+    padding: 8px;
+  }
+}
+```
+
+Nesting (`&`, `:host`, plain descendant selectors) is flattened, and the whole block is scoped to the template's own host element at render/preview time it can't leak onto the rest of the page, and you never write a host selector yourself.
+
+### What gets stripped (sanitization)
+
+Template HTML goes through a sanitizing pass before rendering, and the rendered output through a second full-HTML sanitizer pass. In practice:
+
+- `<script>`, `<iframe>`, `<object>`, `<embed>`, `<link>`, `<meta>`, `<base>` are removed entirely.
+- Any `on*` attribute (`onclick`, `onmouseover`, …) is stripped use `(click)="..."` instead.
+- Inline `style="..."` attributes are stripped put styles in the template's own CSS block, or use classes, not `style=`.
+- `srcdoc` is stripped.
+
+## Template field slots
+
+Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced in the editor as **Template fields**, so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
+
+## Where templates are read from at runtime
+
+Every view has these structure settings (set via the JSON editor, `api.patchSettings()`, or `api.updateStructure()` there's no dedicated builder field for them yet):
+
+| Setting                         | What it does                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `templateStorageMode`           | `'localStorage'` (default) or `'dataSource'`                                                     |
+| `templateStorageLocalKey`       | Browser storage key for local mode (default `ngx-view-builder.templates.v1`)                     |
+| `templateStorageDataSourceName` | Which registered [data source](https://ngxviewbuilder.io/creators/data-sources) supplies templates in `dataSource` mode |
+| `templateStorageDataPath`       | Path into that source's response where the template array lives                                  |
+
+::: warning This is a read path, not your database integration
+`dataSource` mode reliably **writes** only when the named source is a `local` (in-structure JSON) source anything backed by a real REST/GraphQL/websocket source silently falls back to writing into `localStorage` under a per-source key instead of hitting your API. Reading works for any source type (via the _Load from data source_ action). So treat `templateStorageMode: 'dataSource'` as a way to **seed/refresh** templates from a live source, not as the mechanism that persists edits to your database that's the API-level integration below, which every Save/Delete in the Templates tab already goes through regardless of this setting.
+:::
+
+## Persisting templates to your database
+
+Templates always live in `structure.settings.templates`, and the Templates tab's Save/Delete buttons always go through `NgxViewBuilderApiService` so this is the one integration point to wire up, independent of the storage-mode setting above.
+
+### Load your templates in
+
+On startup, fetch your saved templates and push them into the builder:
+
+```ts
+private api = inject(NgxViewBuilderApiService);
+
+async ngOnInit(): Promise<void> {
+  const templates = await firstValueFrom(this.http.get<ITemplateDefinition[]>('/api/templates'));
+  this.api.loadTemplates(templates); // replace = true by default
+}
+```
+
+`loadTemplates(templates, replace = true)` (alias `setTemplates`) accepts objects shaped like `ITemplateDefinition` (`name`, `title?`, `description?`, `content`, `css?`, `tags?`, …) pass `replace: false` to merge instead of overwrite. It fires `onTemplatesLoaded`.
+
+### React to Save / Delete
+
+Two equivalent ways to hear about edits pick whichever fits how your app is wired:
+
+**A. Component outputs**, if you embed `<ngx-view-builder-builder>` directly:
+
+```html
+<ngx-view-builder-builder
+  [model]="builderModel"
+  (templateSaved)="onTemplateSaved($event)"
+  (templateDeleted)="onTemplateDeleted($event)"
+  (templatesLoaded)="onTemplatesLoaded($event)"
+/>
+```
+
+**B. `NgxViewBuilderApiService` events**, anywhere else (they fire identically the outputs above just forward these):
+
+```ts
+private api = inject(NgxViewBuilderApiService);
+
+ngOnInit(): void {
+  this.api.onTemplateSaved.add(({ template, previousCode }) => {
+    const request = previousCode
+      ? this.http.put(`/api/templates/${previousCode}`, template)  // renamed: previousCode -> template.code
+      : this.http.put(`/api/templates/${template.code}`, template);
+    firstValueFrom(request).catch((err) => this.api.showToast({
+      title: 'Template not saved', message: err.message, variant: 'error',
+    }));
+  });
+
+  this.api.onTemplateDeleted.add(({ code }) => {
+    void firstValueFrom(this.http.delete(`/api/templates/${code}`));
+  });
+}
+```
+
+`onTemplateSaved`'s payload uses `code` for the template's unique name (same value as `template.name`, under the API's field name); `previousCode` is only set when the Save renamed an existing template, so you know to update rather than insert.
+
+You can also read the current list on demand e.g. right before your own "save form" call with `api.getTemplates()`, and push/remove one template imperatively with `api.upsertTemplate(template)` / `api.saveTemplate(template, previousCode?)` and `api.removeTemplate(name)` / `api.deleteTemplate(code)`.
+
+## Wiring template actions to your backend
+
+The expression inside `(click)="..."` is a single function-style call `name(arg1, arg2)` or a bare `name` resolved in this order:
+
+1. **An element action.** If the element hosting the template (the List grid, Select, table, …) has an [Events & actions](https://ngxviewbuilder.io/creators/events-actions) entry whose `actionCode` (or `id` / `label`) matches, that action runs with the call's arguments available as context:
+   ```html
+   <button (click)="approveRow(item.id)">Approve</button>
+   <!-- or, if you'd rather keep the action reference explicit: -->
+   <button (click)="action('approveRow', item.id)">Approve</button>
+   ```
+   (`runAction` / `eventAction` are accepted aliases for `action`.)
+2. **A data source**, otherwise. The call name is looked up in the map set by `api.setTemplateActionMap({...})` / `api.registerTemplateActionDataSource(fnName, dataSourceName)` (or the structure's `settings.templateActionMap`, or the builder's `templateActionMap` runtime setting), and the resolved [data source](https://ngxviewbuilder.io/developers/data-sources) runs directly no element action needed:
+   ```ts
+   this.api.setTemplateActionMap({ approve: "approveRequest" });
+   ```
+   ```html
+   <button (click)="approve(item.id)">Approve</button>
+   <!-- or call the data source name directly, with no map entry: -->
+   <button (click)="dataSource('approveRequest', item.id)">Approve</button>
+   ```
+   (`runSource` / `runDataSource` / `loadDataSource` are accepted aliases for `dataSource`.)
+
+Either way, the call's arguments are exposed to whatever runs as `{arg0}`, `{arg1}`, … (so a REST data source's URL can be `/api/requests/{arg0}/approve`), and as `{__action.name}`, `{__action.args}`, `{__action.item}`, `{__action.row}` everywhere else in the view for the duration of the call.
+
+## Events at a glance
+
+| Event               | Fires                                                                    |
+| ------------------- | ------------------------------------------------------------------------ |
+| `onTemplateSaved`   | a template was added or updated `{ template, previousCode?, timestamp }` |
+| `onTemplateDeleted` | a template was removed `{ code, timestamp }`                             |
+| `onTemplatesLoaded` | `loadTemplates` / `setTemplates` ran `{ templates, replace, timestamp }` |
+
+Full list (including the sidebar-library equivalents used by the reusable-elements panel) in the [Events reference](https://ngxviewbuilder.io/developers/events#templates-sidebar-library).
+
+## Related
+
+- [Using plugins](https://ngxviewbuilder.io/developers/plugins) the general plugin/capability mechanism
+- [Dynamic text & templates](https://ngxviewbuilder.io/creators/templates) the creator-facing guide to the Templates tab
+- [Events & actions](https://ngxviewbuilder.io/creators/events-actions) `actionCode` and the action editor
+- [Data source integration](https://ngxviewbuilder.io/developers/data-sources) host-side data source concerns
+- [API service reference](https://ngxviewbuilder.io/developers/api-service#templates-sidebar-library) / [Events reference](https://ngxviewbuilder.io/developers/events#templates-sidebar-library)
+
+---
+
 ## Using plugins
 
 Source: https://ngxviewbuilder.io/developers/plugins
@@ -4135,13 +4399,13 @@ providers: [ provideNgxViewBuilderTemplates() ],
 
 ## Official plugins
 
-| Package | Provider | Adds |
-| --- | --- | --- |
-| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates |
+| Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
+| ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the *Option template* property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
+A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 
 ## Version rule
 
@@ -7169,28 +7433,21 @@ The **Templates** tab (plugin) manages reusable HTML templates. Define a card or
 
 A template has:
 
-| Field | What it is |
-| --- | --- |
-| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
-| **Title** | Human-friendly display title. |
-| **Description** | What the template is for. |
-| **Tags (comma separated)** | For finding it later. |
-| **HTML content** | The markup, with <code v-pre>{{placeholders}}</code>. Required. A **Format template** button tidies the HTML. |
-| **CSS** | Styles scoped to the template, with its own **Format CSS** button. |
-| **Template fields** | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots. |
-| **Preview JSON object** | Sample data used to preview the template inside the editor. Edit and format it via *Edit preview JSON*. Must be a JSON object (or array for list-style templates). |
+| Field                      | What it is                                                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
+| **Title**                  | Human-friendly display title.                                                                                                                 |
+| **Description**            | What the template is for.                                                                                                                     |
+| **Tags (comma separated)** | For finding it later.                                                                                                                         |
+| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
+| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
+| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+
+The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
 
 ### Storage settings
 
-At the top of the tab, **Storage mode** decides where saved templates live:
-
-| Field | What it does |
-| --- | --- |
-| **Storage mode** | `Local storage` (browser) or `Data source` (server). |
-| **Local storage key** | The browser key when local mode is used. |
-| **Data source name** | The source that loads/saves templates in data-source mode. |
-| **Templates path (optional)** | Where the template array lives in the source response. |
-| **Load from data source** | Re-fetches templates from the source. |
+Where saved templates live (browser localStorage vs. a server-backed data source) isn't a field in this tab it's a setting your developer configures on the view. See [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates#where-templates-are-read-from-at-runtime) for the exact settings and how host persistence to your own database works.
 
 ### Example: client card
 
@@ -7205,16 +7462,25 @@ Template `clientCard`:
 ```
 
 ```css
-.client-card { display: flex; flex-direction: column; gap: 4px;
-  padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-.client-card .badge { color: #0a7; font-size: 12px; }
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.client-card .badge {
+  color: #0a7;
+  font-size: 12px;
+}
 ```
 
-Then on a List grid: *Card template* → `clientCard`. Every view using the template updates when the template is edited.
+Then on a List grid: _Card template_ → `clientCard`. Every view using the template updates when the template is edited.
 
 ## Where templates are stored
 
-Depending on the **Storage mode** above, templates live in browser localStorage or on a server through a data source. The host application can also supply and persist templates through its own API. Your developer configures this; as a creator you just save templates in the Templates tab.
+Depending on the **Storage mode** above, templates live in browser localStorage or on a server through a data source. The host application can also supply and persist templates through its own API including saving them into your own database. Your developer configures this (see the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) for the full syntax and integration details); as a creator you just save templates in the Templates tab.
 
 ## Template actions
 
@@ -7643,7 +7909,7 @@ Source: https://ngxviewbuilder.io/pricing
 
 ## What changes at 1.0.0
 
-- The builder starts requiring a paid license key. **The runtime is not affected and never will be** — rendering views in production stays free and unlicensed.
+- The builder starts requiring a paid license key. **The runtime is not affected and never will be** rendering views in production stays free and unlicensed.
 - Pre-1.0.0 builder versions stay free to keep using.
 - **[Perpetual coverage](https://ngxviewbuilder.io/developers/licensing#version-coverage-perpetual-fallback):** every builder version released during your license term keeps working forever, even after the license lapses.
 - Client and agency work is included, so either side of a contract-work relationship can hold the key. See the [full license terms](https://ngxviewbuilder.io/developers/licensing).

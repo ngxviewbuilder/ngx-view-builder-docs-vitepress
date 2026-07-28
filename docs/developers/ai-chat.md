@@ -5,7 +5,7 @@ description: Wire the builder's AI chat panel to your own AI service, covering c
 
 # AI assistant backend
 
-The builder ships with an [AI chat panel](../creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that *you* host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
+The builder ships with an [AI chat panel](../creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that _you_ host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
 
 ## Enabling and configuring
 
@@ -16,23 +16,23 @@ builderSettings: INgxViewBuilderBuilderSettings = {
   // master switch (root-level alias: enableAiAssistant)
   aiAssistant: {
     enabled: true,
-    backendUrl: 'https://ai.example.com',   // default: http://localhost:8000
-    defaultModel: 'gemini-2.5-flash',
+    backendUrl: "https://ai.example.com", // default: http://localhost:8000
+    defaultModel: "gemini-2.5-flash",
     models: [
-      { id: 'gemini-2.5-pro',        label: 'Gemini 2.5 Pro' },
-      { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash' },
-      { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+      { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+      { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite" },
     ],
   },
 };
 ```
 
-| Option | What it does |
-| --- | --- |
-| `enabled` | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set. |
-| `backendUrl` | Base URL of your AI service. Trailing slashes are stripped. |
-| `defaultModel` | Pre-selected model id in the picker. |
-| `models` | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
+| Option         | What it does                                                                                                                                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`      | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set.                                                                                                                                          |
+| `backendUrl`   | Base URL of your AI service. Trailing slashes are stripped.                                                                                                                                                                                                                                   |
+| `defaultModel` | Pre-selected model id in the picker.                                                                                                                                                                                                                                                          |
+| `models`       | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
 
 The backend URL can also be set (or changed) at runtime through the API service:
 
@@ -42,7 +42,7 @@ api.getAiAssistantConfig();               // { backendUrl }
 api.onAiAssistantConfigChanged.add(({ config }) => ...);
 ```
 
-Until a URL is known, the panel shows *"Host application has not provided AI assistant backend URL via API yet."*
+Until a URL is known, the panel shows _"Host application has not provided AI assistant backend URL via API yet."_
 
 ## The wire protocol
 
@@ -83,12 +83,12 @@ Notes: images arrive as data URLs. Files arrive as **raw bytes**, base64-encoded
 
 **Server → client messages:**
 
-| Type | Payload | Panel behaviour |
-| --- | --- | --- |
-| `status` | `{ "message": "Generating structure…" }` | Shown as the live status line. |
-| `assistant_json_delta` | `{ "chunk": "..." }` | Streamed JSON fragments, buffered by the panel (keeps the socket alive on long generations). |
-| `assistant_done` | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
-| `error` | `{ "message": "..." }` | Shown as the error banner; loading state ends. |
+| Type                   | Payload                                                                        | Panel behaviour                                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`               | `{ "message": "Generating structure…" }`                                       | Shown as the live status line.                                                                                                                                             |
+| `assistant_json_delta` | `{ "chunk": "..." }`                                                           | Streamed JSON fragments, buffered by the panel (keeps the socket alive on long generations).                                                                               |
+| `assistant_done`       | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
+| `error`                | `{ "message": "..." }`                                                         | Shown as the error banner; loading state ends.                                                                                                                             |
 
 That's the whole contract. Any backend that implements these five message types works; language, framework, and AI provider are entirely your choice.
 
@@ -114,41 +114,41 @@ curl http://localhost:8000/health
 
 ### Environment variables
 
-| Variable | What it does |
-| --- | --- |
-| `NVB_AI_PROVIDER` | Default provider: `gemini` (Google AI Studio, the default) or `openai` (any OpenAI-compatible endpoint). |
-| `NVB_AI_GEMINI_API_KEY` | Key for the Gemini provider (Google AI Studio → *Get API key*; the free tier works). |
-| `NVB_AI_OPENAI_API_KEY` | Key for the OpenAI-compatible provider. |
-| `NVB_AI_DEFAULT_MODEL` | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message. |
+| Variable                | What it does                                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `NVB_AI_PROVIDER`       | Default provider: `gemini` (Google AI Studio, the default) or `openai` (any OpenAI-compatible endpoint).                            |
+| `NVB_AI_GEMINI_API_KEY` | Key for the Gemini provider (Google AI Studio → _Get API key_; the free tier works).                                                |
+| `NVB_AI_OPENAI_API_KEY` | Key for the OpenAI-compatible provider.                                                                                             |
+| `NVB_AI_DEFAULT_MODEL`  | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message.        |
 | `NVB_AI_WORKSPACE_ROOT` | Folder containing all `ngx-view-builder*` projects (defaults to two levels above `src/`). Used to resolve the knowledge-base files. |
-| `NVB_AI_REFERENCE_MAP` | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`). |
-| `NVB_AI_DOCS_SOURCE` | Where documentation pages are read from: `auto` (default — local file, published site as fallback), `local`, or `remote`. |
-| `NVB_AI_DOCS_LLMS_URL` | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`). |
-| `NVB_AI_DOCS_URL` | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference. |
+| `NVB_AI_REFERENCE_MAP`  | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`).       |
+| `NVB_AI_DOCS_SOURCE`    | Where documentation pages are read from: `auto` (default local file, published site as fallback), `local`, or `remote`.             |
+| `NVB_AI_DOCS_LLMS_URL`  | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`).                     |
+| `NVB_AI_DOCS_URL`       | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference.          |
 
-Because the agent resolves `docs:` sources from disk *or* from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
+Because the agent resolves `docs:` sources from disk _or_ from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
 
 The provider is also inferred from the model id: `gemini-*` always routes to Gemini regardless of `NVB_AI_PROVIDER`. Legacy `PF_AI_*` variable names still work as a fallback.
 
 ### How it builds answers
 
-- Its knowledge base is the **[AI reference](../ai/) section of this documentation**, indexed by [`retrieval-map.json`](../ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a *selected* slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
+- Its knowledge base is the **[AI reference](../ai/) section of this documentation**, indexed by [`retrieval-map.json`](../ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a _selected_ slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
 - It is not limited to generating JSON: **developer questions** (what an API method does, what it returns, how an event works, how to embed the builder) are answered in prose from the developer documentation via the map's `developer` source group.
 - `GET /health` reports `reference_map_loaded`, `reference_sources_total`, and `reference_sources_missing`; check it after moving any docs files.
 - Responses stream as `assistant_json_delta` chunks and finish with `assistant_done` carrying the generated/updated structure.
 
 ### Where to customise
 
-| Concern | File |
-| --- | --- |
+| Concern                             | File                                               |
+| ----------------------------------- | -------------------------------------------------- |
 | Which docs/sources feed the prompts | `retrieval-map.json` in the docs repo (`docs/ai/`) |
-| LLM prompts & request profiling | `src/prompts.js` |
-| Reference-context loading & budgets | `src/reference-context.js` |
-| Gemini (Google AI Studio) API call | `src/gemini.js` |
-| OpenAI-compatible API call | `src/openai.js` |
-| Session storage | `src/session-store.js` |
-| Response JSON parsing | `src/documentation.js` |
-| Routes & WebSocket wiring | `src/server.js` |
+| LLM prompts & request profiling     | `src/prompts.js`                                   |
+| Reference-context loading & budgets | `src/reference-context.js`                         |
+| Gemini (Google AI Studio) API call  | `src/gemini.js`                                    |
+| OpenAI-compatible API call          | `src/openai.js`                                    |
+| Session storage                     | `src/session-store.js`                             |
+| Response JSON parsing               | `src/documentation.js`                             |
+| Routes & WebSocket wiring           | `src/server.js`                                    |
 
 ## Adding models & providers
 

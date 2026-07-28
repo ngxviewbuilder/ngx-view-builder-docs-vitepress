@@ -21,7 +21,7 @@ sidebar: false
 
 ## What changes at 1.0.0
 
-- The builder starts requiring a paid license key. **The runtime is not affected and never will be** — rendering views in production stays free and unlicensed.
+- The builder starts requiring a paid license key. **The runtime is not affected and never will be** rendering views in production stays free and unlicensed.
 - Pre-1.0.0 builder versions stay free to keep using.
 - **[Perpetual coverage](/developers/licensing#version-coverage-perpetual-fallback):** every builder version released during your license term keeps working forever, even after the license lapses.
 - Client and agency work is included, so either side of a contract-work relationship can hold the key. See the [full license terms](/developers/licensing).

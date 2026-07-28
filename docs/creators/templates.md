@@ -34,28 +34,21 @@ The **Templates** tab (plugin) manages reusable HTML templates. Define a card or
 
 A template has:
 
-| Field | What it is |
-| --- | --- |
-| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
-| **Title** | Human-friendly display title. |
-| **Description** | What the template is for. |
-| **Tags (comma separated)** | For finding it later. |
-| **HTML content** | The markup, with <code v-pre>{{placeholders}}</code>. Required. A **Format template** button tidies the HTML. |
-| **CSS** | Styles scoped to the template, with its own **Format CSS** button. |
-| **Template fields** | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots. |
-| **Preview JSON object** | Sample data used to preview the template inside the editor. Edit and format it via *Edit preview JSON*. Must be a JSON object (or array for list-style templates). |
+| Field                      | What it is                                                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
+| **Title**                  | Human-friendly display title.                                                                                                                 |
+| **Description**            | What the template is for.                                                                                                                     |
+| **Tags (comma separated)** | For finding it later.                                                                                                                         |
+| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
+| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
+| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+
+The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
 
 ### Storage settings
 
-At the top of the tab, **Storage mode** decides where saved templates live:
-
-| Field | What it does |
-| --- | --- |
-| **Storage mode** | `Local storage` (browser) or `Data source` (server). |
-| **Local storage key** | The browser key when local mode is used. |
-| **Data source name** | The source that loads/saves templates in data-source mode. |
-| **Templates path (optional)** | Where the template array lives in the source response. |
-| **Load from data source** | Re-fetches templates from the source. |
+Where saved templates live (browser localStorage vs. a server-backed data source) isn't a field in this tab it's a setting your developer configures on the view. See [Templates plugin reference](../developers/plugin-templates#where-templates-are-read-from-at-runtime) for the exact settings and how host persistence to your own database works.
 
 ### Example: client card
 
@@ -70,16 +63,25 @@ Template `clientCard`:
 ```
 
 ```css
-.client-card { display: flex; flex-direction: column; gap: 4px;
-  padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-.client-card .badge { color: #0a7; font-size: 12px; }
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.client-card .badge {
+  color: #0a7;
+  font-size: 12px;
+}
 ```
 
-Then on a List grid: *Card template* → `clientCard`. Every view using the template updates when the template is edited.
+Then on a List grid: _Card template_ → `clientCard`. Every view using the template updates when the template is edited.
 
 ## Where templates are stored
 
-Depending on the **Storage mode** above, templates live in browser localStorage or on a server through a data source. The host application can also supply and persist templates through its own API. Your developer configures this; as a creator you just save templates in the Templates tab.
+Depending on the **Storage mode** above, templates live in browser localStorage or on a server through a data source. The host application can also supply and persist templates through its own API including saving them into your own database. Your developer configures this (see the [Templates plugin reference](../developers/plugin-templates) for the full syntax and integration details); as a creator you just save templates in the Templates tab.
 
 ## Template actions
 
