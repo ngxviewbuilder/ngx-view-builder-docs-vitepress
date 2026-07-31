@@ -110,6 +110,7 @@ Every action uses the standard [action editor](../events-actions), so a row butt
 | **Expandable rows** | Master switch. Without it neither inline nested tables nor the side panel work. |
 | **Expanded display mode** | `inline` (below the row) or `sidePanel` (side details panel). |
 | **Show expand chevron in first column** | Chevron appears only on rows that can actually expand. |
+| **Always show expand chevron** | Puts the chevron on every row, including rows with nothing nested yet. Requires the chevron above. |
 | **Open details on row click** | Row click opens details, with no separate button needed. |
 | **Expanded rows path** | Path in the row object to the nested array (`orgList`, `details.items`). |
 | **Expanded datasource** (+ **items path**) | Alternative: call a data source on expand instead of reading a nested array. Example: `organizationsByUser`. |
@@ -118,6 +119,8 @@ Every action uses the standard [action editor](../events-actions), so a row butt
 | **Expanded content template (HTML)** | Free-form details markup: <code v-pre>{{value}}</code>, <code v-pre>{{row.xxx}}</code>, <code v-pre>{{item.xxx}}</code>. |
 | **Expanded empty message** | Text when a row has no nested records. |
 | **Details panel title** | Title of the side details panel. |
+
+The chevron normally shows only where there is something to open, which is right when nested rows come from **Expanded rows path**. It reads badly when the details come from an **Expanded datasource** or an **Expanded content template**: the row object holds no nested array, so the table cannot know in advance that the row has details, and the column ends up half-empty. **Always show expand chevron** gives every row one, and a row with nothing to show opens the details area with your **Expanded empty message** instead of ignoring the click.
 
 ### Pagination
 

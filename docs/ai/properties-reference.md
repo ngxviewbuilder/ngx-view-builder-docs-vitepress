@@ -104,7 +104,7 @@ interface IValidator {
 
 | Field | Type | Values / Notes |
 |---|---|---|
-| `trigger` | `string` | `click` `submit` `input` `change` `blur` `focus` `beforeLoad` `onLoad` `afterLoad` |
+| `trigger` | `string` | `click` `submit` `input` `change` `blur` `focus` `beforeLoad` `onLoad` `afterLoad` `always`. Prefer a named trigger; `always` skips trigger filtering entirely and is only for host elements whose events are not gestures (a router outlet's `activate`/`deactivate`), so on a normal element it fires on load and on every gesture. |
 | `type` | `string` | `navigate` `dataSource` `setValue` `setOptions` `reloadElements` `toast` `dialog` `validate` `submit` |
 | `label` | `string` | Button label (when rendered as action button) |
 | `icon` | `string` | Icon name |

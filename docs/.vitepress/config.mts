@@ -309,12 +309,8 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [
-      {
-        icon: "github",
-        link: "https://github.com/ngxviewbuilder/ngx-view-builder-community",
-      },
-    ],
+    // socialLinks sąmoningai tuščias: GitHub navbare rodomas kaip
+    // GitHubStarBadge (theme/Layout.vue), kad matytųsi ir žvaigždučių skaičius.
     search: { provider: "local" },
     outline: { level: [2, 3], label: "On this page" },
     docFooter: { prev: "Previous", next: "Next" },
