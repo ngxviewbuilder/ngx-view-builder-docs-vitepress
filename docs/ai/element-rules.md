@@ -204,6 +204,7 @@ Canonical example:
 - Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
+- A column either prints text (`type: "text"`) or hosts a real element (`type: "element"` plus `elementType` and `element`). Use the element form whenever the cell needs a control, a badge, a button, or an event.
 - Server-side paging/search (`lazyLoad: true` + a `TABLE-POST` datasource method) has its own request/response contract, so do not invent one. Consulting mode: see [Properties reference](./properties-reference#table) and [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post).
 - If `key` is empty or absent, the column will not be rendered at runtime.
 - This is not an editable `dynamicTable`.

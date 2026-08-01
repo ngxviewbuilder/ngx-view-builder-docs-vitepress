@@ -321,13 +321,57 @@ Value shape: array of objects.
 }
 ```
 
-Column type values: `text` `number` `date` `boolean` `html` `status` `toggleSwitch` `singleCheckbox`
+Column type values the builder offers: `text`, `date`, `dateTime`, `number`, and `element`. The renderer still understands `boolean` `html` `status` `toggleSwitch` `singleCheckbox` so older structures keep working, but do not author new columns with them; use `element` with the matching `elementType` instead.
+
+`date`, `dateTime`, and `number` format the raw value in place, no template or cell element needed:
+
+```json
+{
+  "key": "created",
+  "label": "Created",
+  "type": "dateTime",
+  "dateIncludeSeconds": true,
+  "showInTable": true
+}
+```
+
+| Property | Type | Notes |
+|---|---|---|
+| `formatLocale` | `string` | `lt-LT`, `en-US`. Empty follows the view locale |
+| `dateFormatPattern` | `string` | `yyyy-MM-dd HH:mm:ss`. Tokens `yyyy yy MM dd HH hh mm ss SSS a`. Wins over the locale format |
+| `dateIncludeSeconds` | `boolean` | `dateTime` only |
+| `numberMinFractionDigits` | `number` | Decimal places, minimum |
+| `numberMaxFractionDigits` | `number` | Decimal places, maximum |
+| `numberUseGrouping` | `boolean` | Thousands separator, defaults to `true` |
+
+A column of `type: "element"` renders a real element in every row:
+
+```json
+{
+  "key": "status",
+  "label": "Status",
+  "type": "element",
+  "showInTable": true,
+  "elementType": "select",
+  "element": {
+    "options": [{ "label": "New", "value": "new" }, { "label": "Done", "value": "done" }],
+    "events": [
+      { "trigger": "change", "type": "dataSource", "dataSourceName": "saveStatus",
+        "params": [["id", "{row.id}"], ["status", "{value}"]] }
+    ]
+  }
+}
+```
+
+`elementType` is the element type id (`select`, `button`, `badge`, `datepicker`, `progressBar`, `customHtml`, `richTextViewer`, and so on). Use `richTextViewer` when the row field already holds HTML and only needs rendering. `element` is that element's own configuration, the same keys it would have as a page element. Inside it, `{row.*}`, a bare sibling field name, `{index}`, and `{value}` all resolve against the row the cell belongs to.
 
 | Property | Type | Notes |
 |---|---|---|
 | `columnsConfig` | `ITableColumnConfig[]` | Column definitions, use `key` not `name` |
-| `dataSource` | `IElementDataSource` | Client-side table only (`lazyLoad: false`). Must return **all** rows in one response; the table paginates/sorts/filters in the browser |
-| `tableDataSourceName` | `string` | Server-side table (`lazyLoad: true`). The source referenced must accept the `TABLE-POST` paging/filter contract below |
+| `columnsConfig[*].elementType` | `string` | Element type rendered in the cells, when `type` is `element` |
+| `columnsConfig[*].element` | `object` | Configuration of that hosted element (options, dataSource, events, validators) |
+| `dataSource` | `IElementDataSource` | The table's source, for both client-side and server-side tables. With `lazyLoad: false` it must return **all** rows in one response; with `lazyLoad: true` it must accept the `TABLE-POST` paging/filter contract below |
+| `tableDataSourceName` | `string` | Legacy server-side binding, still read for older structures. New structures put the source in `dataSource` |
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
 | `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |

@@ -561,6 +561,8 @@ These can use expression fragments such as:
 - `controlActiveIf`
 - `controlEnabledIf`
 
+Inside a column of `type: "element"`, the hosted element's own texts, templates, and event params resolve against the row it renders: `{row.field}`, a bare `{field}` for a sibling of the same row, `{index}`, and `{value}`. The same tokens work in a `dynamicTable` cell and a `dynamicPanel` row.
+
 ### Event and action logic
 
 Expressions are often used in actions in:
@@ -701,6 +703,35 @@ if `customerType` does not exist in the form.
 | Automatically compute a value | `expression` |
 | Enable a validator conditionally | `validators[].applyIf` |
 | Flag a custom validation error | `validators[].condition` (error while `true`) |
+
+## Working with arrays and element metadata
+
+Conditions inside collection functions are written unquoted and evaluated once per entry. Entry fields are referenced bare, everything else in the view stays reachable through `{...}`:
+
+```text
+countInArray({tasks}, status == "OPEN")
+filterArray({users}, role == {__variables.requiredRole})
+findInArray({products}, id == {selectedId})
+existsInArray({items}, status == "ACTIVE")
+sumArray({orderItems}, price)
+joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
+```
+
+Also available: `avgArray`, `getFirst(source, condition?)`, `getLast(source, condition?)`. `countInArray` still accepts a plain field selector, so older structures keep working.
+
+For element metadata rather than values:
+
+| Call | Returns |
+| --- | --- |
+| `getValue({select1})` | stored value, e.g. `OPEN` |
+| `getLabel({select1})` | displayed option label, e.g. `Open issue` |
+| `getLabel("select1", "CLOSED")` | label of a specific value |
+| `getElementProperty("el1", "label")` | any configured property, nested keys allowed |
+| `getProp({el1}, "placeholder")` | alias of `getElementProperty` |
+| `translate({row.status})` | value translated through `localization.texts[<language>]` |
+| `currentLanguage()` | active language code |
+
+In `getLabel`, `getValue`, and `getProp` the token names the element, it is not replaced by that element's value.
 
 ## Contexts the agent may encounter
 
@@ -943,6 +974,7 @@ Canonical example:
 - Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
+- A column either prints text (`type: "text"`) or hosts a real element (`type: "element"` plus `elementType` and `element`). Use the element form whenever the cell needs a control, a badge, a button, or an event.
 - Server-side paging/search (`lazyLoad: true` + a `TABLE-POST` datasource method) has its own request/response contract, so do not invent one. Consulting mode: see [Properties reference](https://ngxviewbuilder.io/ai/properties-reference#table) and [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post).
 - If `key` is empty or absent, the column will not be rendered at runtime.
 - This is not an editable `dynamicTable`.
@@ -1497,13 +1529,57 @@ Value shape: array of objects.
 }
 ```
 
-Column type values: `text` `number` `date` `boolean` `html` `status` `toggleSwitch` `singleCheckbox`
+Column type values the builder offers: `text`, `date`, `dateTime`, `number`, and `element`. The renderer still understands `boolean` `html` `status` `toggleSwitch` `singleCheckbox` so older structures keep working, but do not author new columns with them; use `element` with the matching `elementType` instead.
+
+`date`, `dateTime`, and `number` format the raw value in place, no template or cell element needed:
+
+```json
+{
+  "key": "created",
+  "label": "Created",
+  "type": "dateTime",
+  "dateIncludeSeconds": true,
+  "showInTable": true
+}
+```
+
+| Property | Type | Notes |
+|---|---|---|
+| `formatLocale` | `string` | `lt-LT`, `en-US`. Empty follows the view locale |
+| `dateFormatPattern` | `string` | `yyyy-MM-dd HH:mm:ss`. Tokens `yyyy yy MM dd HH hh mm ss SSS a`. Wins over the locale format |
+| `dateIncludeSeconds` | `boolean` | `dateTime` only |
+| `numberMinFractionDigits` | `number` | Decimal places, minimum |
+| `numberMaxFractionDigits` | `number` | Decimal places, maximum |
+| `numberUseGrouping` | `boolean` | Thousands separator, defaults to `true` |
+
+A column of `type: "element"` renders a real element in every row:
+
+```json
+{
+  "key": "status",
+  "label": "Status",
+  "type": "element",
+  "showInTable": true,
+  "elementType": "select",
+  "element": {
+    "options": [{ "label": "New", "value": "new" }, { "label": "Done", "value": "done" }],
+    "events": [
+      { "trigger": "change", "type": "dataSource", "dataSourceName": "saveStatus",
+        "params": [["id", "{row.id}"], ["status", "{value}"]] }
+    ]
+  }
+}
+```
+
+`elementType` is the element type id (`select`, `button`, `badge`, `datepicker`, `progressBar`, `customHtml`, `richTextViewer`, and so on). Use `richTextViewer` when the row field already holds HTML and only needs rendering. `element` is that element's own configuration, the same keys it would have as a page element. Inside it, `{row.*}`, a bare sibling field name, `{index}`, and `{value}` all resolve against the row the cell belongs to.
 
 | Property | Type | Notes |
 |---|---|---|
 | `columnsConfig` | `ITableColumnConfig[]` | Column definitions, use `key` not `name` |
-| `dataSource` | `IElementDataSource` | Client-side table only (`lazyLoad: false`). Must return **all** rows in one response; the table paginates/sorts/filters in the browser |
-| `tableDataSourceName` | `string` | Server-side table (`lazyLoad: true`). The source referenced must accept the `TABLE-POST` paging/filter contract below |
+| `columnsConfig[*].elementType` | `string` | Element type rendered in the cells, when `type` is `element` |
+| `columnsConfig[*].element` | `object` | Configuration of that hosted element (options, dataSource, events, validators) |
+| `dataSource` | `IElementDataSource` | The table's source, for both client-side and server-side tables. With `lazyLoad: false` it must return **all** rows in one response; with `lazyLoad: true` it must accept the `TABLE-POST` paging/filter contract below |
+| `tableDataSourceName` | `string` | Legacy server-side binding, still read for older structures. New structures put the source in `dataSource` |
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
 | `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
@@ -2690,6 +2766,10 @@ Everything from [`provideNgxViewBuilderExtensions`](https://ngxviewbuilder.io/de
 | `registerSvgIconDirectory(config): Promise<{ loaded, failed }>` | Loads a directory of `.svg` files by URL manifest. |
 | `registerSvgIconDirectories(configs): Promise<...[]>` | Several directories at once. |
 | `getTableHeaderCenterExtensions(): INgxViewBuilderCustomElementDefinition[]` | Custom elements flagged `allowInTableHeader` (usable in table header bars). |
+| `registerTableCellElementType(type): void` | Adds an element type to the **Cell element** picker of a table column ([cell elements](https://ngxviewbuilder.io/creators/elements/tables#cell-elements)). Takes a type id or `{ type, label, order }`. Elements registered with `allowInTableCell: true` are added for you. |
+| `registerTableCellElementTypes(types): void` | Several at once. |
+| `removeTableCellElementType(type): void` | Takes one back out of the picker. |
+| `getTableCellElementTypes(): ITableCellElementType[]` | Built-in cell element types plus everything registered by the host. |
 | `attachBuilderAdapter(adapter): void` | Internal bridge between this service and the builder UI. The builder component attaches itself; hosts don't call this. |
 
 ## Templates & sidebar library
@@ -3085,7 +3165,51 @@ provideNgxViewBuilderExtensions({
 
 `properties` drives the properties sidebar; each key maps a model field to an editor. Available editor `type`s and categories: [Custom properties](https://ngxviewbuilder.io/developers/custom-properties).
 
-Optional registration fields: `aliases` (alternative type ids), `order` (position in group), `allowInTableHeader`.
+Optional registration fields: `aliases` (alternative type ids), `order` (position in group), `allowInTableHeader`, `allowInTableCell`.
+
+## Using a custom element in a table cell
+
+A table column whose type is `Element (control)` renders a real element in every row ([Cell elements](https://ngxviewbuilder.io/creators/elements/tables#cell-elements)). Add `allowInTableCell: true` and your element joins the built-in ones in that column's **Cell element** picker:
+
+```ts
+provideNgxViewBuilderExtensions({
+  elements: [{
+    type: 'ratingWidget',
+    label: 'Rating',
+    groupCode: 'custom',
+    allowInTableCell: true,
+    component: RatingWidgetComponent,
+    model: RatingWidgetModel,
+    properties: { /* … */ },
+  }],
+});
+```
+
+The same list is editable at runtime through the [API service](https://ngxviewbuilder.io/developers/api-service#extensions-registration), which is handy when the component is registered somewhere else, or when you want a built-in type back that the picker does not offer by default:
+
+```ts
+api.registerTableCellElementType({ type: 'ratingWidget', label: 'Rating', order: 2500 });
+api.registerTableCellElementTypes(['autocomplete', 'listBox']);
+api.removeTableCellElementType('fileUpload');
+api.getTableCellElementTypes();          // built-ins plus everything you registered
+```
+
+### Reading the row
+
+Nothing extra is needed for values and events: the library gives the cell model its row data path, mirrors the table's disabled/read-only state onto it, and merges the row into the runtime context of every action your element runs, so `{row.id}` and `{index}` resolve in the action editor.
+
+If your component renders its own text template, resolve it against the row explicitly:
+
+```ts
+import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder';
+
+const context = buildElementRowRuntimeContext(this.model(), (path) =>
+  this.dataService.getValue(path),
+);
+// context.row, context.index, and every field of the row addressable by name
+```
+
+`resolveElementRowScope()` returns the raw scope (`rowPath`, `rowIndex`, `rowValue`, sibling names) when you need the pieces rather than a ready context. Both work for table cells, dynamic-table rows, and dynamic-panel rows, so writing against them once covers every repeater.
 
 ## Behaviour you get for free
 
@@ -4569,6 +4693,11 @@ this.api.setRuntimeVariableDefinitions([
 | `manual` | left to be set at runtime |
 
 Useful definition flags: `fallbackValue`, `targetPath` (mirror into form data), `includeInDataJson` (ship with submits), `refreshOnChange` / `refreshPaths`.
+
+Two things to keep in mind when defining them by hand:
+
+- An `expression` variable resolves element references the same way an element expression does, so `{el1} + {el2}` reads those fields even before the user has touched them. Its dependencies are tracked automatically and it recomputes whenever one of them changes, along with anything reading the variable.
+- A `dataSource` variable needs an explicit `source`. If it is missing, the variable stays unresolved rather than picking up whichever source happens to be first in the structure.
 
 ## One-call configuration
 
@@ -6214,11 +6343,13 @@ A working table needs only: a data source, *Items path*, and 2-3 columns. Add se
 
 Row context in expressions and actions: `{row.fieldName}`, e.g. a row action with condition `{row.status} == "draft"`. Selected rows: `{__table.<tableName>.selectedRows}`.
 
+A column either prints its value as text, or hosts a real element in every row. See [Cell elements](https://ngxviewbuilder.io/creators/elements/tables#cell-elements) for the second option, which covers what the old per-type renderers did (dates, badges, toggles, checkboxes) and adds events, data sources, and validation on top.
+
 ### Primary source & request
 
 | Property | What it does |
 | --- | --- |
-| **Data source name** | Primary source from the DataSources tab. Example: `loadUsers`. |
+| **Data source** | Primary source from the DataSources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |
@@ -6251,7 +6382,15 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 | --- | --- |
 | **Key** | Data key in the row object; nested paths allowed (`user.name`, `status`). |
 | **Label** / **Mobile label** | Header text; the mobile variant falls back to Label when empty. |
-| **Align** | Column text alignment. |
+| **Type** | `text` prints the plain value. `Date`, `Date & time`, and `Number` format it, see [Formatted columns](https://ngxviewbuilder.io/creators/elements/tables#formatted-columns). `Element (control)` renders a real element in every cell, see [Cell elements](https://ngxviewbuilder.io/creators/elements/tables#cell-elements). |
+| **Format locale** | Formatted columns only: `lt-LT`, `en-US`, and so on. Empty follows the view's locale. |
+| **Date pattern** | Exact date shape, e.g. `yyyy-MM-dd HH:mm:ss`. Empty uses the locale's own format. |
+| **Show seconds** | Whether a `Date & time` column includes seconds. |
+| **Min decimals / Max decimals** | Decimal places on a `Number` column. |
+| **Thousands separator** | Group digits on a `Number` column. |
+| **Cell element** | Which element the cells host when Type is `Element (control)`: Select, Button, Badge, Date picker, Progress bar, and so on. |
+| **Cell element text** | The hosted element's own label or caption (button text, badge text). Kept separate from **Label**, which stays the column header. |
+| **Align** | Column text alignment. Applies to both plain and element columns. |
 | **Sortable** | Whether sorting is allowed by this column. |
 | **Show in table / Show in details** | Where the column appears (main table and/or the details view). |
 | **Detail label** | Optional different name in the details view. |
@@ -6263,12 +6402,72 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 | **Filter options / JSON / data source (+ items path, label key, value key)** | Where the filter's choices come from: manual list, JSON, or a data source. |
 | **Filter toggle true/false value** | What a detailed-search toggle sends when on/off (`yes`/`no`, `T`/`N`). |
 | **Filter multi-value delimiter** | Joins multiple filter values into one request param (`,` or `;`). |
-| **Status rules** | Condition + tone (+ label, icon, rounded) rules that render the cell as a status badge. Conditions support `{row.*}`, `{value}`. Example: `[{ "condition": "{row.submitted} == \"Y\"", "label": "Submitted", "tone": "success", "icon": "check_circle", "rounded": true }]`. |
-| **Show status icon** | Status badges show an icon (tone default when the rule has none). |
-| **Checked if / Enabled if** | For interactive toggle/checkbox columns: what controls the checked state (`{row.disabled} == true`) and whether clicking is allowed (`{row.canEdit} == true`). |
-| **Cell actions (+ enabled, display mode, placeholder)** | Actions on the cell: dropdown/buttons for regular columns; fired on click for toggle/checkbox columns. Context: `row`, `parentRow`, `column`, `checked`. |
 | **Use totals (+ fraction digits, locale, grouping, mask, template)** | Show this column's sum in the footer row, with formatting controls and a `{total}` text template. |
 | **Editable / Editor type / Editor options (+ label key, value key, placeholder)** | Inline-edit settings for this column: which control edits it (text, number, select, date) and where its choices come from. |
+
+### Formatted columns
+
+An API rarely sends a value ready to read. A timestamp arrives as `2026-07-25T07:11:43.724948Z` and an amount as `1234.5`. Set the column's **Type** to `Date`, `Date & time`, or `Number` and the raw value is rendered the way the reader expects, with no template and no cell element.
+
+Formatting follows the view's locale, so the decimal mark and the thousands separator come from there. Override it per column with **Format locale** when one table has to differ.
+
+With `locale: lt-LT`:
+
+| Type | Settings | `2026-07-25T07:11:43.724948Z` renders as |
+| --- | --- | --- |
+| `Date` | none | `2026-07-25` |
+| `Date & time` | Show seconds on | `2026-07-25 10:11:43` |
+| `Date & time` | Date pattern `yyyy/MM/dd hh:mm a` | `2026/07/25 10:11 AM` |
+
+And for `1234.5`:
+
+| Type | Settings | Renders as |
+| --- | --- | --- |
+| `Number` | Min and max decimals 2 | `1 234,50` |
+| `Number` | Thousands separator off | `1234,50` |
+
+**Date pattern** takes priority over the locale format when you need an exact shape. Tokens are `yyyy`, `yy`, `MM`, `dd`, `HH` (24h), `hh` (12h), `mm`, `ss`, `SSS`, and `a` for AM/PM. Everything else in the pattern is printed as typed, so separators are yours to choose.
+
+A value that is not a real date or number is printed unchanged rather than blanked, which keeps a stray `N/A` from a backend visible instead of silently disappearing.
+
+### Cell elements
+
+Set a column's **Type** to `Element (control)` and pick a **Cell element**. Every row of that column then renders a real builder element, configured exactly like one dropped on a page: its own options, data source, events, and validators. It is the same principle a [Dynamic table](https://ngxviewbuilder.io/creators/elements/tables#dynamic-table-dynamictable) uses for its columns, brought to the data table.
+
+Pick the element and the properties sidebar grows the matching sections. A Select column gains **Data**, **Options**, **Validators**, and **Events**; a Button column gains **Events**; a Progress bar column gains its own appearance settings. The column keeps owning **Label**, **Width**, **Align**, and **Visible if**, so the header and the layout stay where you set them. The hosted element's own caption lives in **Cell element text**.
+
+Available cell elements: Text input, Textarea, Number, Number stepper, Phone input, Select, Multi select, Select button, Radio, Checkbox group, Single checkbox, Toggle switch, Slider, Date picker, Date range, Time picker, Button, Badge, Image, Progress bar, File upload, Custom HTML, HTML viewer. Developers can add their own components to this list, see [Custom elements](https://ngxviewbuilder.io/developers/custom-elements#using-a-custom-element-in-a-table-cell).
+
+**HTML viewer** is the one to reach for when the row already carries markup. It renders the cell's own value as HTML, so a `note` or `description` field holding `<b>Bold</b>` or a small list shows up formatted with nothing else to configure. Custom HTML is the other way round: you write the template and pull row fields into it.
+
+::: warning Switching the element starts over
+Choosing a different **Cell element** clears the previous element's configuration. Options, data source, and events belonging to the old element have no meaning for the new one, so the column starts fresh. Switch **Type** back to `text` and the hosted element is dropped entirely.
+:::
+
+#### The row is in scope
+
+A cell element knows which row it sits in, so anything you write in it resolves against that row:
+
+| Token | Resolves to |
+| --- | --- |
+| `{row.fieldName}` | A field of this row |
+| `{fieldName}` | The same thing, short form for a sibling field of the row |
+| `{index}` | Zero-based index of the row on the current page |
+| `{value}` | The cell's own value |
+
+This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
+
+Editing a value through a cell element writes it back into the row, so a plain `text` column bound to the same key updates with it, and row actions and conditions see the new value.
+
+::: tip Which one to reach for
+Use a plain `text` column when you only print a value. Use a cell element when the cell has to *do* something: a status Select, a per-row Button, a Badge, a Progress bar, or a Custom HTML block that mixes several fields of the row.
+:::
+
+Example: a status column that saves on change.
+
+- **Key** `status`, **Label** `Status`, **Type** `Element (control)`, **Cell element** `Select`.
+- In **Options**, list the statuses, or point **Data** at a `statuses` data source.
+- In **Events**, add an action with trigger `change`, type `dataSource`, source `saveStatus`, and a param `id = {row.id}`, `status = {value}`.
 
 ### Actions
 
@@ -6310,6 +6509,10 @@ Every action uses the standard [action editor](https://ngxviewbuilder.io/creator
 | **Expanded content template (HTML)** | Free-form details markup: <code v-pre>{{value}}</code>, <code v-pre>{{row.xxx}}</code>, <code v-pre>{{item.xxx}}</code>. |
 | **Expanded empty message** | Text when a row has no nested records. |
 | **Details panel title** | Title of the side details panel. |
+
+**Open details on row click** and cell elements get along: clicking a Badge, an Image, a Progress bar, an HTML viewer, or a Custom HTML block counts as clicking the row, so the details open. Controls that own their click, a Select, an Input, or a Button, keep it to themselves, which is what you want when someone is picking a value rather than choosing a row.
+
+Columns marked **Show in details** rebind to whichever row is open, so a Select in the details view always shows the selected record's value.
 
 The chevron normally shows only where there is something to open, which is right when nested rows come from **Expanded rows path**. It reads badly when the details come from an **Expanded datasource** or an **Expanded content template**: the row object holds no nested array, so the table cannot know in advance that the row has details, and the column ends up half-empty. **Always show expand chevron** gives every row one, and a row with nothing to show opens the details area with your **Expanded empty message** instead of ignoring the click.
 
@@ -6454,48 +6657,48 @@ In the view JSON every action is one object in the element's `events` array (or 
 
 ## Triggers
 
-**Trigger** is *when to run the action* (JSON key: `trigger`).
+**Trigger** is _when to run the action_ (JSON key: `trigger`).
 
-| Trigger | Fires when |
-| --- | --- |
-| `click` | element is clicked (buttons, icons, cards, rows) |
-| `change` | value changes |
-| `input` | every keystroke (add **Debounce (ms)** to avoid flooding) |
-| `blur` / `focus` | field loses / gains focus |
-| `submit` | the form is submitted |
-| `beforeLoad` / `onLoad` / `afterLoad` | element lifecycle when the view loads |
-| `always` | whatever the element fires  the action is not filtered by trigger at all |
+| Trigger                               | Fires when                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `click`                               | element is clicked (buttons, icons, cards, rows)                        |
+| `change`                              | value changes                                                           |
+| `input`                               | every keystroke (add **Debounce (ms)** to avoid flooding)               |
+| `blur` / `focus`                      | field loses / gains focus                                               |
+| `submit`                              | the form is submitted                                                   |
+| `beforeLoad` / `onLoad` / `afterLoad` | element lifecycle when the view loads                                   |
+| `always`                              | whatever the element fires the action is not filtered by trigger at all |
 
 Use `always` (**Always (any trigger)** in the editor) for elements whose events are not user gestures. A custom element registered by the host app might emit `activate`, `deactivate`, `attach`, or `detach`; none of those map to a name in the list above, and a router outlet has no click or change to hook into. With `always`, the action simply runs whenever that element fires something.
 
-The trade-off is that *any* really means any. On an ordinary input, an `always` action runs on load **and** on every change, input, blur, and focus. Keep it for elements that fire one kind of event, and use a named trigger everywhere else.
+The trade-off is that _any_ really means any. On an ordinary input, an `always` action runs on load **and** on every change, input, blur, and focus. Keep it for elements that fire one kind of event, and use a named trigger everywhere else.
 
 ## Fields shared by every action
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Action** | `type` | What the action will do: `navigate`, `dataSource`, `setValue`, `setOptions`, `reloadElements`, `toast`, `dialog`, `validate`, `submit`. |
-| **Label** | `label` | Short action label shown in the action list and on generated buttons. Example: *Update table*. |
-| **Action code** | `actionCode` | Optional technical code for the action. Useful when the host app or templates refer to actions by name (`action('Open dialog')`). |
-| **Icon** | `icon` | Material Symbols icon code shown on the generated button. Example: `refresh`, `save`, `visibility`. |
-| **Hide text, show icon only** | `hideText` | Renders the action as an icon-only button. |
-| **Use custom button style** | `useCustomButtonStyle` | Unlocks the two style fields below instead of the default styling. |
-| **Button style** | `buttonVariant` | `filled`, `outlined`, or `text`. |
-| **Button tone** | `buttonTone` | `primary`, `risk` (destructive), or `neutral`. |
-| **Visible if** | `condition` | Expression. The action runs (and its button is shown) only while true. Example: `{el1} == "ok"` or `{row.status} != "draft"`. |
-| **Debounce (ms)** | `debounceMs` | Delay between the trigger and execution. Essential for `input`/`change` triggers. Example: `300`. |
-| **Validate whole form before action** | `validateForm` | Runs validation first; the action is aborted when the form is invalid. |
+| Field                                 | JSON key               | What it does                                                                                                                            |
+| ------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Action**                            | `type`                 | What the action will do: `navigate`, `dataSource`, `setValue`, `setOptions`, `reloadElements`, `toast`, `dialog`, `validate`, `submit`. |
+| **Label**                             | `label`                | Short action label shown in the action list and on generated buttons. Example: _Update table_.                                          |
+| **Action code**                       | `actionCode`           | Optional technical code for the action. Useful when the host app or templates refer to actions by name (`action('Open dialog')`).       |
+| **Icon**                              | `icon`                 | Material Symbols icon code shown on the generated button. Example: `refresh`, `save`, `visibility`.                                     |
+| **Hide text, show icon only**         | `hideText`             | Renders the action as an icon-only button.                                                                                              |
+| **Use custom button style**           | `useCustomButtonStyle` | Unlocks the two style fields below instead of the default styling.                                                                      |
+| **Button style**                      | `buttonVariant`        | `filled`, `outlined`, or `text`.                                                                                                        |
+| **Button tone**                       | `buttonTone`           | `primary`, `risk` (destructive), or `neutral`.                                                                                          |
+| **Visible if**                        | `condition`            | Expression. The action runs (and its button is shown) only while true. Example: `{el1} == "ok"` or `{row.status} != "draft"`.           |
+| **Debounce (ms)**                     | `debounceMs`           | Delay between the trigger and execution. Essential for `input`/`change` triggers. Example: `300`.                                       |
+| **Validate whole form before action** | `validateForm`         | Runs validation first; the action is aborted when the form is invalid.                                                                  |
 
 ### Confirmation fields
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Ask confirmation before action** | `confirmEnabled` | Shows an *"Are you sure?"* dialog before running. |
-| **Confirm only when form has changes** | `confirmOnDirty` | Ask only if the form has unsaved changes. Handy for *Cancel*/*Leave* buttons. |
-| **Confirmation title (optional)** | `confirmTitle` | Dialog title. Example: *Confirm deletion?* |
-| **Confirmation message (optional)** | `confirmMessage` | Dialog body text. Example: *This action will change table data.* |
-| **Confirm button label** | `confirmConfirmLabel` | Example: *Yes, continue*. |
-| **Cancel button label** | `confirmCancelLabel` | Example: *No, go back*. |
+| Field                                  | JSON key              | What it does                                                                  |
+| -------------------------------------- | --------------------- | ----------------------------------------------------------------------------- |
+| **Ask confirmation before action**     | `confirmEnabled`      | Shows an _"Are you sure?"_ dialog before running.                             |
+| **Confirm only when form has changes** | `confirmOnDirty`      | Ask only if the form has unsaved changes. Handy for _Cancel_/_Leave_ buttons. |
+| **Confirmation title (optional)**      | `confirmTitle`        | Dialog title. Example: _Confirm deletion?_                                    |
+| **Confirmation message (optional)**    | `confirmMessage`      | Dialog body text. Example: _This action will change table data._              |
+| **Confirm button label**               | `confirmConfirmLabel` | Example: _Yes, continue_.                                                     |
+| **Cancel button label**                | `confirmCancelLabel`  | Example: _No, go back_.                                                       |
 
 ```json
 {
@@ -6515,14 +6718,14 @@ The trade-off is that *any* really means any. On an ordinary input, an `always` 
 
 Opens a URL or app route. Tokens in `{…}` are resolved from form data, row context, and variables.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Navigate to** | `navigateTo` | Route or URL. Example: `/orders/{row.id}` or `https://example.com?id={item.id}`. |
-| **Open in new tab** | `openInNewTab` | Opens the target in a new browser tab, so the user keeps the current form context. |
-| **Run data source before navigation** | `beforeNavigateDataSourceName` | An additional data source that runs **before** leaving, e.g. save a draft, resolve an ID, log the click. Example: `loadOrderDraft`. |
-| **Response data path (optional)** | `responseDataPath` | Which part of the before-navigate response to keep. Example: `data`, `result.item`, `payload`. |
-| **Use response path before navigation** | `responseTargetPath` | Variable or data path where the before-navigate response is stored *before* navigating, so the target page (or the return trip) can use it. Example: `__variables.customerDraft` or `customerDraft`. |
-| **Reload elements on return** | `reloadOnReturnElementNames` | Elements refreshed when the user comes back from the navigation or dialog. Example: `filesTable`. |
+| Field                                   | JSON key                       | What it does                                                                                                                                                                                         |
+| --------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Navigate to**                         | `navigateTo`                   | Route or URL. Example: `/orders/{row.id}` or `https://example.com?id={item.id}`.                                                                                                                     |
+| **Open in new tab**                     | `openInNewTab`                 | Opens the target in a new browser tab, so the user keeps the current form context.                                                                                                                   |
+| **Run data source before navigation**   | `beforeNavigateDataSourceName` | An additional data source that runs **before** leaving, e.g. save a draft, resolve an ID, log the click. Example: `loadOrderDraft`.                                                                  |
+| **Response data path (optional)**       | `responseDataPath`             | Which part of the before-navigate response to keep. Example: `data`, `result.item`, `payload`.                                                                                                       |
+| **Use response path before navigation** | `responseTargetPath`           | Variable or data path where the before-navigate response is stored _before_ navigating, so the target page (or the return trip) can use it. Example: `__variables.customerDraft` or `customerDraft`. |
+| **Reload elements on return**           | `reloadOnReturnElementNames`   | Elements refreshed when the user comes back from the navigation or dialog. Example: `filesTable`.                                                                                                    |
 
 ```json
 {
@@ -6541,19 +6744,19 @@ Opens a URL or app route. Tokens in `{…}` are resolved from form data, row con
 
 Calls a [data source](https://ngxviewbuilder.io/creators/data-sources). This is the workhorse for saving and loading.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Data source** | `dataSourceName` | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the DataSources tab. |
-| **Placeholder mapping (URL/body)** | `params` | Maps each `{placeholder}` in the source URL/body to a context path or plain value. Example: body `{selectedRows}` → `__table.el1.selectedRows`, URL `{id}` → `row.id`. Shown only when the source actually has placeholders. |
-| **Response action** | `responseMode` | What to do with the response: `none` (do nothing), `download` (save response as a file), `setValue` (write response into an element). |
-| **Response data path (optional)** | `responseDataPath` | Which part of the response to use. Example: `data`, `result.item`, `payload.items`. |
-| **Target element** | `responseTargetElement` | Element that receives the response when `responseMode` = `setValue`. |
-| **Target data path (optional)** | `responseTargetPath` | Alternative to a target element: write the response to any data path or variable. |
-| **Download file name (optional)** | `responseFileName` | File name for `responseMode` = `download`. Tokens allowed: `report-{__variables.route.id}.pdf`. |
-| **Reload current element data after success** | `reloadCurrentElementAfterSuccess` | The element that fired the action reloads its own data source afterwards. |
-| **Reload data sources after success** | `reloadDataSourceNames` | Comma-separated source names re-fetched after success. Example: `loadPersons, loadSummary`. |
-| **Elements to reload** | `reloadElementNames` | Comma-separated element names; each reloads its own data source. Example: `ordersTable, summaryCards`. |
-| **Show toast after successful action** | `showToastAfter` | Enables the [toast fields](https://ngxviewbuilder.io/creators/events-actions#action-type-toast) below the action. |
+| Field                                         | JSON key                           | What it does                                                                                                                                                                                                                 |
+| --------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Data source**                               | `dataSourceName`                   | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the DataSources tab.                                                                               |
+| **Placeholder mapping (URL/body)**            | `params`                           | Maps each `{placeholder}` in the source URL/body to a context path or plain value. Example: body `{selectedRows}` → `__table.el1.selectedRows`, URL `{id}` → `row.id`. Shown only when the source actually has placeholders. |
+| **Response action**                           | `responseMode`                     | What to do with the response: `none` (do nothing), `download` (save response as a file), `setValue` (write response into an element).                                                                                        |
+| **Response data path (optional)**             | `responseDataPath`                 | Which part of the response to use. Example: `data`, `result.item`, `payload.items`.                                                                                                                                          |
+| **Target element**                            | `responseTargetElement`            | Element that receives the response when `responseMode` = `setValue`.                                                                                                                                                         |
+| **Target data path (optional)**               | `responseTargetPath`               | Alternative to a target element: write the response to any data path or variable.                                                                                                                                            |
+| **Download file name (optional)**             | `responseFileName`                 | File name for `responseMode` = `download`. Tokens allowed: `report-{__variables.route.id}.pdf`.                                                                                                                              |
+| **Reload current element data after success** | `reloadCurrentElementAfterSuccess` | The element that fired the action reloads its own data source afterwards.                                                                                                                                                    |
+| **Reload data sources after success**         | `reloadDataSourceNames`            | Comma-separated source names re-fetched after success. Example: `loadPersons, loadSummary`.                                                                                                                                  |
+| **Elements to reload**                        | `reloadElementNames`               | Comma-separated element names; each reloads its own data source. Example: `ordersTable, summaryCards`.                                                                                                                       |
+| **Show toast after successful action**        | `showToastAfter`                   | Enables the [toast fields](https://ngxviewbuilder.io/creators/events-actions#action-type-toast) below the action.                                                                                                                                                             |
 
 ```json
 {
@@ -6571,16 +6774,16 @@ Calls a [data source](https://ngxviewbuilder.io/creators/data-sources). This is 
 
 Writes a value into any field or variable.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
+| Field                            | JSON key             | What it does                                                                                                                                               |
+| -------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Target variable or data path** | `setValueTargetPath` | Where to write. Use a variable name or `__variables.name` for variables, or any data path. Example: `__variables.selectedRow`, `selectedRow`, `client.id`. |
-| **Value source** | `setValueMode` | How the value is produced: `contextPath` (copy from another path), `template` (text with tokens), `json` (object/array literal). |
-| **Value** | `setValueValue` | The value itself, interpreted per mode, see below. |
+| **Value source**                 | `setValueMode`       | How the value is produced: `contextPath` (copy from another path), `template` (text with tokens), `json` (object/array literal).                           |
+| **Value**                        | `setValueValue`      | The value itself, interpreted per mode, see below.                                                                                                         |
 
-| Mode | Value example |
-| --- | --- |
-| Context path | `value`, `item`, `row.id`, `el3.selectedTab` |
-| Text template | `Selected tab: el3.selectedTab` |
+| Mode                | Value example                                  |
+| ------------------- | ---------------------------------------------- |
+| Context path        | `value`, `item`, `row.id`, `el3.selectedTab`   |
+| Text template       | `Selected tab: el3.selectedTab`                |
 | JSON object / array | `{ "id": "row.id", "tab": "el3.selectedTab" }` |
 
 Values written to variables can then feed dialogs, expressions, and data source actions.
@@ -6600,17 +6803,17 @@ Values written to variables can then feed dialogs, expressions, and data source 
 
 Replaces the option list of a choice element, so you can build dependent dropdowns without a server round-trip.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Target element** | `setOptionsTargetElement` | The select/radio/checkbox element whose options are replaced. |
-| **Options source** | `setOptionsMode` | Same three modes as `setValue`: `contextPath`, `template`, `json`. |
-| **Options** | `setOptionsValue` | Provide an array, or a response object containing `items`, `data`, or `results`. |
+| Field              | JSON key                  | What it does                                                                     |
+| ------------------ | ------------------------- | -------------------------------------------------------------------------------- |
+| **Target element** | `setOptionsTargetElement` | The select/radio/checkbox element whose options are replaced.                    |
+| **Options source** | `setOptionsMode`          | Same three modes as `setValue`: `contextPath`, `template`, `json`.               |
+| **Options**        | `setOptionsValue`         | Provide an array, or a response object containing `items`, `data`, or `results`. |
 
-| Mode | Value example |
-| --- | --- |
+| Mode         | Value example                                    |
+| ------------ | ------------------------------------------------ |
 | Context path | `items`, `response.items`, `__variables.options` |
-| JSON | `[{"label":"A","value":"a"}]` |
-| Template | `[{"label":"{row.name}","value":"{row.id}"}]` |
+| JSON         | `[{"label":"A","value":"a"}]`                    |
+| Template     | `[{"label":"{row.name}","value":"{row.id}"}]`    |
 
 ```json
 {
@@ -6626,28 +6829,32 @@ Replaces the option list of a choice element, so you can build dependent dropdow
 
 Re-runs the data sources of the named elements. Use after anything that changes server data.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
+| Field                                    | JSON key             | What it does                                                                                                                                                                                                         |
+| ---------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Elements to reload (comma separated)** | `reloadElementNames` | Each listed element reloads its own data source. Example: `ordersTable, summaryCards`. The editor lists all reloadable elements; if none exist yet, first assign a data source to a table, list, or another element. |
 
 ```json
-{ "trigger": "click", "type": "reloadElements", "reloadElementNames": "ordersTable, summaryCards" }
+{
+  "trigger": "click",
+  "type": "reloadElements",
+  "reloadElementNames": "ordersTable, summaryCards"
+}
 ```
 
 ## Action type: `toast`
 
 Shows a notification. The same fields appear on any `dataSource` action when **Show toast after successful action** is on.
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Toast title** | `toastTitle` | Short title. Example: *Data updated*. |
-| **Toast message** | `toastMessage` | Additional explanation. Example: *Table data reloaded*. |
-| **Toast variant** | `toastVariant` | Visual type: `success`, `info`, `warning`, `error`. |
-| **Toast position** | `toastPosition` | Where on screen: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. |
-| **Show icon** | `toastShowIcon` | Whether the toast shows an icon at all. |
-| **Icon name** | `toastIcon` | Material Symbols icon. Example: `check_circle`, `info`. |
-| **Auto hide** | `toastAutoHide` | Hide the toast automatically. |
-| **Auto hide timeout (ms)** | `toastAutoHideMs` | How long to show it. Example: `7000` = 7 seconds. |
+| Field                      | JSON key          | What it does                                                                                            |
+| -------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------- |
+| **Toast title**            | `toastTitle`      | Short title. Example: _Data updated_.                                                                   |
+| **Toast message**          | `toastMessage`    | Additional explanation. Example: _Table data reloaded_.                                                 |
+| **Toast variant**          | `toastVariant`    | Visual type: `success`, `info`, `warning`, `error`.                                                     |
+| **Toast position**         | `toastPosition`   | Where on screen: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. |
+| **Show icon**              | `toastShowIcon`   | Whether the toast shows an icon at all.                                                                 |
+| **Icon name**              | `toastIcon`       | Material Symbols icon. Example: `check_circle`, `info`.                                                 |
+| **Auto hide**              | `toastAutoHide`   | Hide the toast automatically.                                                                           |
+| **Auto hide timeout (ms)** | `toastAutoHideMs` | How long to show it. Example: `7000` = 7 seconds.                                                       |
 
 ```json
 {
@@ -6666,13 +6873,18 @@ Shows a notification. The same fields appear on any `dataSource` action when **S
 
 Opens, closes, or toggles a named [Dialog element](https://ngxviewbuilder.io/creators/elements/containers#dialog-dialog).
 
-| Field | JSON key | What it does |
-| --- | --- | --- |
-| **Dialog name** | `dialogName` | The `name` of the Dialog element. The editor lists existing dialogs; if it says *No dialogs yet*, drop a Dialog element onto the canvas first. |
-| **Dialog operation** | `dialogOperation` | `open`, `close`, or `toggle`. |
+| Field                | JSON key          | What it does                                                                                                                                   |
+| -------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dialog name**      | `dialogName`      | The `name` of the Dialog element. The editor lists existing dialogs; if it says _No dialogs yet_, drop a Dialog element onto the canvas first. |
+| **Dialog operation** | `dialogOperation` | `open`, `close`, or `toggle`.                                                                                                                  |
 
 ```json
-{ "trigger": "click", "type": "dialog", "dialogName": "clientDialog", "dialogOperation": "open" }
+{
+  "trigger": "click",
+  "type": "dialog",
+  "dialogName": "clientDialog",
+  "dialogOperation": "open"
+}
 ```
 
 ## Action type: `validate`
@@ -6693,17 +6905,19 @@ Validates the form, then fires the host app's `onComplete` event with `{ isValid
 
 ## Row-action context (tables)
 
-Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowActions`, `selectionActions`, `cellActions`) get extra context tokens:
+Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowActions`, `selectionActions`) get extra context tokens:
 
-| Token | Meaning |
-| --- | --- |
-| `{row.*}` | The clicked row object |
-| `{parentRow.*}` | The parent row (in expanded/nested tables) |
-| `{value}` | The cell value (in cell actions) |
-| `{checked}` | Toggle/checkbox state (in interactive columns) |
-| `{__table.<name>.selectedRows}` | Selected rows of a table |
+| Token                           | Meaning                                        |
+| ------------------------------- | ---------------------------------------------- |
+| `{row.*}`                       | The clicked row object                         |
+| `{parentRow.*}`                 | The parent row (in expanded/nested tables)     |
+| `{value}`                       | The cell value (in cell actions)               |
+| `{checked}`                     | Toggle/checkbox state (in interactive columns) |
+| `{__table.<name>.selectedRows}` | Selected rows of a table                       |
 
-Tables also offer **quick action** presets (*View*, *Edit*, *Copy*, *Delete*) that pre-fill a row action for you.
+Tables also offer **quick action** presets (_View_, _Edit_, _Copy_, _Delete_) that pre-fill a row action for you.
+
+The same tokens reach the events of an element hosted in a table cell or in a dynamic-table row, plus two more: `{index}` for the row position, and a bare `{fieldName}` as a short form for a sibling field of the same row. A Select in a table column can therefore fire `Row {row.name} is now {value}` on change and name the correct row. See [Cell elements](https://ngxviewbuilder.io/creators/elements/tables#cell-elements).
 
 ## Recipes
 
@@ -6711,10 +6925,15 @@ Tables also offer **quick action** presets (*View*, *Edit*, *Copy*, *Delete*) th
 
 ```json
 {
-  "trigger": "click", "type": "dataSource", "label": "Save",
-  "dataSourceName": "saveClient", "validateForm": true,
+  "trigger": "click",
+  "type": "dataSource",
+  "label": "Save",
+  "dataSourceName": "saveClient",
+  "validateForm": true,
   "reloadElementNames": "clientsTable",
-  "showToastAfter": true, "toastTitle": "Saved", "toastVariant": "success"
+  "showToastAfter": true,
+  "toastTitle": "Saved",
+  "toastVariant": "success"
 }
 ```
 
@@ -6724,11 +6943,15 @@ Tables also offer **quick action** presets (*View*, *Edit*, *Copy*, *Delete*) th
 
 ```json
 {
-  "label": "Delete", "type": "dataSource", "dataSourceName": "deleteClient",
+  "label": "Delete",
+  "type": "dataSource",
+  "dataSourceName": "deleteClient",
   "params": [{ "param": "id", "path": "row.id" }],
-  "confirmEnabled": true, "confirmTitle": "Delete client?",
+  "confirmEnabled": true,
+  "confirmTitle": "Delete client?",
   "confirmMessage": "This cannot be undone.",
-  "reloadElementNames": "clientsTable", "buttonTone": "risk"
+  "reloadElementNames": "clientsTable",
+  "buttonTone": "risk"
 }
 ```
 
@@ -7028,6 +7251,38 @@ For dynamic panel / dynamic table values (arrays of objects). `selector` is the 
 | `joinInArray(source, selector, separator)` | joined text | `joinInArray({tags}, "name", ", ")` |
 | `collectValuesFrom(source, selector, unique)` | array of values | `collectValuesFrom({orders}, "id", true)` |
 
+## Searching and filtering arrays
+
+The functions above work on a field name. These ones take a **condition** instead, written the same way you write any other expression, and evaluate it once per entry.
+
+| Function | Returns | Example |
+| --- | --- | --- |
+| `filterArray(source, condition)` | the matching entries | `filterArray({users}, role == "ADMIN")` |
+| `findInArray(source, condition)` | the first matching entry, or nothing | `findInArray({products}, id == {selectedId})` |
+| `existsInArray(source, condition)` | true if at least one entry matches | `existsInArray({items}, status == "ACTIVE")` |
+| `countInArray(source, condition)` | how many entries match | `countInArray({tasks}, status == "OPEN")` |
+| `getFirst(source, condition?)` | first entry, optionally the first match | `getFirst({tasks}, status == "OPEN")` |
+| `getLast(source, condition?)` | last entry, optionally the last match | `getLast({history})` |
+| `sumArray(source, selector)` | sum of a field | `sumArray({orderItems}, price)` |
+| `avgArray(source, selector)` | average of a field | `avgArray({grades}, score)` |
+| `mapArray(source, selector)` | one value per entry | `mapArray({users}, name)` |
+
+Inside a condition you write the entry's own field names directly, with no braces. Everything else in the view stays visible, so you can compare against another element or a variable:
+
+```text
+countInArray({tasks}, status == {statusFilter})
+filterArray({orders}, status == {el5} && total > {minTotal})
+filterArray({users}, role == {__variables.requiredRole})
+```
+
+Calls nest, which is how you go from a filtered set to a single text:
+
+```text
+joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
+```
+
+`countInArray` also still accepts a plain field name, so older views keep working. Anything containing a comparison is treated as a condition.
+
 ## Dates
 
 | Function | Returns | Example |
@@ -7051,8 +7306,43 @@ Advanced. These reach outside the current field:
 | --- | --- | --- |
 | `getVal(path)` | reads any value by data path | `getVal("addresses[0].city")` |
 | `setElementProperty(name, key, value)` | sets another element's property | `setElementProperty("step2", "disabled", true)` |
+| `getElementProperty(name, key)` | reads another element's property | `getElementProperty("sel1", "label")` |
+| `getProp(name, key)` | alias of `getElementProperty` | `getProp({sel1}, "placeholder")` |
 | `runDataSource(name)` | reloads a data source, returns its result | `runDataSource("loadUsers")` |
 | `reloadDataSource(name)` | alias of `runDataSource` | |
+
+`getVal` also answers for a field the user has not touched yet, reading the value straight off the element, so `{price} * 2` no longer collapses the moment one side is still empty.
+
+`getElementProperty` reaches any configured property, not just the value, and nested keys work:
+
+```text
+getProp("sel1", "placeholder")
+getProp("sel1", "options[0].label")
+getProp("orders", "dataSource.name")
+```
+
+## Labels of choice elements
+
+A Select, Radio, or Checkbox group stores a code and shows a label. Only the element knows the pairing, so these two functions ask it directly:
+
+| Function | Returns | Example |
+| --- | --- | --- |
+| `getValue(element)` | the stored value | `getValue({status})` gives `OPEN` |
+| `getLabel(element, value?)` | the displayed label | `getLabel({status})` gives `Open issue` |
+
+Name the element either way you prefer, `getLabel({status})` or `getLabel("status")`. The token is treated as the element's name here, not as its value. Pass a second argument to translate some other value through the same option list: `getLabel("status", "CLOSED")`. For a multi select you get one label per selected value.
+
+## Translating dynamic values
+
+Values coming from an API never pass through the Translations tab, because that tab only knows the texts written into the view. `translate()` opens the same per-language dictionary to any key:
+
+| Function | Returns | Example |
+| --- | --- | --- |
+| `translate(value, fallback?)` | the translated text | `translate({row.status})` |
+| `t(value, fallback?)` | alias of `translate` | `t({row.status}, "Unknown")` |
+| `currentLanguage()` | active language code | `currentLanguage() == "lt"` |
+
+See [Translations](https://ngxviewbuilder.io/creators/translations#translating-values-that-come-from-data) for where the keys live.
 
 ## Debugging
 
@@ -7532,6 +7822,29 @@ The texts live in the view definition under `localization`:
 
 Untranslated texts fall back to the default language, so the view never shows blanks.
 
+## Translating values that come from data
+
+The Translations tab only sees texts written into the view. A status arriving from an API (`BUG`, `QUESTION`, `FEATURE`) is data, so it is never listed there, yet it still has to read properly in every language.
+
+Put the raw value in the dictionary as its own key and wrap the token in `translate()`:
+
+```json
+"texts": {
+  "en": { "BUG": "Bug", "QUESTION": "Question", "FEATURE": "Feature" },
+  "lt": { "BUG": "Klaida", "QUESTION": "Klausimas", "FEATURE": "Funkcija" }
+}
+```
+
+```text
+translate({row.status})
+```
+
+Two things worth knowing. A `values.` prefix is checked as well, so `values.BUG` keeps these keys apart from element paths if you prefer that. And when the key is missing, the original value is shown unchanged, which means adding a new status to the backend never leaves an empty cell.
+
+It works anywhere an expression does, most usefully in a table's Badge or text cell. Pass a second argument for a different fallback, `translate({row.status}, "Unknown")`, and read the active language with `currentLanguage()`.
+
+For a Select or Radio you usually want [`getLabel()`](https://ngxviewbuilder.io/creators/functions#labels-of-choice-elements) instead, since the option list already holds the translated label.
+
 ## Locale vs. language
 
 **Language** picks the text set. **Locale** (Form settings) controls number and date formatting: `lt-LT` renders `1 234,56`, `en-US` renders `1,234.56`. Set both for a fully localised view.
@@ -7662,6 +7975,12 @@ Each row in the Variables tab has:
 | **Reload data source when fields change** | For `dataSource` variables: re-run the source when watched fields change. |
 | **Listen fields** | Comma-separated paths that trigger the reload. Reload runs only when one of these changes. Example: `userId, data.user.type, filters.status`. |
 | **Refresh** | Manually re-resolve variables after structure or source changes. |
+
+## When variables recalculate
+
+An `expression` variable behaves like any other calculated value. It watches every field it references and recomputes the moment one of them changes, and anything reading the variable updates in the same pass. A chain like `variable1 = {el1} + {el2}` feeding an element with `expression: {variable1}` settles immediately, with no need to leave and re-enter the view.
+
+Referencing a field the user has not filled in yet is fine. The variable simply resolves to nothing and falls back to **Fallback** if you set one, rather than showing a broken value.
 
 ## Using variables
 

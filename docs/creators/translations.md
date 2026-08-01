@@ -35,6 +35,29 @@ The texts live in the view definition under `localization`:
 
 Untranslated texts fall back to the default language, so the view never shows blanks.
 
+## Translating values that come from data
+
+The Translations tab only sees texts written into the view. A status arriving from an API (`BUG`, `QUESTION`, `FEATURE`) is data, so it is never listed there, yet it still has to read properly in every language.
+
+Put the raw value in the dictionary as its own key and wrap the token in `translate()`:
+
+```json
+"texts": {
+  "en": { "BUG": "Bug", "QUESTION": "Question", "FEATURE": "Feature" },
+  "lt": { "BUG": "Klaida", "QUESTION": "Klausimas", "FEATURE": "Funkcija" }
+}
+```
+
+```text
+translate({row.status})
+```
+
+Two things worth knowing. A `values.` prefix is checked as well, so `values.BUG` keeps these keys apart from element paths if you prefer that. And when the key is missing, the original value is shown unchanged, which means adding a new status to the backend never leaves an empty cell.
+
+It works anywhere an expression does, most usefully in a table's Badge or text cell. Pass a second argument for a different fallback, `translate({row.status}, "Unknown")`, and read the active language with `currentLanguage()`.
+
+For a Select or Radio you usually want [`getLabel()`](./functions#labels-of-choice-elements) instead, since the option list already holds the translated label.
+
 ## Locale vs. language
 
 **Language** picks the text set. **Locale** (Form settings) controls number and date formatting: `lt-LT` renders `1 234,56`, `en-US` renders `1,234.56`. Set both for a fully localised view.

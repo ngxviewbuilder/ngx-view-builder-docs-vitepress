@@ -51,6 +51,11 @@ this.api.setRuntimeVariableDefinitions([
 
 Useful definition flags: `fallbackValue`, `targetPath` (mirror into form data), `includeInDataJson` (ship with submits), `refreshOnChange` / `refreshPaths`.
 
+Two things to keep in mind when defining them by hand:
+
+- An `expression` variable resolves element references the same way an element expression does, so `{el1} + {el2}` reads those fields even before the user has touched them. Its dependencies are tracked automatically and it recomputes whenever one of them changes, along with anything reading the variable.
+- A `dataSource` variable needs an explicit `source`. If it is missing, the variable stays unresolved rather than picking up whichever source happens to be first in the structure.
+
 ## One-call configuration
 
 ```ts

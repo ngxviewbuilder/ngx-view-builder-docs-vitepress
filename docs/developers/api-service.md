@@ -212,6 +212,10 @@ Everything from [`provideNgxViewBuilderExtensions`](./extensions) is also callab
 | `registerSvgIconDirectory(config): Promise<{ loaded, failed }>` | Loads a directory of `.svg` files by URL manifest. |
 | `registerSvgIconDirectories(configs): Promise<...[]>` | Several directories at once. |
 | `getTableHeaderCenterExtensions(): INgxViewBuilderCustomElementDefinition[]` | Custom elements flagged `allowInTableHeader` (usable in table header bars). |
+| `registerTableCellElementType(type): void` | Adds an element type to the **Cell element** picker of a table column ([cell elements](../creators/elements/tables#cell-elements)). Takes a type id or `{ type, label, order }`. Elements registered with `allowInTableCell: true` are added for you. |
+| `registerTableCellElementTypes(types): void` | Several at once. |
+| `removeTableCellElementType(type): void` | Takes one back out of the picker. |
+| `getTableCellElementTypes(): ITableCellElementType[]` | Built-in cell element types plus everything registered by the host. |
 | `attachBuilderAdapter(adapter): void` | Internal bridge between this service and the builder UI. The builder component attaches itself; hosts don't call this. |
 
 ## Templates & sidebar library

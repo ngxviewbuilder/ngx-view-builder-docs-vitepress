@@ -45,6 +45,8 @@ These can use expression fragments such as:
 - `controlActiveIf`
 - `controlEnabledIf`
 
+Inside a column of `type: "element"`, the hosted element's own texts, templates, and event params resolve against the row it renders: `{row.field}`, a bare `{field}` for a sibling of the same row, `{index}`, and `{value}`. The same tokens work in a `dynamicTable` cell and a `dynamicPanel` row.
+
 ### Event and action logic
 
 Expressions are often used in actions in:
@@ -185,6 +187,35 @@ if `customerType` does not exist in the form.
 | Automatically compute a value | `expression` |
 | Enable a validator conditionally | `validators[].applyIf` |
 | Flag a custom validation error | `validators[].condition` (error while `true`) |
+
+## Working with arrays and element metadata
+
+Conditions inside collection functions are written unquoted and evaluated once per entry. Entry fields are referenced bare, everything else in the view stays reachable through `{...}`:
+
+```text
+countInArray({tasks}, status == "OPEN")
+filterArray({users}, role == {__variables.requiredRole})
+findInArray({products}, id == {selectedId})
+existsInArray({items}, status == "ACTIVE")
+sumArray({orderItems}, price)
+joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
+```
+
+Also available: `avgArray`, `getFirst(source, condition?)`, `getLast(source, condition?)`. `countInArray` still accepts a plain field selector, so older structures keep working.
+
+For element metadata rather than values:
+
+| Call | Returns |
+| --- | --- |
+| `getValue({select1})` | stored value, e.g. `OPEN` |
+| `getLabel({select1})` | displayed option label, e.g. `Open issue` |
+| `getLabel("select1", "CLOSED")` | label of a specific value |
+| `getElementProperty("el1", "label")` | any configured property, nested keys allowed |
+| `getProp({el1}, "placeholder")` | alias of `getElementProperty` |
+| `translate({row.status})` | value translated through `localization.texts[<language>]` |
+| `currentLanguage()` | active language code |
+
+In `getLabel`, `getValue`, and `getProp` the token names the element, it is not replaced by that element's value.
 
 ## Contexts the agent may encounter
 

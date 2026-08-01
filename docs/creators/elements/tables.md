@@ -23,11 +23,13 @@ A working table needs only: a data source, *Items path*, and 2-3 columns. Add se
 
 Row context in expressions and actions: `{row.fieldName}`, e.g. a row action with condition `{row.status} == "draft"`. Selected rows: `{__table.<tableName>.selectedRows}`.
 
+A column either prints its value as text, or hosts a real element in every row. See [Cell elements](#cell-elements) for the second option, which covers what the old per-type renderers did (dates, badges, toggles, checkboxes) and adds events, data sources, and validation on top.
+
 ### Primary source & request
 
 | Property | What it does |
 | --- | --- |
-| **Data source name** | Primary source from the DataSources tab. Example: `loadUsers`. |
+| **Data source** | Primary source from the DataSources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |
@@ -60,7 +62,15 @@ Per-column filter settings live on each column; see [Columns](#columns) below.
 | --- | --- |
 | **Key** | Data key in the row object; nested paths allowed (`user.name`, `status`). |
 | **Label** / **Mobile label** | Header text; the mobile variant falls back to Label when empty. |
-| **Align** | Column text alignment. |
+| **Type** | `text` prints the plain value. `Date`, `Date & time`, and `Number` format it, see [Formatted columns](#formatted-columns). `Element (control)` renders a real element in every cell, see [Cell elements](#cell-elements). |
+| **Format locale** | Formatted columns only: `lt-LT`, `en-US`, and so on. Empty follows the view's locale. |
+| **Date pattern** | Exact date shape, e.g. `yyyy-MM-dd HH:mm:ss`. Empty uses the locale's own format. |
+| **Show seconds** | Whether a `Date & time` column includes seconds. |
+| **Min decimals / Max decimals** | Decimal places on a `Number` column. |
+| **Thousands separator** | Group digits on a `Number` column. |
+| **Cell element** | Which element the cells host when Type is `Element (control)`: Select, Button, Badge, Date picker, Progress bar, and so on. |
+| **Cell element text** | The hosted element's own label or caption (button text, badge text). Kept separate from **Label**, which stays the column header. |
+| **Align** | Column text alignment. Applies to both plain and element columns. |
 | **Sortable** | Whether sorting is allowed by this column. |
 | **Show in table / Show in details** | Where the column appears (main table and/or the details view). |
 | **Detail label** | Optional different name in the details view. |
@@ -72,12 +82,72 @@ Per-column filter settings live on each column; see [Columns](#columns) below.
 | **Filter options / JSON / data source (+ items path, label key, value key)** | Where the filter's choices come from: manual list, JSON, or a data source. |
 | **Filter toggle true/false value** | What a detailed-search toggle sends when on/off (`yes`/`no`, `T`/`N`). |
 | **Filter multi-value delimiter** | Joins multiple filter values into one request param (`,` or `;`). |
-| **Status rules** | Condition + tone (+ label, icon, rounded) rules that render the cell as a status badge. Conditions support `{row.*}`, `{value}`. Example: `[{ "condition": "{row.submitted} == \"Y\"", "label": "Submitted", "tone": "success", "icon": "check_circle", "rounded": true }]`. |
-| **Show status icon** | Status badges show an icon (tone default when the rule has none). |
-| **Checked if / Enabled if** | For interactive toggle/checkbox columns: what controls the checked state (`{row.disabled} == true`) and whether clicking is allowed (`{row.canEdit} == true`). |
-| **Cell actions (+ enabled, display mode, placeholder)** | Actions on the cell: dropdown/buttons for regular columns; fired on click for toggle/checkbox columns. Context: `row`, `parentRow`, `column`, `checked`. |
 | **Use totals (+ fraction digits, locale, grouping, mask, template)** | Show this column's sum in the footer row, with formatting controls and a `{total}` text template. |
 | **Editable / Editor type / Editor options (+ label key, value key, placeholder)** | Inline-edit settings for this column: which control edits it (text, number, select, date) and where its choices come from. |
+
+### Formatted columns
+
+An API rarely sends a value ready to read. A timestamp arrives as `2026-07-25T07:11:43.724948Z` and an amount as `1234.5`. Set the column's **Type** to `Date`, `Date & time`, or `Number` and the raw value is rendered the way the reader expects, with no template and no cell element.
+
+Formatting follows the view's locale, so the decimal mark and the thousands separator come from there. Override it per column with **Format locale** when one table has to differ.
+
+With `locale: lt-LT`:
+
+| Type | Settings | `2026-07-25T07:11:43.724948Z` renders as |
+| --- | --- | --- |
+| `Date` | none | `2026-07-25` |
+| `Date & time` | Show seconds on | `2026-07-25 10:11:43` |
+| `Date & time` | Date pattern `yyyy/MM/dd hh:mm a` | `2026/07/25 10:11 AM` |
+
+And for `1234.5`:
+
+| Type | Settings | Renders as |
+| --- | --- | --- |
+| `Number` | Min and max decimals 2 | `1 234,50` |
+| `Number` | Thousands separator off | `1234,50` |
+
+**Date pattern** takes priority over the locale format when you need an exact shape. Tokens are `yyyy`, `yy`, `MM`, `dd`, `HH` (24h), `hh` (12h), `mm`, `ss`, `SSS`, and `a` for AM/PM. Everything else in the pattern is printed as typed, so separators are yours to choose.
+
+A value that is not a real date or number is printed unchanged rather than blanked, which keeps a stray `N/A` from a backend visible instead of silently disappearing.
+
+### Cell elements
+
+Set a column's **Type** to `Element (control)` and pick a **Cell element**. Every row of that column then renders a real builder element, configured exactly like one dropped on a page: its own options, data source, events, and validators. It is the same principle a [Dynamic table](#dynamic-table-dynamictable) uses for its columns, brought to the data table.
+
+Pick the element and the properties sidebar grows the matching sections. A Select column gains **Data**, **Options**, **Validators**, and **Events**; a Button column gains **Events**; a Progress bar column gains its own appearance settings. The column keeps owning **Label**, **Width**, **Align**, and **Visible if**, so the header and the layout stay where you set them. The hosted element's own caption lives in **Cell element text**.
+
+Available cell elements: Text input, Textarea, Number, Number stepper, Phone input, Select, Multi select, Select button, Radio, Checkbox group, Single checkbox, Toggle switch, Slider, Date picker, Date range, Time picker, Button, Badge, Image, Progress bar, File upload, Custom HTML, HTML viewer. Developers can add their own components to this list, see [Custom elements](../../developers/custom-elements#using-a-custom-element-in-a-table-cell).
+
+**HTML viewer** is the one to reach for when the row already carries markup. It renders the cell's own value as HTML, so a `note` or `description` field holding `<b>Bold</b>` or a small list shows up formatted with nothing else to configure. Custom HTML is the other way round: you write the template and pull row fields into it.
+
+::: warning Switching the element starts over
+Choosing a different **Cell element** clears the previous element's configuration. Options, data source, and events belonging to the old element have no meaning for the new one, so the column starts fresh. Switch **Type** back to `text` and the hosted element is dropped entirely.
+:::
+
+#### The row is in scope
+
+A cell element knows which row it sits in, so anything you write in it resolves against that row:
+
+| Token | Resolves to |
+| --- | --- |
+| `{row.fieldName}` | A field of this row |
+| `{fieldName}` | The same thing, short form for a sibling field of the row |
+| `{index}` | Zero-based index of the row on the current page |
+| `{value}` | The cell's own value |
+
+This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
+
+Editing a value through a cell element writes it back into the row, so a plain `text` column bound to the same key updates with it, and row actions and conditions see the new value.
+
+::: tip Which one to reach for
+Use a plain `text` column when you only print a value. Use a cell element when the cell has to *do* something: a status Select, a per-row Button, a Badge, a Progress bar, or a Custom HTML block that mixes several fields of the row.
+:::
+
+Example: a status column that saves on change.
+
+- **Key** `status`, **Label** `Status`, **Type** `Element (control)`, **Cell element** `Select`.
+- In **Options**, list the statuses, or point **Data** at a `statuses` data source.
+- In **Events**, add an action with trigger `change`, type `dataSource`, source `saveStatus`, and a param `id = {row.id}`, `status = {value}`.
 
 ### Actions
 
@@ -119,6 +189,10 @@ Every action uses the standard [action editor](../events-actions), so a row butt
 | **Expanded content template (HTML)** | Free-form details markup: <code v-pre>{{value}}</code>, <code v-pre>{{row.xxx}}</code>, <code v-pre>{{item.xxx}}</code>. |
 | **Expanded empty message** | Text when a row has no nested records. |
 | **Details panel title** | Title of the side details panel. |
+
+**Open details on row click** and cell elements get along: clicking a Badge, an Image, a Progress bar, an HTML viewer, or a Custom HTML block counts as clicking the row, so the details open. Controls that own their click, a Select, an Input, or a Button, keep it to themselves, which is what you want when someone is picking a value rather than choosing a row.
+
+Columns marked **Show in details** rebind to whichever row is open, so a Select in the details view always shows the selected record's value.
 
 The chevron normally shows only where there is something to open, which is right when nested rows come from **Expanded rows path**. It reads badly when the details come from an **Expanded datasource** or an **Expanded content template**: the row object holds no nested array, so the table cannot know in advance that the row has details, and the column ends up half-empty. **Always show expand chevron** gives every row one, and a row with nothing to show opens the details area with your **Expanded empty message** instead of ignoring the click.
 

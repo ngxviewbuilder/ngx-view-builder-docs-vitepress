@@ -123,7 +123,51 @@ provideNgxViewBuilderExtensions({
 
 `properties` drives the properties sidebar; each key maps a model field to an editor. Available editor `type`s and categories: [Custom properties](./custom-properties).
 
-Optional registration fields: `aliases` (alternative type ids), `order` (position in group), `allowInTableHeader`.
+Optional registration fields: `aliases` (alternative type ids), `order` (position in group), `allowInTableHeader`, `allowInTableCell`.
+
+## Using a custom element in a table cell
+
+A table column whose type is `Element (control)` renders a real element in every row ([Cell elements](../creators/elements/tables#cell-elements)). Add `allowInTableCell: true` and your element joins the built-in ones in that column's **Cell element** picker:
+
+```ts
+provideNgxViewBuilderExtensions({
+  elements: [{
+    type: 'ratingWidget',
+    label: 'Rating',
+    groupCode: 'custom',
+    allowInTableCell: true,
+    component: RatingWidgetComponent,
+    model: RatingWidgetModel,
+    properties: { /* … */ },
+  }],
+});
+```
+
+The same list is editable at runtime through the [API service](./api-service#extensions-registration), which is handy when the component is registered somewhere else, or when you want a built-in type back that the picker does not offer by default:
+
+```ts
+api.registerTableCellElementType({ type: 'ratingWidget', label: 'Rating', order: 2500 });
+api.registerTableCellElementTypes(['autocomplete', 'listBox']);
+api.removeTableCellElementType('fileUpload');
+api.getTableCellElementTypes();          // built-ins plus everything you registered
+```
+
+### Reading the row
+
+Nothing extra is needed for values and events: the library gives the cell model its row data path, mirrors the table's disabled/read-only state onto it, and merges the row into the runtime context of every action your element runs, so `{row.id}` and `{index}` resolve in the action editor.
+
+If your component renders its own text template, resolve it against the row explicitly:
+
+```ts
+import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder';
+
+const context = buildElementRowRuntimeContext(this.model(), (path) =>
+  this.dataService.getValue(path),
+);
+// context.row, context.index, and every field of the row addressable by name
+```
+
+`resolveElementRowScope()` returns the raw scope (`rowPath`, `rowIndex`, `rowValue`, sibling names) when you need the pieces rather than a ready context. Both work for table cells, dynamic-table rows, and dynamic-panel rows, so writing against them once covers every repeater.
 
 ## Behaviour you get for free
 

@@ -37,6 +37,12 @@ Each row in the Variables tab has:
 | **Listen fields** | Comma-separated paths that trigger the reload. Reload runs only when one of these changes. Example: `userId, data.user.type, filters.status`. |
 | **Refresh** | Manually re-resolve variables after structure or source changes. |
 
+## When variables recalculate
+
+An `expression` variable behaves like any other calculated value. It watches every field it references and recomputes the moment one of them changes, and anything reading the variable updates in the same pass. A chain like `variable1 = {el1} + {el2}` feeding an element with `expression: {variable1}` settles immediately, with no need to leave and re-enter the view.
+
+Referencing a field the user has not filled in yet is fine. The variable simply resolves to nothing and falls back to **Fallback** if you set one, rather than showing a broken value.
+
 ## Using variables
 
 ```text

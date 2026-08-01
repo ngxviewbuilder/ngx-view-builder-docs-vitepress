@@ -277,7 +277,7 @@ Validates the form, then fires the host app's `onComplete` event with `{ isValid
 
 ## Row-action context (tables)
 
-Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowActions`, `selectionActions`, `cellActions`) get extra context tokens:
+Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowActions`, `selectionActions`) get extra context tokens:
 
 | Token                           | Meaning                                        |
 | ------------------------------- | ---------------------------------------------- |
@@ -288,6 +288,8 @@ Actions attached to table rows (`rowActions`, `rowClickActions`, `expandedRowAct
 | `{__table.<name>.selectedRows}` | Selected rows of a table                       |
 
 Tables also offer **quick action** presets (_View_, _Edit_, _Copy_, _Delete_) that pre-fill a row action for you.
+
+The same tokens reach the events of an element hosted in a table cell or in a dynamic-table row, plus two more: `{index}` for the row position, and a bare `{fieldName}` as a short form for a sibling field of the same row. A Select in a table column can therefore fire `Row {row.name} is now {value}` on change and name the correct row. See [Cell elements](./elements/tables#cell-elements).
 
 ## Recipes
 
