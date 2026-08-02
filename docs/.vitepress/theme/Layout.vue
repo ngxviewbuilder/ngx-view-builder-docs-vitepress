@@ -2,7 +2,9 @@
 import DefaultTheme from 'vitepress/theme';
 import ComingSoonCard from './components/ComingSoonCard.vue';
 import CookieConsent from './components/CookieConsent.vue';
-import GitHubStarBadge from './components/GitHubStarBadge.vue';
+// Laikinai isjungtas GitHub zvaigzduciu badge.
+// import GitHubStarBadge from './components/GitHubStarBadge.vue';
+import NpmBadges from './components/NpmBadges.vue';
 
 const { Layout } = DefaultTheme;
 </script>
@@ -10,7 +12,8 @@ const { Layout } = DefaultTheme;
 <template>
   <Layout>
     <template #nav-bar-content-after>
-      <GitHubStarBadge />
+      <!-- <GitHubStarBadge /> -->
+      <NpmBadges />
     </template>
     <template #home-hero-after>
       <ComingSoonCard />
