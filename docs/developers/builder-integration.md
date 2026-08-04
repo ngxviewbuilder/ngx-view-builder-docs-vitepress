@@ -69,7 +69,7 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   theme: 'light',
   language: 'en',
   builderPageDisplayMode: 'single',        // canvas shows one page at a time
-  dataSources: { enableGraphql: true, enableWebsocket: true },
+  dataSources: { enableWebsocket: true },
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar

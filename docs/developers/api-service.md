@@ -125,7 +125,7 @@ if (!result.isValid) console.table(result.issues);
 | `reloadElementDataSource(elementNameOrPath, runtimeContext?): Promise<unknown \| null>` | Shorthand: reload whatever source the element uses. |
 | `reloadElementsByDataSource(dataSourceName, runtimeContext?): Promise<unknown[]>` | Reloads **every element** consuming the named source (falls back to the raw source when nothing consumes it). |
 | `setDefaultDataSources(dataSources: IDataSource[], overwriteExisting?): void` | Injects host-defined sources into the current structure so every view can use them (by name; existing names kept unless `overwriteExisting`). |
-| `setDataSourceTypeSettings(settings): void` | Enables optional source types in the builder UI: `{ enableGraphql, enableWebsocket }`. |
+| `setDataSourceTypeSettings(settings): void` | Enables optional source types in the builder UI: `{ enableWebsocket }`. |
 | `getDataSourceTypeSettings(): INgxViewBuilderDataSourceTypeSettings` | Current source-type switches. |
 
 ```ts

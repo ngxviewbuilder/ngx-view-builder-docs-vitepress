@@ -155,7 +155,7 @@ Every view has these structure settings (set via the JSON editor, `api.patchSett
 | `templateStorageDataPath`       | Path into that source's response where the template array lives                                  |
 
 ::: warning This is a read path, not your database integration
-`dataSource` mode reliably **writes** only when the named source is a `local` (in-structure JSON) source anything backed by a real REST/GraphQL/websocket source silently falls back to writing into `localStorage` under a per-source key instead of hitting your API. Reading works for any source type (via the _Load from data source_ action). So treat `templateStorageMode: 'dataSource'` as a way to **seed/refresh** templates from a live source, not as the mechanism that persists edits to your database that's the API-level integration below, which every Save/Delete in the Templates tab already goes through regardless of this setting.
+`dataSource` mode reliably **writes** only when the named source is a `local` (in-structure JSON) source anything backed by a real REST/websocket source silently falls back to writing into `localStorage` under a per-source key instead of hitting your API. Reading works for any source type (via the _Load from data source_ action). So treat `templateStorageMode: 'dataSource'` as a way to **seed/refresh** templates from a live source, not as the mechanism that persists edits to your database that's the API-level integration below, which every Save/Delete in the Templates tab already goes through regardless of this setting.
 :::
 
 ## Persisting templates to your database
