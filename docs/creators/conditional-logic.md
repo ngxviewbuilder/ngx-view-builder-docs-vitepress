@@ -62,6 +62,29 @@ Clears stale answers when their premise disappears:
 
 Without a reset rule, a hidden field keeps its old value, and that value is still submitted.
 
+## Logic inside repeaters
+
+Inside a **Dynamic panel** or a **Dynamic table**, the same five properties are evaluated once per row, against that row's own values. Write the condition with the row context rather than a field name:
+
+```text
+panel.dpDriver > 10        dynamic panel: this entry's field
+row.quantity > 0           dynamic table: this row's cell
+```
+
+Each row then decides for itself. In a panel of order lines, `visibleIf: panel.quantity > 0` hides the discount field only in the lines that have no quantity, and leaves the other lines untouched. The same goes for **Require if**, so a row can be mandatory while its neighbours are not.
+
+Referring to a plain field name inside a repeater still points at the form-level field of that name, which is what you want for conditions like `visibleIf: {orderType} == "wholesale"` applied to every row at once.
+
+## Several logic properties on one element
+
+They are independent and all apply. An element can be visible, required, and read only at the same time, and the combination is resolved in one pass, so the field is correct on the first change rather than after a second edit.
+
+```text
+Visible if    {n1} > 10
+Require if    {n1} > 10
+Read only if  {approved} == true
+```
+
 ## Complete example
 
 Order form: *"Deliver to a different address?"* (single checkbox `otherAddress`) with a delivery panel:

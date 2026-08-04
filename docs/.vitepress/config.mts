@@ -242,6 +242,10 @@ export default defineConfig({
             },
             { text: "Headless validation", link: "/developers/validator" },
             { text: "Structure JSON", link: "/developers/structure-json" },
+            {
+              text: "Schema versioning",
+              link: "/developers/schema-versioning",
+            },
             { text: "AI assistant backend", link: "/developers/ai-chat" },
             { text: "Licensing", link: "/developers/licensing" },
           ],

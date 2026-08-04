@@ -142,6 +142,27 @@ Calls a [data source](./data-sources). This is the workhorse for saving and load
 }
 ```
 
+## Action type: `sendMessage`
+
+Pushes a message through a [WebSocket source](./data-sources#websocket) that is already connected. The source's own **Message** field only fires once, when the connection opens, so anything the user triggers later goes through this action.
+
+| Field | JSON key | What it does |
+| --- | --- | --- |
+| **WebSocket data source** | `dataSourceName` | The source whose open connection carries the message. Only WebSocket sources work here. |
+| **Message** | `messagePayload` | Text or JSON to send. Placeholders are filled in from the form: `{"action":"publish","label":"{el1}"}`. |
+
+```json
+{
+  "trigger": "click",
+  "type": "sendMessage",
+  "label": "Notify everyone",
+  "dataSourceName": "liveFeed",
+  "messagePayload": "{ \"action\": \"publish\", \"label\": \"{userName}\" }"
+}
+```
+
+Whatever the server broadcasts in reply arrives through the same source, so every window watching that feed updates at once, including the one that pressed the button. Nothing is sent when the connection is down at that moment.
+
 ## Action type: `setValue`
 
 Writes a value into any field or variable.

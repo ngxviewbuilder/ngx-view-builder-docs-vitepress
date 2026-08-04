@@ -127,6 +127,7 @@ if (!result.isValid) console.table(result.issues);
 | `setDefaultDataSources(dataSources: IDataSource[], overwriteExisting?): void` | Injects host-defined sources into the current structure so every view can use them (by name; existing names kept unless `overwriteExisting`). |
 | `setDataSourceTypeSettings(settings): void` | Enables optional source types in the builder UI: `{ enableWebsocket }`. |
 | `getDataSourceTypeSettings(): INgxViewBuilderDataSourceTypeSettings` | Current source-type switches. |
+| `setWebsocketAuthorizer(authorizer): void` | Puts this runtime instance's websocket connections under host control: rewrite the url or the subprotocols to carry credentials. Runs before every connection and reconnection, and may return a promise. See [WebSocket security](./data-sources#security-authorizing-the-connection). |
 
 ```ts
 await api.reloadElementsByDataSource('loadClients');

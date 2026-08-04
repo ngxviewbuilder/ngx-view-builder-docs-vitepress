@@ -37,6 +37,7 @@
 - [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official Templates plugin and how the plugin system works.
 - [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved view definitions to end users and collect their data.
 - [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Inject route params, user context, and derived values into views.
+- [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning): How stored views survive library upgrades, what schemaVersion means, and how to add your own migrations.
 - [Structure JSON](https://ngxviewbuilder.io/developers/structure-json): The IStructure document, covering settings, pages, elements, data sources, and localization.
 - [Theming & design tokens](https://ngxviewbuilder.io/developers/theming): Light/dark modes, token overrides, and full custom themes.
 - [UI translations](https://ngxviewbuilder.io/developers/ui-translations): Translate the builder interface itself (tabs, buttons, property labels).

@@ -185,6 +185,86 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 - Responses are cached per request signature (URL + method + payload); identical concurrent requests are coalesced. Force fresh data with the reload APIs.
 - A request whose URL/body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
 
+## WebSocket sources
+
+A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [DataSources tab](../creators/data-sources#websocket); this section is about what the host controls.
+
+Enable the type in the builder UI first, otherwise creators cannot pick it:
+
+```ts
+api.setDataSourceTypeSettings({ enableWebsocket: true });
+```
+
+The runtime is not gated by that flag. A stored view containing a websocket source connects even if the builder never offered the type.
+
+### Your server side
+
+Plain WebSocket, the kind `new WebSocket(url)` speaks. Not STOMP, not SockJS. Text frames that contain JSON are parsed automatically, anything else is delivered as-is.
+
+### One connection per endpoint
+
+Connections are shared by url, subprotocols, and handshake message. Two sources pointing at the same endpoint with different `messagePath` values use one socket, and so do two elements reading the same source. The socket closes when the last subscriber goes away.
+
+This matters for capacity planning: the number of connections your server sees is the number of distinct endpoints your views use, not the number of bound elements.
+
+### Reconnecting
+
+A closed or failed connection is retried automatically with a growing delay of 1s, 2s, 5s, 10s, then 30s for as long as it takes. The delay resets after a successful connection. Subscribers stay attached throughout, so a view recovers on its own after a deploy or a network blip, with no page refresh.
+
+Each attempt is authorized again, which is what makes token refresh possible.
+
+### Connection status
+
+The runtime publishes each source's state under `__socket.<sourceName>`, which creators can bind to and expressions can read:
+
+```
+{__socket.liveFeed.connected}       // boolean
+{__socket.liveFeed.lastMessageAt}   // epoch milliseconds
+{__socket.liveFeed.reconnects}      // how many times it came back
+{__socket.liveFeed.url}             // endpoint actually connected to
+```
+
+Use it to show an offline banner. A frozen live view that still looks live is the failure mode worth designing against.
+
+### Security: authorizing the connection
+
+REST sources go through Angular `HttpClient`, so your interceptors add tokens automatically. **A browser `WebSocket` cannot send headers**, which means nothing you installed for HTTP applies to it. That leaves two ways to authenticate, and both are the host's decision: a query parameter on the url, or a subprotocol entry.
+
+Register an authorizer once, at app level, and every runtime instance uses it:
+
+```ts
+// app.config.ts
+provideNgxViewBuilderProjectLayer({
+  id: 'websocket-security',
+  authorizeWebsocket: async ({ sourceName, url, protocols }) => {
+    const token = await auth.getFreshToken();
+    return { url: `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` };
+  },
+});
+```
+
+The hook runs before every connection and before every reconnection, and it may return a promise, so an expired token can be refreshed before the socket is opened again. Return `{ url }`, `{ protocols }`, both, or nothing at all to connect exactly as configured.
+
+Subprotocols are the alternative when you would rather keep tokens out of urls:
+
+```ts
+authorizeWebsocket: async ({ protocols }) => ({
+  protocols: [...protocols, `auth.${await auth.getFreshToken()}`],
+});
+```
+
+Your server reads it from the `Sec-WebSocket-Protocol` header during the handshake and must echo back one of the offered values.
+
+::: warning A token in a url is a token in a log
+Query strings end up in access logs, proxy logs, and referrer headers. Prefer short-lived tokens issued for this purpose, validate them at the handshake, and reject unauthorized handshakes with a 401 before the connection is established.
+:::
+
+`NgxViewBuilderApiService.setWebsocketAuthorizer()` sets the same hook on a single runtime instance, which is useful when one embedded view needs different credentials than the rest of the app. An authorizer set that way wins over the project layer for that instance.
+
+### Proxies and timeouts
+
+Sockets die for reasons that have nothing to do with your code. Load balancers and reverse proxies need WebSocket upgrade enabled on the route, and their idle timeout decides how long a quiet connection survives. A server-side heartbeat keeps long-lived views connected instead of relying on the reconnect loop.
+
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.

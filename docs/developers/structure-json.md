@@ -9,6 +9,7 @@ description: The IStructure document, covering settings, pages, elements, data s
 
 ```ts
 interface IStructure {
+  schemaVersion?: number;
   settings: ISettings;
   header?: IHeader;
   pages: IPage[];
@@ -17,6 +18,8 @@ interface IStructure {
   localization?: ILocalization;
 }
 ```
+
+`schemaVersion` records the format the view was saved in, and the runtime upgrades anything older before rendering it. A document without the field is read as version 1. See [Schema versioning](./schema-versioning) for migrations and for what happens when the JSON is newer than the runtime.
 
 ## `pages`: layout
 

@@ -2679,8 +2679,9 @@ if (!result.isValid) console.table(result.issues);
 | `reloadElementDataSource(elementNameOrPath, runtimeContext?): Promise<unknown \| null>` | Shorthand: reload whatever source the element uses. |
 | `reloadElementsByDataSource(dataSourceName, runtimeContext?): Promise<unknown[]>` | Reloads **every element** consuming the named source (falls back to the raw source when nothing consumes it). |
 | `setDefaultDataSources(dataSources: IDataSource[], overwriteExisting?): void` | Injects host-defined sources into the current structure so every view can use them (by name; existing names kept unless `overwriteExisting`). |
-| `setDataSourceTypeSettings(settings): void` | Enables optional source types in the builder UI: `{ enableGraphql, enableWebsocket }`. |
+| `setDataSourceTypeSettings(settings): void` | Enables optional source types in the builder UI: `{ enableWebsocket }`. |
 | `getDataSourceTypeSettings(): INgxViewBuilderDataSourceTypeSettings` | Current source-type switches. |
+| `setWebsocketAuthorizer(authorizer): void` | Puts this runtime instance's websocket connections under host control: rewrite the url or the subprotocols to carry credentials. Runs before every connection and reconnection, and may return a promise. See [WebSocket security](https://ngxviewbuilder.io/developers/data-sources#security-authorizing-the-connection). |
 
 ```ts
 await api.reloadElementsByDataSource('loadClients');
@@ -2945,7 +2946,7 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   theme: 'light',
   language: 'en',
   builderPageDisplayMode: 'single',        // canvas shows one page at a time
-  dataSources: { enableGraphql: true, enableWebsocket: true },
+  dataSources: { enableWebsocket: true },
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
@@ -3695,6 +3696,86 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 - Responses are cached per request signature (URL + method + payload); identical concurrent requests are coalesced. Force fresh data with the reload APIs.
 - A request whose URL/body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
 
+## WebSocket sources
+
+A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [DataSources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
+
+Enable the type in the builder UI first, otherwise creators cannot pick it:
+
+```ts
+api.setDataSourceTypeSettings({ enableWebsocket: true });
+```
+
+The runtime is not gated by that flag. A stored view containing a websocket source connects even if the builder never offered the type.
+
+### Your server side
+
+Plain WebSocket, the kind `new WebSocket(url)` speaks. Not STOMP, not SockJS. Text frames that contain JSON are parsed automatically, anything else is delivered as-is.
+
+### One connection per endpoint
+
+Connections are shared by url, subprotocols, and handshake message. Two sources pointing at the same endpoint with different `messagePath` values use one socket, and so do two elements reading the same source. The socket closes when the last subscriber goes away.
+
+This matters for capacity planning: the number of connections your server sees is the number of distinct endpoints your views use, not the number of bound elements.
+
+### Reconnecting
+
+A closed or failed connection is retried automatically with a growing delay of 1s, 2s, 5s, 10s, then 30s for as long as it takes. The delay resets after a successful connection. Subscribers stay attached throughout, so a view recovers on its own after a deploy or a network blip, with no page refresh.
+
+Each attempt is authorized again, which is what makes token refresh possible.
+
+### Connection status
+
+The runtime publishes each source's state under `__socket.<sourceName>`, which creators can bind to and expressions can read:
+
+```
+{__socket.liveFeed.connected}       // boolean
+{__socket.liveFeed.lastMessageAt}   // epoch milliseconds
+{__socket.liveFeed.reconnects}      // how many times it came back
+{__socket.liveFeed.url}             // endpoint actually connected to
+```
+
+Use it to show an offline banner. A frozen live view that still looks live is the failure mode worth designing against.
+
+### Security: authorizing the connection
+
+REST sources go through Angular `HttpClient`, so your interceptors add tokens automatically. **A browser `WebSocket` cannot send headers**, which means nothing you installed for HTTP applies to it. That leaves two ways to authenticate, and both are the host's decision: a query parameter on the url, or a subprotocol entry.
+
+Register an authorizer once, at app level, and every runtime instance uses it:
+
+```ts
+// app.config.ts
+provideNgxViewBuilderProjectLayer({
+  id: 'websocket-security',
+  authorizeWebsocket: async ({ sourceName, url, protocols }) => {
+    const token = await auth.getFreshToken();
+    return { url: `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` };
+  },
+});
+```
+
+The hook runs before every connection and before every reconnection, and it may return a promise, so an expired token can be refreshed before the socket is opened again. Return `{ url }`, `{ protocols }`, both, or nothing at all to connect exactly as configured.
+
+Subprotocols are the alternative when you would rather keep tokens out of urls:
+
+```ts
+authorizeWebsocket: async ({ protocols }) => ({
+  protocols: [...protocols, `auth.${await auth.getFreshToken()}`],
+});
+```
+
+Your server reads it from the `Sec-WebSocket-Protocol` header during the handshake and must echo back one of the offered values.
+
+::: warning A token in a url is a token in a log
+Query strings end up in access logs, proxy logs, and referrer headers. Prefer short-lived tokens issued for this purpose, validate them at the handshake, and reject unauthorized handshakes with a 401 before the connection is established.
+:::
+
+`NgxViewBuilderApiService.setWebsocketAuthorizer()` sets the same hook on a single runtime instance, which is useful when one embedded view needs different credentials than the rest of the app. An authorizer set that way wins over the project layer for that instance.
+
+### Proxies and timeouts
+
+Sockets die for reasons that have nothing to do with your code. Load balancers and reverse proxies need WebSocket upgrade enabled on the route, and their idle timeout decides how long a quiet connection survives. A server-side heartbeat keeps long-lived views connected instead of relying on the reconnect loop.
+
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.
@@ -4397,7 +4478,7 @@ Every view has these structure settings (set via the JSON editor, `api.patchSett
 | `templateStorageDataPath`       | Path into that source's response where the template array lives                                  |
 
 ::: warning This is a read path, not your database integration
-`dataSource` mode reliably **writes** only when the named source is a `local` (in-structure JSON) source anything backed by a real REST/GraphQL/websocket source silently falls back to writing into `localStorage` under a per-source key instead of hitting your API. Reading works for any source type (via the _Load from data source_ action). So treat `templateStorageMode: 'dataSource'` as a way to **seed/refresh** templates from a live source, not as the mechanism that persists edits to your database that's the API-level integration below, which every Save/Delete in the Templates tab already goes through regardless of this setting.
+`dataSource` mode reliably **writes** only when the named source is a `local` (in-structure JSON) source anything backed by a real REST/websocket source silently falls back to writing into `localStorage` under a per-source key instead of hitting your API. Reading works for any source type (via the _Load from data source_ action). So treat `templateStorageMode: 'dataSource'` as a way to **seed/refresh** templates from a live source, not as the mechanism that persists edits to your database that's the API-level integration below, which every Save/Delete in the Templates tab already goes through regardless of this setting.
 :::
 
 ## Persisting templates to your database
@@ -4738,6 +4819,146 @@ Set context **before** the view renders (constructor / `ngOnInit` ahead of passi
 
 ---
 
+## Schema versioning
+
+Source: https://ngxviewbuilder.io/developers/schema-versioning
+
+# Schema versioning
+
+Views live in your database, sometimes for years. The library keeps evolving. `schemaVersion` is the contract that keeps those two facts from colliding: every structure records the format it was saved in, and the runtime upgrades anything older before it renders.
+
+```json
+{
+  "schemaVersion": 1,
+  "settings": { "language": "en" },
+  "pages": [],
+  "elements": {}
+}
+```
+
+Nothing is required of you for this to work. Load an old view under a new library version and it renders correctly. The rest of this page is for the cases where you want control.
+
+## What a version bump means
+
+The number goes up by one when a change to the structure format is not backward compatible: a field is renamed or removed, a field changes type, a node is reshaped, or the meaning of an existing default changes.
+
+Adding a new optional field or a whole new element type is not a bump. Old JSON keeps rendering under the new runtime, because nothing it relied on moved.
+
+Structures saved before `schemaVersion` existed carry no version at all. Those are read as version 1, which is the oldest format the library still knows.
+
+## What happens on load
+
+Every entry point that accepts a structure runs the same chain, including the JSON editor and the AI panel:
+
+1. Read the version the JSON declares.
+2. Apply each migration in order until the structure reaches the version the runtime speaks.
+3. Hand the result to the renderer.
+
+The migration happens in memory. The library never writes to your storage. A migrated view stays migrated only for as long as it is open, unless you save it yourself.
+
+```ts
+const model = new BuilderModel(storedJson);
+model.getJson();             // migrated, current format
+model.getSourceJson();       // exactly what you passed in, or null when nothing was migrated
+model.getMigrationResult();  // what the last load did, or null
+```
+
+That distinction matters when you audit or diff. Save `getJson()` when you want the upgrade persisted, and keep `getSourceJson()` if you need to prove what was stored before.
+
+## In the builder
+
+When a creator opens a view saved in an older format, the builder header shows an upgrade action with the two versions in its tooltip. The view is already migrated in memory, so the button is really a save prompt: pressing it emits `saveRequested` and rewrites the stored copy in the new format.
+
+The runtime shows nothing. A person filling in a form has no decision to make about a schema.
+
+## Configuring it
+
+`provideNgxViewBuilderMigrations()` is optional. Reach for it to log upgrades, to register migrations for your own custom fields, or to opt out.
+
+```ts
+// app.config.ts
+provideNgxViewBuilderMigrations({
+  onMigrated: (result) =>
+    logger.info(`view migrated v${result.fromVersion} to v${result.toVersion}`, {
+      applied: result.appliedDescriptions,
+      warnings: result.warnings,
+    }),
+});
+```
+
+| Option | What it does |
+| --- | --- |
+| `enabled` | Default `true`. Setting it to `false` hands the structure to the renderer untouched. Correct only when you run your own migration pipeline first. A stale structure rendered as-is means missing or misconfigured elements. |
+| `onUnsupported` | What to do when the JSON declares a **newer** version than this runtime knows. `error` (default) refuses to render, `renderAsIs` tries anyway. Migrating forward is impossible, so both options are damage control. |
+| `onMigrated` | Called once per migrated structure. Useful for audit logs. |
+| `migrations` | Your own migrations, merged with the built-in ones. |
+
+The provider writes module-level configuration rather than a DI token, because `BuilderModel` is constructed by hosts with `new BuilderModel()`, outside any injection context.
+
+## Newer JSON than the runtime
+
+This happens during a staged rollout: someone saves a view on the new version, then opens it on a server still running the old one. The old runtime cannot know what changed, so by default it refuses and reports the problem instead of rendering something subtly wrong.
+
+If a partial render is better than none for your product, switch it:
+
+```ts
+provideNgxViewBuilderMigrations({ onUnsupported: 'renderAsIs' });
+```
+
+Deploying the library before the views that depend on it avoids the situation entirely.
+
+## Writing your own migration
+
+Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
+
+```ts
+import { IStructureMigration } from 'ngx-view-builder';
+
+const renameNoteText: IStructureMigration = {
+  from: 1,
+  description: 'sprCard.text -> sprCard.body',
+  migrate: (structure) => {
+    Object.values(structure.elements ?? {}).forEach((element: any) => {
+      if (element?.type === 'sprCard' && element.text !== undefined) {
+        element.body = element.text;
+        delete element.text;
+      }
+    });
+    return structure;
+  },
+};
+
+provideNgxViewBuilderMigrations({ migrations: [renameNoteText] });
+```
+
+Return warnings when a change needs a human to look at it:
+
+```ts
+migrate: (structure) => ({
+  structure,
+  warnings: ['Two columns bound to the same key were merged, check the totals row.'],
+});
+```
+
+Warnings reach you through `onMigrated` and through `StructureMigrationService.inspect()`.
+
+## Inspecting without loading
+
+`StructureMigrationService` answers questions about a structure without rendering it, which is what a migration script or a health check needs:
+
+```ts
+const migration = inject(StructureMigrationService);
+
+migration.currentVersion;              // version this runtime speaks
+migration.versionOf(storedJson);       // version that JSON declares
+migration.needsMigration(storedJson);  // true when they differ
+migration.inspect(storedJson);         // full result, no side effects
+```
+
+A batch upgrade of stored views is then a loop over your table: `inspect`, save the returned structure when `migrated` is true, and log `appliedDescriptions` as you go. Doing it once offline means no view pays the migration cost at request time.
+
+---
+
 ## Structure JSON
 
 Source: https://ngxviewbuilder.io/developers/structure-json
@@ -4748,6 +4969,7 @@ Source: https://ngxviewbuilder.io/developers/structure-json
 
 ```ts
 interface IStructure {
+  schemaVersion?: number;
   settings: ISettings;
   header?: IHeader;
   pages: IPage[];
@@ -4756,6 +4978,8 @@ interface IStructure {
   localization?: ILocalization;
 }
 ```
+
+`schemaVersion` records the format the view was saved in, and the runtime upgrades anything older before rendering it. A document without the field is read as version 1. See [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning) for migrations and for what happens when the JSON is newer than the runtime.
 
 ## `pages`: layout
 
@@ -5399,6 +5623,29 @@ Clears stale answers when their premise disappears:
 
 Without a reset rule, a hidden field keeps its old value, and that value is still submitted.
 
+## Logic inside repeaters
+
+Inside a **Dynamic panel** or a **Dynamic table**, the same five properties are evaluated once per row, against that row's own values. Write the condition with the row context rather than a field name:
+
+```text
+panel.dpDriver > 10        dynamic panel: this entry's field
+row.quantity > 0           dynamic table: this row's cell
+```
+
+Each row then decides for itself. In a panel of order lines, `visibleIf: panel.quantity > 0` hides the discount field only in the lines that have no quantity, and leaves the other lines untouched. The same goes for **Require if**, so a row can be mandatory while its neighbours are not.
+
+Referring to a plain field name inside a repeater still points at the form-level field of that name, which is what you want for conditions like `visibleIf: {orderType} == "wholesale"` applied to every row at once.
+
+## Several logic properties on one element
+
+They are independent and all apply. An element can be visible, required, and read only at the same time, and the combination is resolved in one pass, so the field is correct on the first change rather than after a second edit.
+
+```text
+Visible if    {n1} > 10
+Require if    {n1} > 10
+Read only if  {approved} == true
+```
+
 ## Complete example
 
 Order form: *"Deliver to a different address?"* (single checkbox `otherAddress`) with a delivery panel:
@@ -5429,7 +5676,7 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | --- | --- |
 | **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). |
 | **Title** | A friendly display title for the list. |
-| **Type** | `REST`, `Route data`, or `Local JSON`. |
+| **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
 
 ### REST
 
@@ -5456,6 +5703,45 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | **Local mode** | `JSON` (inline data) or `Another question value` (points at existing form data). |
 | **JSON data** | The inline JSON when mode is `JSON`. |
 | **Local function** | Optionally call a JS function for the data. Example: `window.myFunction` or `this.myFunction`. |
+
+### WebSocket
+
+A REST source answers once, when something asks it. A WebSocket source stays connected and keeps handing you whatever the server sends, so the view moves on its own: a dashboard counter, a queue, an order that someone else just changed.
+
+The connection opens the first time something on the page uses the source, and closes when the last thing using it goes away. Every message after that lands in the bound elements without anyone pressing anything.
+
+| Field | What it does |
+| --- | --- |
+| **Url** | The endpoint, starting with `ws://` or `wss://`. Use `wss://` anywhere that is not your own machine. |
+| **Protocols (optional)** | Comma separated subprotocol names, if your server asks for them. |
+| **Message (optional)** | Sent once, right after the connection opens. This is where a subscribe or handshake payload goes. It is not sent again later. |
+| **Message path (optional)** | Where the useful part of each message lives, for example `rows`. Leave it empty to take the whole message. |
+| **Message mode** | `Replace current` keeps only the latest message, which is what a live value or a refreshing table wants. `Push values in array` collects messages into a growing list, for a feed or a log. The list keeps the most recent 500 entries. |
+
+Binding works exactly like any other source. Point a table at it with **Use as: Value**, or feed a [variable](https://ngxviewbuilder.io/creators/variables) from it and read the variable in expressions.
+
+::: tip Two sources, one connection
+Several sources pointing at the same url share a single connection, so a page with a table on `rows` and a counter on the whole payload still opens one socket. Give each source its own **Message path** rather than duplicating the endpoint.
+:::
+
+#### Showing whether the data is live
+
+Stale numbers that look live are worse than an honest gap, so the runtime publishes the state of every socket under `__socket.<source name>`:
+
+| Path | What it holds |
+| --- | --- |
+| `{__socket.liveFeed.connected}` | `true` while the connection is up, `false` while it is not. |
+| `{__socket.liveFeed.lastMessageAt}` | Timestamp of the last message received. |
+| `{__socket.liveFeed.reconnects}` | How many times the connection came back by itself. |
+| `{__socket.liveFeed.url}` | The endpoint actually connected to. |
+
+A read-only text element with `visibleIf: {__socket.liveFeed.connected} == false` and a label like "Connection lost, values are from a moment ago" is usually all a form needs.
+
+Reconnecting is automatic. A dropped connection is retried with a growing delay, and once the server is back the view carries on without a page refresh.
+
+#### Sending something back
+
+The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](https://ngxviewbuilder.io/creators/events-actions#send-socket-message).
 
 #### Object creator
 
@@ -6769,6 +7055,27 @@ Calls a [data source](https://ngxviewbuilder.io/creators/data-sources). This is 
   "responseFileName": "report-{reportYear}.pdf"
 }
 ```
+
+## Action type: `sendMessage`
+
+Pushes a message through a [WebSocket source](https://ngxviewbuilder.io/creators/data-sources#websocket) that is already connected. The source's own **Message** field only fires once, when the connection opens, so anything the user triggers later goes through this action.
+
+| Field | JSON key | What it does |
+| --- | --- | --- |
+| **WebSocket data source** | `dataSourceName` | The source whose open connection carries the message. Only WebSocket sources work here. |
+| **Message** | `messagePayload` | Text or JSON to send. Placeholders are filled in from the form: `{"action":"publish","label":"{el1}"}`. |
+
+```json
+{
+  "trigger": "click",
+  "type": "sendMessage",
+  "label": "Notify everyone",
+  "dataSourceName": "liveFeed",
+  "messagePayload": "{ \"action\": \"publish\", \"label\": \"{userName}\" }"
+}
+```
+
+Whatever the server broadcasts in reply arrives through the same source, so every window watching that feed updates at once, including the one that pressed the button. Nothing is sent when the connection is down at that moment.
 
 ## Action type: `setValue`
 
