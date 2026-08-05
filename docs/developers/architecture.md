@@ -42,7 +42,7 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 
 ### Host API
 
-`NgxViewBuilderApiService` (root-provided) is the façade the host app uses: get/set structure and data, look up elements, react to 50+ typed events, register extensions at runtime, control theming and language. Reference: [API service](./api-service).
+`NgxViewBuilderApiService` (root-provided) is the façade the host app uses: get/set structure and data, look up elements, react to 59 typed events, register extensions at runtime, control theming and language. Reference: [API service](./api-service).
 
 ## Render pipeline
 

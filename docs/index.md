@@ -35,9 +35,9 @@ hero:
 <h3 class="caps__phase-title">Compose</h3>
 </div>
 <ul class="caps__list">
-<li><strong>Whole pages, not just forms</strong><span>55+ elements: inputs, choice controls, data tables, charts, KPI cards, tabs, dialogs, and steppers, with responsive layout per breakpoint.</span></li>
+<li><strong>Whole pages, not just forms</strong><span>47 elements: inputs, choice controls, data tables, charts, KPI cards, tabs, dialogs, and steppers, with responsive layout per breakpoint.</span></li>
 <li><strong>Enterprise-grade data tables</strong><span>Server-side paging, saved filters, per-user column settings, inline editing, row expansion, bulk actions, and status rules.</span></li>
-<li><strong>Logic without code</strong><span>Show, hide, require, disable, and calculate with a concise expression language, 40+ functions, and a visual condition builder.</span></li>
+<li><strong>Logic without code</strong><span>Show, hide, require, disable, and calculate with a concise expression language, 69 functions, and a visual condition builder.</span></li>
 </ul>
 </div>
 <div class="caps__phase">
@@ -55,7 +55,7 @@ hero:
 <h3 class="caps__phase-title">Ship</h3>
 </div>
 <ul class="caps__list">
-<li><strong>Angular-native architecture</strong><span>Standalone components, signals, zoneless-ready. A typed API service exposes every structure, data, and lifecycle operation, with 50+ events.</span></li>
+<li><strong>Angular-native architecture</strong><span>Standalone components, signals, zoneless-ready. A typed API service exposes every structure, data, and lifecycle operation, with 59 events.</span></li>
 <li><strong>Ready for real products</strong><span>Multi-language content, locale-aware formatting, light/dark theming with design tokens, headless validation, and a template library.</span></li>
 <li><strong>Idea to production, fast</strong><span>Analysts build screens visually; developers embed them with one component. Version, review, and deploy a view like any other artifact.</span></li>
 </ul>
@@ -87,7 +87,7 @@ export class ClientPage {
 }
 ```
 
-Everything the builder does is available programmatically: read and mutate structures, set values, reload data sources, switch themes and languages, validate headlessly, and observe 50+ typed events. See the [API service reference](/developers/api-service).
+Everything the builder does is available programmatically: read and mutate structures, set values, reload data sources, switch themes and languages, validate headlessly, and observe 59 typed events. See the [API service reference](/developers/api-service).
 
 ## The ideas it's built on
 

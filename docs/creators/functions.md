@@ -64,6 +64,10 @@ The functions above work on a field name. These ones take a **condition** instea
 | `getLast(source, condition?)` | last entry, optionally the last match | `getLast({history})` |
 | `sumArray(source, selector)` | sum of a field | `sumArray({orderItems}, price)` |
 | `avgArray(source, selector)` | average of a field | `avgArray({grades}, score)` |
+| `minArray(source, selector?)` | smallest number over the entries | `minArray({orderItems}, price)` |
+| `maxArray(source, selector?)` | largest number over the entries | `maxArray({orderItems}, price)` |
+| `countArray(source, condition?)` | how many entries match, or the length without a condition | `countArray({tasks}, status == "OPEN")` |
+| `joinArray(source, selector?, separator?)` | the projected values as text | `joinArray({users}, name, ", ")` |
 | `mapArray(source, selector)` | one value per entry | `mapArray({users}, name)` |
 
 Inside a condition you write the entry's own field names directly, with no braces. Everything else in the view stays visible, so you can compare against another element or a variable:
@@ -107,8 +111,10 @@ Advanced. These reach outside the current field:
 | `setElementProperty(name, key, value)` | sets another element's property | `setElementProperty("step2", "disabled", true)` |
 | `getElementProperty(name, key)` | reads another element's property | `getElementProperty("sel1", "label")` |
 | `getProp(name, key)` | alias of `getElementProperty` | `getProp({sel1}, "placeholder")` |
+| `setProp(name, key, value)` | alias of `setElementProperty` | `setProp({el1}, "label", "New label")` |
 | `runDataSource(name)` | reloads a data source, returns its result | `runDataSource("loadUsers")` |
 | `reloadDataSource(name)` | alias of `runDataSource` | |
+| `dataSourceValue(name, contextElement?)` | the payload a data source loaded last, without waiting for a request | `len(dataSourceValue("loadUsers")) > 0` |
 
 `getVal` also answers for a field the user has not touched yet, reading the value straight off the element, so `{price} * 2` no longer collapses the moment one side is still empty.
 

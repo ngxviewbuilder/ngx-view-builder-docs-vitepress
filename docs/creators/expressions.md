@@ -38,7 +38,7 @@ Examples:
 
 ## Functions
 
-40+ built-in functions cover text, arrays, numbers, and dates:
+69 built-in functions cover text, arrays, numbers, and dates:
 
 ```text
 isEmpty({companyCode})

@@ -25,10 +25,10 @@ const STRUCTURED_DATA = {
     "Angular form builder, Angular view builder, Angular dashboard builder, low-code Angular, drag-and-drop form builder, JSON schema forms",
   featureList: [
     "Drag-and-drop visual form and view builder for Angular",
-    "55+ elements: inputs, choices, data tables, charts, KPI cards, tabs, steppers",
+    "47 elements: inputs, choices, data tables, charts, KPI cards, tabs, steppers",
     "No-code conditional logic, validation, and expression language",
     "Live REST/route data sources with dependent fields and server-side tables",
-    "Native Angular runtime with a typed API service and 50+ events",
+    "Native Angular runtime with a typed API service and 59 events",
   ],
   sameAs: ["https://github.com/ngxviewbuilder/ngx-view-builder-community"],
 };

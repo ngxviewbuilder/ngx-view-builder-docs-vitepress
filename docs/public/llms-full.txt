@@ -2895,7 +2895,7 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 
 ### Host API
 
-`NgxViewBuilderApiService` (root-provided) is the façade the host app uses: get/set structure and data, look up elements, react to 50+ typed events, register extensions at runtime, control theming and language. Reference: [API service](https://ngxviewbuilder.io/developers/api-service).
+`NgxViewBuilderApiService` (root-provided) is the façade the host app uses: get/set structure and data, look up elements, react to 59 typed events, register extensions at runtime, control theming and language. Reference: [API service](https://ngxviewbuilder.io/developers/api-service).
 
 ## Render pipeline
 
@@ -7379,7 +7379,7 @@ Examples:
 
 ## Functions
 
-40+ built-in functions cover text, arrays, numbers, and dates:
+69 built-in functions cover text, arrays, numbers, and dates:
 
 ```text
 isEmpty({companyCode})
@@ -7657,6 +7657,10 @@ The functions above work on a field name. These ones take a **condition** instea
 | `getLast(source, condition?)` | last entry, optionally the last match | `getLast({history})` |
 | `sumArray(source, selector)` | sum of a field | `sumArray({orderItems}, price)` |
 | `avgArray(source, selector)` | average of a field | `avgArray({grades}, score)` |
+| `minArray(source, selector?)` | smallest number over the entries | `minArray({orderItems}, price)` |
+| `maxArray(source, selector?)` | largest number over the entries | `maxArray({orderItems}, price)` |
+| `countArray(source, condition?)` | how many entries match, or the length without a condition | `countArray({tasks}, status == "OPEN")` |
+| `joinArray(source, selector?, separator?)` | the projected values as text | `joinArray({users}, name, ", ")` |
 | `mapArray(source, selector)` | one value per entry | `mapArray({users}, name)` |
 
 Inside a condition you write the entry's own field names directly, with no braces. Everything else in the view stays visible, so you can compare against another element or a variable:
@@ -7700,8 +7704,10 @@ Advanced. These reach outside the current field:
 | `setElementProperty(name, key, value)` | sets another element's property | `setElementProperty("step2", "disabled", true)` |
 | `getElementProperty(name, key)` | reads another element's property | `getElementProperty("sel1", "label")` |
 | `getProp(name, key)` | alias of `getElementProperty` | `getProp({sel1}, "placeholder")` |
+| `setProp(name, key, value)` | alias of `setElementProperty` | `setProp({el1}, "label", "New label")` |
 | `runDataSource(name)` | reloads a data source, returns its result | `runDataSource("loadUsers")` |
 | `reloadDataSource(name)` | alias of `runDataSource` | |
+| `dataSourceValue(name, contextElement?)` | the payload a data source loaded last, without waiting for a request | `len(dataSourceValue("loadUsers")) > 0` |
 
 `getVal` also answers for a field the user has not touched yet, reading the value straight off the element, so `{price} * 2` no longer collapses the moment one side is still empty.
 
@@ -8570,9 +8576,9 @@ Source: https://ngxviewbuilder.io/
 <h3 class="caps__phase-title">Compose</h3>
 </div>
 <ul class="caps__list">
-<li><strong>Whole pages, not just forms</strong><span>55+ elements: inputs, choice controls, data tables, charts, KPI cards, tabs, dialogs, and steppers, with responsive layout per breakpoint.</span></li>
+<li><strong>Whole pages, not just forms</strong><span>47 elements: inputs, choice controls, data tables, charts, KPI cards, tabs, dialogs, and steppers, with responsive layout per breakpoint.</span></li>
 <li><strong>Enterprise-grade data tables</strong><span>Server-side paging, saved filters, per-user column settings, inline editing, row expansion, bulk actions, and status rules.</span></li>
-<li><strong>Logic without code</strong><span>Show, hide, require, disable, and calculate with a concise expression language, 40+ functions, and a visual condition builder.</span></li>
+<li><strong>Logic without code</strong><span>Show, hide, require, disable, and calculate with a concise expression language, 69 functions, and a visual condition builder.</span></li>
 </ul>
 </div>
 <div class="caps__phase">
@@ -8590,7 +8596,7 @@ Source: https://ngxviewbuilder.io/
 <h3 class="caps__phase-title">Ship</h3>
 </div>
 <ul class="caps__list">
-<li><strong>Angular-native architecture</strong><span>Standalone components, signals, zoneless-ready. A typed API service exposes every structure, data, and lifecycle operation, with 50+ events.</span></li>
+<li><strong>Angular-native architecture</strong><span>Standalone components, signals, zoneless-ready. A typed API service exposes every structure, data, and lifecycle operation, with 59 events.</span></li>
 <li><strong>Ready for real products</strong><span>Multi-language content, locale-aware formatting, light/dark theming with design tokens, headless validation, and a template library.</span></li>
 <li><strong>Idea to production, fast</strong><span>Analysts build screens visually; developers embed them with one component. Version, review, and deploy a view like any other artifact.</span></li>
 </ul>
@@ -8622,7 +8628,7 @@ export class ClientPage {
 }
 ```
 
-Everything the builder does is available programmatically: read and mutate structures, set values, reload data sources, switch themes and languages, validate headlessly, and observe 50+ typed events. See the [API service reference](https://ngxviewbuilder.io/developers/api-service).
+Everything the builder does is available programmatically: read and mutate structures, set values, reload data sources, switch themes and languages, validate headlessly, and observe 59 typed events. See the [API service reference](https://ngxviewbuilder.io/developers/api-service).
 
 ## The ideas it's built on
 
