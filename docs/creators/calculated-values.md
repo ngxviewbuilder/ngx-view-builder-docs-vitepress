@@ -24,6 +24,7 @@ Rules of thumb:
 - Never reference the field itself; self-referencing expressions are skipped with a console warning.
 - On **Number** elements the result respects the element's formatting settings (fraction digits, locale).
 - If the expression errors or returns nothing, the value is cleared.
+- To land the result somewhere else instead of in this field, write it: `{variable1} = sumInArray({orderLines}, "total")`. See [Writing values back](./functions#writing-values-back).
 
 ## Default value
 

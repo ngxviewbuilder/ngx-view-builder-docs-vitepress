@@ -120,6 +120,54 @@ getProp("sel1", "options[0].label")
 getProp("orders", "dataSource.name")
 ```
 
+## Writing values back
+
+Everything above reads. These write, so a total or a collected list can be parked in a variable or in another field without leaving the expression language:
+
+| Function | Does | Example |
+| --- | --- | --- |
+| `setValue(target, value)` | writes the value and returns it | `setValue({variable1}, sumArray({el1}, el5[].column3))` |
+| `setVar(name, value)` | same, target always read as a variable name | `setVar({variable1}, {el2} + {el3})` |
+| `sumValue(target, value)` | adds a number to what is already there, returns the new total | `sumValue({variable1}, {row.column3})` |
+| `sumVar(name, value)` | same, for variables | `sumVar({variable1}, {row.column3} + 40)` |
+| `addValue(target, value)` | alias of `sumValue` | `addValue({total}, {row.column3})` |
+| `pushValue(target, value)` | appends to the target's array, returns it | `pushValue({variable1}, {row})` |
+| `pushVar(name, value)` | same, for variables | `pushVar({selected}, {el2})` |
+| `flattenArray(source)` | flattens nested arrays into one level | `flattenArray(collectValuesFrom({el1}, el5[]))` |
+
+The target names a variable or an element, it is not replaced by its current value. If the name matches a declared variable the value goes to the variable, otherwise to that element's data path.
+
+`sumValue` and `pushValue` change the result every time they run, so use them from an [action](./events-actions), not from a condition that recalculates on its own. `setValue` is safe anywhere: writing the value that is already there does nothing, which is what keeps an expression from looping on the change it caused itself.
+
+An array argument is summed before it is added, so a whole column lands in one call:
+
+```text
+sumValue({variable1}, collectValuesFrom({el1}, el5[].column3))
+```
+
+### Assignment shorthand
+
+The same two writers have a shorter form. Put the target on the left:
+
+```text
+{variable1} = {row.column3} + 40
+{variable1} = ({variable1} + ({row.column3} + 40))
+{variable1} += {row.column3}
+```
+
+`=` becomes `setValue`, `+=` becomes `sumValue`. Only the leftmost token is the target; on the right side `{variable1}` reads normally, which is how the second line adds to itself. Comparisons are untouched, `{el2} == 5` stays a condition.
+
+### Totals across a dynamic panel
+
+A table inside a dynamic panel exists once per panel entry, so its rows sit deeper in the data. The `[]` selector walks through every level:
+
+```text
+{variable1} = sumArray({el1}, el5[].column3)
+{variable1} = flattenArray(collectValuesFrom({el1}, el5[]))
+```
+
+The first sums one column across all panels, the second gathers every row of every table into one list.
+
 ## Labels of choice elements
 
 A Select, Radio, or Checkbox group stores a code and shows a label. Only the element knows the pairing, so these two functions ask it directly:

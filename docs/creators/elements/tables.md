@@ -270,9 +270,31 @@ An **input** element: spreadsheet-like rows the user fills in. The value is an a
 | **Confirm row deletion** | Ask before removing, with **Delete confirm title / message / confirm & cancel button texts**. |
 | **Hide row if** | Expression that hides matching rows: `{row.status} != "A"`. |
 | **Status rules** | Condition + tone rules that color the whole cell background. |
+| **Use totals** | Show the column's sum in the footer row. |
 | **Total template** | Footer text with `{total}`, e.g. `Total: {total}`. |
+| **Total to data** | Publish the sum into the data without showing a footer row. See [Column totals in data](#column-totals-in-data). |
 
 Row context inside cells: `row.otherColumn`, `row.index`. Aggregates outside: `sumInArray({orderLines}, "amount")`.
+
+### Column totals in data
+
+A column sum can leave the table. Turn on **Total to data** (or **Use totals**, which publishes as well) and the sum appears in the data under the table's name and the column's name:
+
+```text
+el4.column1-total
+```
+
+From there it behaves like any other value. Read it anywhere, keep the braces so the minus sign is not read as subtraction:
+
+```text
+{el4.column1-total}                          in text, HTML, templates
+{el4.column1-total} > 1000                   in visibleIf, disableIf, validators
+{variable1} = {el4.column1-total}            into a variable
+```
+
+It travels with the submitted data JSON, and elements reading it refresh as soon as a row changes. Turning both switches off removes the key again.
+
+Inside a dynamic panel the table exists once per entry, so the key carries the entry index: `el1[0].el5.column3-total`. For one number across all entries use an aggregate instead: `sumArray({el1}, el5[].column3)`.
 
 Example: order lines:
 

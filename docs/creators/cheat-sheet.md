@@ -54,6 +54,18 @@ sumInArray({orderLines}, "amount")
 countInArray({employees}, "id")
 contains(collectValuesFrom({employees}, "role", true), "manager")
 joinInArray({tags}, "name", ", ")
+sumArray({el1}, el5[].column3)               through a dynamic panel
+flattenArray(collectValuesFrom({el1}, el5[]))  all rows in one list
+```
+
+## Writing a value
+
+```text
+{variable1} = {price} * {quantity}           set
+{variable1} += {row.column3}                 add, use from an action
+setValue({variable1}, sumArray({el1}, el5[].column3))
+pushValue({variable1}, {row})
+{el4.column1-total}                          published column total
 ```
 
 ## Dates

@@ -13,9 +13,13 @@ Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images
 
 | Property | What it does |
 | --- | --- |
-| **HTML content** | The content itself. Placeholders render live values: <code v-pre>{{firstName}}</code> or `{user.name}`. See [Dynamic text & templates](../templates). |
-| **Input mode** | *Text editor* (WYSIWYG) or *Manual HTML*. |
+| **HTML content** | The content itself. Opens in a dialog you can move and resize, with a *Text editor* and an *HTML* tab. Placeholders render live values: <code v-pre>{{firstName}}</code> or `{user.name}`. See [Dynamic text & templates](../templates). |
+| **HTML source path** | Viewer only: take the markup from a data path or a source response instead of the property. |
 | **Visible tools** | Which toolbar buttons the editor offers: bold, italic, underline, strikethrough, headings, font family, text size, colors, highlight, alignment, lists, quote, inline code, link, image, horizontal rule, line spacing, sub/superscript, undo/redo, clear formatting. |
+
+The viewer resolves placeholders too, so markup arriving from data can carry `{el2}`, `{variable1}`, or `{row.column3}` inside a table row.
+
+Content written in a Custom HTML element renders the same way here. Both elements read the same `<style>` block and the same classes, so text colors, fonts, sizes, and alignment survive a copy from one to the other.
 
 ## Custom HTML (`customHtml` / `htmlSnippet`)
 

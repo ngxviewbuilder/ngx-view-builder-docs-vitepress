@@ -733,6 +733,32 @@ For element metadata rather than values:
 
 In `getLabel`, `getValue`, and `getProp` the token names the element, it is not replaced by that element's value.
 
+## Writing values from an expression
+
+| Call | Does |
+| --- | --- |
+| `setValue({variable1}, value)` | writes into a variable or an element data path |
+| `sumValue({variable1}, value)` | adds a number to the current value, returns the new total |
+| `pushValue({variable1}, value)` | appends to the target's array |
+| `flattenArray(source)` | flattens nested arrays into one level |
+
+`setVar`, `sumVar`, and `pushVar` are the same calls with the target always read as a variable name. `addValue` is an alias of `sumValue`.
+
+Shorthand, where the leftmost token is the target and the right side reads normally:
+
+```text
+{variable1} = {row.column3} + 40
+{variable1} += {row.column3}
+```
+
+Rules for the agent:
+
+- The first argument names the target, do not replace it with a value.
+- `setValue` is safe in a recalculated expression, writing an unchanged value does nothing.
+- `sumValue` and `pushValue` add again on every run, so put them in an action, never in `visibleIf`, `disableIf`, or an `expression` property.
+- For a table inside a dynamic panel prefer one aggregate over accumulation: `setValue({variable1}, sumArray({el1}, el5[].column3))`.
+- A published column total is read as `{el4.column1-total}`, always in braces.
+
 ## Contexts the agent may encounter
 
 ### General form context
@@ -1514,6 +1540,15 @@ Same as `panel` plus inherits repeatable container behavior. Value shape: array 
 | `hideRowIf` | `string` | JEXL, hides individual rows |
 | `columns` | `IDynamicTableColumn[]` | Column definitions |
 | `dataSource` | `IElementDataSource` | Pre-populate from datasource |
+
+Column-level totals:
+
+| Property | Type | Notes |
+|---|---|---|
+| `columns[*].useTotals` | `boolean` | Sum in the footer row, also published to data |
+| `columns[*].totalToData` | `boolean` | Publish the sum without a footer row |
+
+A published sum lands in the data as `<table>.<column>-total`, for example `el4.column1-total`, and is read in expressions as `{el4.column1-total}`. Inside a dynamic panel the key carries the entry index: `el1[0].el5.column3-total`.
 
 Value shape: array of objects.
 
@@ -5427,6 +5462,7 @@ Rules of thumb:
 - Never reference the field itself; self-referencing expressions are skipped with a console warning.
 - On **Number** elements the result respects the element's formatting settings (fraction digits, locale).
 - If the expression errors or returns nothing, the value is cleared.
+- To land the result somewhere else instead of in this field, write it: `{variable1} = sumInArray({orderLines}, "total")`. See [Writing values back](https://ngxviewbuilder.io/creators/functions#writing-values-back).
 
 ## Default value
 
@@ -5523,6 +5559,18 @@ sumInArray({orderLines}, "amount")
 countInArray({employees}, "id")
 contains(collectValuesFrom({employees}, "role", true), "manager")
 joinInArray({tags}, "name", ", ")
+sumArray({el1}, el5[].column3)               through a dynamic panel
+flattenArray(collectValuesFrom({el1}, el5[]))  all rows in one list
+```
+
+## Writing a value
+
+```text
+{variable1} = {price} * {quantity}           set
+{variable1} += {row.column3}                 add, use from an action
+setValue({variable1}, sumArray({el1}, el5[].column3))
+pushValue({variable1}, {row})
+{el4.column1-total}                          published column total
 ```
 
 ## Dates
@@ -6136,9 +6184,13 @@ Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images
 
 | Property | What it does |
 | --- | --- |
-| **HTML content** | The content itself. Placeholders render live values: <code v-pre>{{firstName}}</code> or `{user.name}`. See [Dynamic text & templates](https://ngxviewbuilder.io/creators/templates). |
-| **Input mode** | *Text editor* (WYSIWYG) or *Manual HTML*. |
+| **HTML content** | The content itself. Opens in a dialog you can move and resize, with a *Text editor* and an *HTML* tab. Placeholders render live values: <code v-pre>{{firstName}}</code> or `{user.name}`. See [Dynamic text & templates](https://ngxviewbuilder.io/creators/templates). |
+| **HTML source path** | Viewer only: take the markup from a data path or a source response instead of the property. |
 | **Visible tools** | Which toolbar buttons the editor offers: bold, italic, underline, strikethrough, headings, font family, text size, colors, highlight, alignment, lists, quote, inline code, link, image, horizontal rule, line spacing, sub/superscript, undo/redo, clear formatting. |
+
+The viewer resolves placeholders too, so markup arriving from data can carry `{el2}`, `{variable1}`, or `{row.column3}` inside a table row.
+
+Content written in a Custom HTML element renders the same way here. Both elements read the same `<style>` block and the same classes, so text colors, fonts, sizes, and alignment survive a copy from one to the other.
 
 ## Custom HTML (`customHtml` / `htmlSnippet`)
 
@@ -6876,9 +6928,31 @@ An **input** element: spreadsheet-like rows the user fills in. The value is an a
 | **Confirm row deletion** | Ask before removing, with **Delete confirm title / message / confirm & cancel button texts**. |
 | **Hide row if** | Expression that hides matching rows: `{row.status} != "A"`. |
 | **Status rules** | Condition + tone rules that color the whole cell background. |
+| **Use totals** | Show the column's sum in the footer row. |
 | **Total template** | Footer text with `{total}`, e.g. `Total: {total}`. |
+| **Total to data** | Publish the sum into the data without showing a footer row. See [Column totals in data](https://ngxviewbuilder.io/creators/elements/tables#column-totals-in-data). |
 
 Row context inside cells: `row.otherColumn`, `row.index`. Aggregates outside: `sumInArray({orderLines}, "amount")`.
+
+### Column totals in data
+
+A column sum can leave the table. Turn on **Total to data** (or **Use totals**, which publishes as well) and the sum appears in the data under the table's name and the column's name:
+
+```text
+el4.column1-total
+```
+
+From there it behaves like any other value. Read it anywhere, keep the braces so the minus sign is not read as subtraction:
+
+```text
+{el4.column1-total}                          in text, HTML, templates
+{el4.column1-total} > 1000                   in visibleIf, disableIf, validators
+{variable1} = {el4.column1-total}            into a variable
+```
+
+It travels with the submitted data JSON, and elements reading it refresh as soon as a row changes. Turning both switches off removes the key again.
+
+Inside a dynamic panel the table exists once per entry, so the key carries the entry index: `el1[0].el5.column3-total`. For one number across all entries use an aggregate instead: `sumArray({el1}, el5[].column3)`.
 
 Example: order lines:
 
@@ -7316,6 +7390,17 @@ dateDiffDays({startDate}, {endDate})
 
 Full list with examples: [Function reference](https://ngxviewbuilder.io/creators/functions).
 
+## Writing a value
+
+An expression can also write. Put the target on the left and it becomes a write instead of a comparison:
+
+```text
+{variable1} = {price} * {quantity}
+{variable1} += {row.column3}
+```
+
+`=` sets the value, `+=` adds to it. The same thing spelled out is `setValue()` and `sumValue()`. Use `+=` from an action, since it adds again on every run. See [Writing values back](https://ngxviewbuilder.io/creators/functions#writing-values-back).
+
 ## Context tokens
 
 | Token | Available | Meaning |
@@ -7627,6 +7712,54 @@ getProp("sel1", "placeholder")
 getProp("sel1", "options[0].label")
 getProp("orders", "dataSource.name")
 ```
+
+## Writing values back
+
+Everything above reads. These write, so a total or a collected list can be parked in a variable or in another field without leaving the expression language:
+
+| Function | Does | Example |
+| --- | --- | --- |
+| `setValue(target, value)` | writes the value and returns it | `setValue({variable1}, sumArray({el1}, el5[].column3))` |
+| `setVar(name, value)` | same, target always read as a variable name | `setVar({variable1}, {el2} + {el3})` |
+| `sumValue(target, value)` | adds a number to what is already there, returns the new total | `sumValue({variable1}, {row.column3})` |
+| `sumVar(name, value)` | same, for variables | `sumVar({variable1}, {row.column3} + 40)` |
+| `addValue(target, value)` | alias of `sumValue` | `addValue({total}, {row.column3})` |
+| `pushValue(target, value)` | appends to the target's array, returns it | `pushValue({variable1}, {row})` |
+| `pushVar(name, value)` | same, for variables | `pushVar({selected}, {el2})` |
+| `flattenArray(source)` | flattens nested arrays into one level | `flattenArray(collectValuesFrom({el1}, el5[]))` |
+
+The target names a variable or an element, it is not replaced by its current value. If the name matches a declared variable the value goes to the variable, otherwise to that element's data path.
+
+`sumValue` and `pushValue` change the result every time they run, so use them from an [action](https://ngxviewbuilder.io/creators/events-actions), not from a condition that recalculates on its own. `setValue` is safe anywhere: writing the value that is already there does nothing, which is what keeps an expression from looping on the change it caused itself.
+
+An array argument is summed before it is added, so a whole column lands in one call:
+
+```text
+sumValue({variable1}, collectValuesFrom({el1}, el5[].column3))
+```
+
+### Assignment shorthand
+
+The same two writers have a shorter form. Put the target on the left:
+
+```text
+{variable1} = {row.column3} + 40
+{variable1} = ({variable1} + ({row.column3} + 40))
+{variable1} += {row.column3}
+```
+
+`=` becomes `setValue`, `+=` becomes `sumValue`. Only the leftmost token is the target; on the right side `{variable1}` reads normally, which is how the second line adds to itself. Comparisons are untouched, `{el2} == 5` stays a condition.
+
+### Totals across a dynamic panel
+
+A table inside a dynamic panel exists once per panel entry, so its rows sit deeper in the data. The `[]` selector walks through every level:
+
+```text
+{variable1} = sumArray({el1}, el5[].column3)
+{variable1} = flattenArray(collectValuesFrom({el1}, el5[]))
+```
+
+The first sums one column across all panels, the second gathers every row of every table into one list.
 
 ## Labels of choice elements
 
@@ -8288,6 +8421,17 @@ Each row in the Variables tab has:
 An `expression` variable behaves like any other calculated value. It watches every field it references and recomputes the moment one of them changes, and anything reading the variable updates in the same pass. A chain like `variable1 = {el1} + {el2}` feeding an element with `expression: {variable1}` settles immediately, with no need to leave and re-enter the view.
 
 Referencing a field the user has not filled in yet is fine. The variable simply resolves to nothing and falls back to **Fallback** if you set one, rather than showing a broken value.
+
+## Writing into a variable
+
+Besides the **Set value** action, any expression can write into a variable:
+
+```text
+{variable1} = sumArray({el1}, el5[].column3)
+{variable1} += {row.column3}
+```
+
+Handy for running totals and for collecting rows out of a dynamic panel. A `manual` variable is the right type here, since nothing recalculates it behind your back. Details and the function form in [Writing values back](https://ngxviewbuilder.io/creators/functions#writing-values-back).
 
 ## Using variables
 

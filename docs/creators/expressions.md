@@ -49,6 +49,17 @@ dateDiffDays({startDate}, {endDate})
 
 Full list with examples: [Function reference](./functions).
 
+## Writing a value
+
+An expression can also write. Put the target on the left and it becomes a write instead of a comparison:
+
+```text
+{variable1} = {price} * {quantity}
+{variable1} += {row.column3}
+```
+
+`=` sets the value, `+=` adds to it. The same thing spelled out is `setValue()` and `sumValue()`. Use `+=` from an action, since it adds again on every run. See [Writing values back](./functions#writing-values-back).
+
 ## Context tokens
 
 | Token | Available | Meaning |

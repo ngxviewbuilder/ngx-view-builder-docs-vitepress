@@ -43,6 +43,17 @@ An `expression` variable behaves like any other calculated value. It watches eve
 
 Referencing a field the user has not filled in yet is fine. The variable simply resolves to nothing and falls back to **Fallback** if you set one, rather than showing a broken value.
 
+## Writing into a variable
+
+Besides the **Set value** action, any expression can write into a variable:
+
+```text
+{variable1} = sumArray({el1}, el5[].column3)
+{variable1} += {row.column3}
+```
+
+Handy for running totals and for collecting rows out of a dynamic panel. A `manual` variable is the right type here, since nothing recalculates it behind your back. Details and the function form in [Writing values back](./functions#writing-values-back).
+
 ## Using variables
 
 ```text

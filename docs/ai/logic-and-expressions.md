@@ -217,6 +217,32 @@ For element metadata rather than values:
 
 In `getLabel`, `getValue`, and `getProp` the token names the element, it is not replaced by that element's value.
 
+## Writing values from an expression
+
+| Call | Does |
+| --- | --- |
+| `setValue({variable1}, value)` | writes into a variable or an element data path |
+| `sumValue({variable1}, value)` | adds a number to the current value, returns the new total |
+| `pushValue({variable1}, value)` | appends to the target's array |
+| `flattenArray(source)` | flattens nested arrays into one level |
+
+`setVar`, `sumVar`, and `pushVar` are the same calls with the target always read as a variable name. `addValue` is an alias of `sumValue`.
+
+Shorthand, where the leftmost token is the target and the right side reads normally:
+
+```text
+{variable1} = {row.column3} + 40
+{variable1} += {row.column3}
+```
+
+Rules for the agent:
+
+- The first argument names the target, do not replace it with a value.
+- `setValue` is safe in a recalculated expression, writing an unchanged value does nothing.
+- `sumValue` and `pushValue` add again on every run, so put them in an action, never in `visibleIf`, `disableIf`, or an `expression` property.
+- For a table inside a dynamic panel prefer one aggregate over accumulation: `setValue({variable1}, sumArray({el1}, el5[].column3))`.
+- A published column total is read as `{el4.column1-total}`, always in braces.
+
 ## Contexts the agent may encounter
 
 ### General form context

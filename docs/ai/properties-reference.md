@@ -307,6 +307,15 @@ Same as `panel` plus inherits repeatable container behavior. Value shape: array 
 | `columns` | `IDynamicTableColumn[]` | Column definitions |
 | `dataSource` | `IElementDataSource` | Pre-populate from datasource |
 
+Column-level totals:
+
+| Property | Type | Notes |
+|---|---|---|
+| `columns[*].useTotals` | `boolean` | Sum in the footer row, also published to data |
+| `columns[*].totalToData` | `boolean` | Publish the sum without a footer row |
+
+A published sum lands in the data as `<table>.<column>-total`, for example `el4.column1-total`, and is read in expressions as `{el4.column1-total}`. Inside a dynamic panel the key carries the entry index: `el1[0].el5.column3-total`.
+
 Value shape: array of objects.
 
 ### `table`
