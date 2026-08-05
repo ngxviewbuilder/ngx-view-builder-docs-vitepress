@@ -11,9 +11,9 @@ description: Supplying and validating the license key.
 
 ## Is this open source?
 
-**No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). The npm package ships readable, unminified TypeScript output, which you can read the way you'd read any installed dependency, but that readability grants no open-source rights. There's no license to fork, redistribute, or build a competing product from it.
+**No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). Installing it from npm gives you the right to use it under the terms below. It does not grant a license to fork, redistribute, or build a competing product from it.
 
-If you've used other commercial component libraries (Syncfusion, DevExpress, AG Grid Enterprise, Kendo UI), the model will feel familiar: install from the public npm registry, evaluate for free with a watermark, unlock full use with a paid key. It sits closer to what's sometimes called "source-available" than to open source.
+If you've used commercial component libraries before, the model will feel familiar: install from the public npm registry, evaluate for free with a watermark, unlock full use with a paid key.
 
 **Attempting to remove, disable, or circumvent the license check (the watermark, the signature validation, or the server check) is a breach of the license agreement**, regardless of how it's done (patching the package, monkey-patching at runtime, stripping the check at build time, etc.). See [Restrictions](#license-terms) below.
 

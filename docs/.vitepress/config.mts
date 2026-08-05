@@ -318,6 +318,9 @@ export default defineConfig({
     search: { provider: "local" },
     outline: { level: [2, 3], label: "On this page" },
     docFooter: { prev: "Previous", next: "Next" },
+    // Data be laiko: dokumentacijos puslapiui valanda nieko nereiškia, o
+    // "7/28/26, 9:15 PM" atrodo kaip commit'o žyma, ne kaip atnaujinimo data.
+    lastUpdated: { formatOptions: { dateStyle: "medium" } },
     footer: {
       message:
         'Documentation for NGX View Builder. Found a bug or have an idea? <a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/issues" target="_blank" rel="noopener">Open an issue</a>. ' +
