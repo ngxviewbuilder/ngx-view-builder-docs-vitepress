@@ -209,6 +209,8 @@ Typical mistakes:
 
 ### Mistake
 
+<!-- deliberately incorrect: kept as the counter-example -->
+
 ```json
 { "type": "datePicker" }
 { "type": "SingleCheckbox" }
@@ -222,12 +224,12 @@ Typical mistakes:
 Type strings are **exact lowercase camelCase**. The canonical list:
 
 ```
-text | textarea | number | slider | phoneInput | code | fileUpload | button | numberStepper | signaturePad
-select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | dropdown | autocomplete | selectButton | listBox
+text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
+select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
 panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
-richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon
+richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
 page
 ```
@@ -344,6 +346,160 @@ Logic fields are **direct element-level properties**, never nested:
 
 The same rule applies to `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, and `resetIf`.
 
+## 18. Putting a container's children inside the element definition
+
+This is the single most damaging generation error. The panel renders, and it is **empty**.
+
+### Mistake
+
+<!-- deliberately incorrect: kept as the counter-example -->
+
+```json
+{
+  "elements": {
+    "panelGeneral": {
+      "name": "panelGeneral",
+      "type": "panel",
+      "label": "General",
+      "rows": [
+        { "columns": [{ "elementRef": "firstName" }, { "elementRef": "lastName" }] }
+      ]
+    }
+  }
+}
+```
+
+### Problem
+
+- `IBaseElement` has no `rows` property. The array is ignored.
+- `firstName` and `lastName` are never placed in the layout tree, so they never render.
+- The same applies to invented keys such as `children`, `elements`, `items`, `content`, `fields`.
+
+### Correct
+
+Children belong to the **column that references the container**, in `pages`:
+
+```json
+{
+  "pages": [
+    {
+      "name": "page1",
+      "rows": [
+        {
+          "columns": [
+            {
+              "elementRef": "panelGeneral",
+              "rows": [
+                { "columns": [{ "elementRef": "firstName" }, { "elementRef": "lastName" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "elements": {
+    "page1": { "name": "page1", "type": "page", "label": "Page 1" },
+    "panelGeneral": { "name": "panelGeneral", "type": "panel", "label": "General" },
+    "firstName": { "name": "firstName", "type": "text", "label": "First name" },
+    "lastName": { "name": "lastName", "type": "text", "label": "Last name" }
+  }
+}
+```
+
+`elements` is a **flat map**. It never nests. Full rules: [Layout model](./layout-model).
+
+## 19. Widths written on columns
+
+### Mistake
+
+```json
+{
+  "columns": [
+    { "elementRef": "firstName", "width": "50%", "mobileWidth": "100%" },
+    { "elementRef": "lastName", "width": "50%", "mobileWidth": "100%" }
+  ]
+}
+```
+
+### Problem
+
+- `IColumn` has exactly these keys: `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`. Everything else is dropped.
+- The width was never applied, and the JSON is now noisier and harder to review.
+- Worse, it hides the real intent: two columns in one row **already** split evenly (`flex: 1 1 0`).
+
+### Correct
+
+For an even split, write nothing:
+
+```json
+{ "columns": [{ "elementRef": "firstName" }, { "elementRef": "lastName" }] }
+```
+
+For an uneven split, put `width` / `tabletWidth` / `mobileWidth` on the **element**:
+
+```json
+{
+  "postCode": { "name": "postCode", "label": "Post code", "type": "text", "width": "160px" }
+}
+```
+
+## 20. Using `parentName` to declare structure
+
+### Mistake
+
+```json
+{ "name": "firstName", "type": "text", "parentName": "panelGeneral" }
+```
+
+### Problem
+
+`parentName` exists on `IBaseElement`, but it is runtime bookkeeping, not the structure declaration. Setting it does not place the element anywhere.
+
+### Rule
+
+The layout tree in `pages` is the **only** source of parentage.
+
+## 21. One page per visual section
+
+### Mistake
+
+A screenshot shows four titled sections, and the agent emits four entries in `pages`.
+
+### Problem
+
+A `page` is a **step or screen**, navigated by the pager or stepper. Four pages means a four-step wizard, not four sections stacked on one screen.
+
+### Correct
+
+One page, four `panel` elements at the top level of its `rows`, each panel's `label` being the section heading.
+
+## 22. Invented properties that look plausible
+
+Every one of these has been generated by an agent and none of them exists:
+
+| Invented | What is actually there |
+|---|---|
+| `panel.rows`, `panel.children`, `panel.items` | children go in `column.rows` |
+| `column.width`, `column.mobileWidth`, `column.span` | width goes on the element |
+| `singleCheckbox.checkedValue` / `uncheckedValue` | `singleCheckbox` stores `true`/`false`; the side text is `checkboxLabel` |
+| `phoneInput.maskType`, `phoneInput.inputMode`, `phoneInput.defaultValue` | `defaultCountryCode` (ISO code such as `"LT"`), `allowedCountryCodes` |
+| `text.maskType: "personalCodeLt"` / `"phoneLt"` | masks are exactly `none` `phoneIntl` `date` `time` `dateTime` `digits` `custom` |
+| `datepicker.format: "yyyy-MM-dd"` | uppercase tokens only: `YYYY-MM-DD`, `DD.MM.YYYY`, ... |
+| `element.logic { ... }` wrapper | logic fields sit directly on the element |
+| `validator.expression` | `validator.condition` |
+| `"type": "code"`, `"type": "dropdown"` | neither element type exists; use `textarea` and `select` |
+| `select.placeholder` for the closed-state text | that text is the UI translation `select.placeholder`; the property only sets the dropdown's search hint |
+| `dataSources[*].paramMap` | the field is `params` |
+| `"params": [["id", "{row.id}"]]` | `"params": [{ "name": "id", "value": "{row.id}" }]` |
+| `table.params: [{ "name", "value" }]` | table request params are `[{ "paramName", "paramValue" }]` |
+| `table.columnsConfig[*].name` | `key` |
+| `dynamicTable.columns[*].key` | `name` |
+
+### Rule
+
+If a property is not in [the properties reference](./properties-reference), it does not exist. Omitting a nicety is always better than inventing a property: an invented property is silently ignored, so the form ships subtly broken with no error anywhere.
+
 ## Final anti-pattern checklist
 
 Before returning a response, the agent must verify:
@@ -357,3 +513,7 @@ Before returning a response, the agent must verify:
 7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
 8. Is the existing form context preserved.
 9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper.
+10. Does any object in `elements` contain `rows`, `columns`, `children` or `items` as a way of holding child elements. It must not.
+11. Does any column object carry a key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
+12. Are widths on elements rather than columns, and absent entirely wherever an even split is wanted.
+13. Is the number of `pages` equal to the number of real steps, not the number of visual sections.

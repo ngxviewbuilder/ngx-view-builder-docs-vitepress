@@ -7,6 +7,10 @@ description: The structure skeleton and hard rules an AI agent must follow when 
 
 This page defines how an agent must construct NGX View Builder JSON.
 
+::: warning Read the layout model first
+A structure has two independent halves: `pages` is a **layout tree of positions**, `elements` is a **flat dictionary of definitions**, and `elementRef` is the only bridge between them. Containers do not hold their children; the column that references a container holds them in its own `rows`. Widths belong to elements, never to columns. The complete rules, with the exact object shapes and a full worked example, are in [Layout model](./layout-model). Do not write layout JSON before reading it.
+:::
+
 ## Minimal skeleton
 
 ```json
@@ -77,16 +81,20 @@ The canonical full list is in [Common mistakes, entry 14](./common-mistakes#_14-
 ### `pages`
 
 - `pages` describes layout only.
-- Every page must have a `name`.
-- `rows[*].columns[*].elementRef` points to the `elements` map.
+- Every page must have a `name` and a `rows` array. Those are its only structural keys.
+- A row object has exactly one key: `columns`.
+- A column object has `elementRef`, plus `rows` or `tabRows` when it references a container. Nothing else. `width`, `mobileWidth`, `span`, `label`, `type` on a column are silently dropped.
+- `rows[*].columns[*].elementRef` is a **string key** into the `elements` map, not an object.
 - Do not embed full element objects inside `pages`.
+- A `page` is a step or screen. Titled sections on one screen are `panel` elements inside a single page, not separate pages.
 
 ### `elements`
 
-- `elements` is an object, not an array.
+- `elements` is an object, not an array, and it is **flat**. It never nests.
 - The key must match `element.name`.
 - Every element must have at least `name`, `label`, and `type`.
 - If `pages[*].name = "pageCustomer"`, there must be an `elements.pageCustomer` entry with `type: "page"`.
+- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is `table` / `dynamicTable`, whose cells are declared in `columnsConfig`.
 
 ### `localization`
 
@@ -119,18 +127,22 @@ The canonical full list is in [Common mistakes, entry 14](./common-mistakes#_14-
 
 ## Layout rules
 
-- A single `row` can have one or more `columns`.
-- `panel`, `tabs`, `accordion`, `dynamicPanel`, `dialog`, and `splitter` can have an inner layout.
+- A single `row` is a horizontal band; its `columns` sit side by side. Vertical order is the order of `rows`.
+- **A column with no width takes an equal share of the row.** For a two-column layout, one `row` with two `columns` and no widths is sufficient. Never write `"width": "50%"` to get halves.
+- Widths (`width`, `tabletWidth`, `mobileWidth`, `fitContent`) are **element** properties, set in the `elements` map, and only when the split must be uneven.
+- Exactly ten types accept children: `page`, `panel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
 - Container inner layouts must remain in the NGX View Builder model, not via custom HTML.
-- For a simple two-column layout, one `row` with two `columns` is sufficient.
+- `parentName` is not how parentage is declared. The layout tree is.
+
+Worked examples and the exact interfaces: [Layout model](./layout-model).
 
 ## Value shape rules
 
-- `text`, `textarea`, `richText`, `code` typically store a `string`.
+- `text`, `textarea`, `richText` typically store a `string`.
 - `number`, `slider` store a `number` or `string` depending on `valueStorageType`.
 - `singleCheckbox`, `toggleSwitch`, `toggleButton` typically store a `boolean`.
 - `checkbox`, `multiSelect` typically store an array.
-- `select`, `radio`, `dropdown`, `autocomplete` typically store a single value.
+- `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
@@ -191,3 +203,5 @@ Correct:
 6. Are there no unnecessary properties added.
 7. Are all `type` strings exact-cased (e.g. `datepicker`, not `datePicker`)?
 8. Do validators use `condition` (error when `true`) and `applyIf`, rather than `expression`, `visibleIf`, or other element-level field names?
+9. Is every container's content attached to the referencing **column**, and does no element definition contain a `rows` / `children` / `items` array?
+10. Do all column objects carry only `elementRef` (plus `rows` / `tabRows` where applicable), with no widths or other properties?

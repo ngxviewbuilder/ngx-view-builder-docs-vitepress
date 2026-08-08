@@ -7,7 +7,8 @@
     "docs:dev": "vitepress dev docs --host 0.0.0.0",
     "docs:build": "node scripts/generate-llms.mjs && vitepress build docs",
     "docs:preview": "vitepress preview docs --host 0.0.0.0",
-    "generate:llms": "node scripts/generate-llms.mjs"
+    "generate:llms": "node scripts/generate-llms.mjs",
+    "validate:ai-json": "python scripts/validate-ai-json.py"
   },
   "devDependencies": {
     "vitepress": "^1.6.4"

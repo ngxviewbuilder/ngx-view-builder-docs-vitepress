@@ -149,7 +149,7 @@ Button appearance for action: `buttonVariant` (`filled` `outlined` `text`), `but
 | `maxlength` | `number` | |
 | `showMaxLengthCounter` | `boolean` | Show counter when maxlength is set |
 | `pattern` | `string` | Regex pattern |
-| `maskType` | `string` | `none` `phoneLt` `phoneIntl` `personalCodeLt` `date` `time` `dateTime` `digits` `custom` |
+| `maskType` | `string` | Exactly: `none` `phoneIntl` `date` `time` `dateTime` `digits` `custom`. No other mask names exist |
 | `maskPattern` | `string` | Custom mask (when maskType is `custom`) |
 | `inputMode` | `string` | `text` `search` `email` `tel` `url` `numeric` `decimal` |
 | `spellcheck` | `boolean` | |
@@ -187,9 +187,10 @@ Same as `text` plus:
 | Property | Type | Notes |
 |---|---|---|
 | `placeholder` | `string` | |
-| `pickerMode` | `string` | `date` (default) `datetime` `time` |
-| `includeSeconds` | `boolean` | For datetime/time modes |
-| `format` | `string` | Output format string |
+| `pickerMode` | `string` | `date` (default) or `datetime` |
+| `includeSeconds` | `boolean` | For datetime mode |
+| `format` | `string` | Output format. Exactly one of `""` (locale) `YYYY-MM-DD` `DD/MM/YYYY` `MM/DD/YYYY` `DD.MM.YYYY` `YYYY/MM/DD` `custom`. Lowercase Angular-style patterns such as `yyyy-MM-dd` are **not** valid |
+| `customFormat` | `string` | The pattern used when `format` is `custom` |
 | `minValue` | `string` | Min selectable date (JEXL or static) |
 | `maxValue` | `string` | Max selectable date (JEXL or static) |
 | `requiredMessage` | `string` | |
@@ -206,11 +207,11 @@ Same as `text` plus:
 
 Value shape: `{ "dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD" }`
 
-### `select` / `multiSelect` / `radio` / `checkbox` / `dropdown`
+### `select` / `multiSelect` / `radio` / `checkbox` / `autocomplete`
 
 | Property | Type | Notes |
 |---|---|---|
-| `placeholder` | `string` | (select, multiSelect, dropdown) |
+| `placeholder` | `string` | Real on `autocomplete`, `listBox`, `selectButton`. On `select` / `multiSelect` it sets **only the search box hint** inside the open dropdown, and only when `showSearch` is on; the closed-state "Select..." text comes from the UI translation `select.placeholder` / `multiSelect.placeholder`, not from this property |
 | `options` | `IOption[]` | Static options: `[{ "value": "x", "label": "X" }]` |
 | `dataSource` | `IElementDataSource` | Dynamic options from datasource |
 | `showSearch` | `boolean` | Search box in dropdown (select) |
@@ -219,10 +220,11 @@ Value shape: `{ "dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD" }`
 | `filterIfNotEqual` | `string` | Filter options when datasource field not equals value |
 | `optionTemplate` | `string` | Inline HTML template for each option |
 | `optionTemplateName` | `string` | Template name reference |
+| `showInline` | `boolean` | Lay the choices out in a row (`radio`, `checkbox`) |
 | `requiredMessage` | `string` | |
 
 Value shapes:
-- `select` / `radio` / `dropdown`: single value
+- `select` / `radio` / `autocomplete`: single value
 - `multiSelect` / `checkbox`: array
 
 ### `singleCheckbox` / `toggleSwitch` / `toggleButton`
@@ -231,8 +233,24 @@ Value shape: `boolean`
 
 | Property | Type | Notes |
 |---|---|---|
-| `checkedValue` | `any` | Value when checked (toggleButton) |
-| `uncheckedValue` | `any` | Value when unchecked (toggleButton) |
+| `checkboxLabel` | `string` | Text rendered **next to the box** (`singleCheckbox`). `label` is the field label above it; for a bare checkbox row set `label` to `""` and put the wording here |
+| `checkedValue` | `any` | Value when checked (`toggleButton` only) |
+| `uncheckedValue` | `any` | Value when unchecked (`toggleButton` only) |
+
+`singleCheckbox` has no `checkedValue` / `uncheckedValue`. It always stores `true` / `false`.
+
+### `phoneInput`
+
+| Property | Type | Notes |
+|---|---|---|
+| `placeholder` | `string` | |
+| `defaultCountryCode` | `string` | ISO code of the preselected country: `LT` `LV` `EE` `PL` `DE` `SE` `NO` `DK` `FI` `GB` `IE` `US` |
+| `allowedCountryCodes` | `string[]` | Restrict the country dropdown to these ISO codes |
+| `maxlength` | `number` | |
+| `autocomplete` | `string` | |
+| `requiredMessage` | `string` | |
+
+`phoneInput` has its own country dropdown. It has **no** `maskType`, `maskPattern` or `inputMode`, and the dial code is not set via `defaultValue`.
 
 ### `button`
 
@@ -264,6 +282,25 @@ Value shape: `boolean`
 
 Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name`, never file bytes/base64. Full request/response wire contract: [File upload requests](../developers/data-sources#file-upload-requests).
 
+### `page`
+
+The complete list. A `page` element accepts nothing else.
+
+| Property | Type | Notes |
+|---|---|---|
+| `name` | `string` | Must match the `pages[*].name` entry |
+| `label` | `string` | Page / step title |
+| `description` | `string` | Subtitle |
+| `type` | `"page"` | Required |
+| `hideHeader` | `boolean` | Hide the page title block |
+| `removeBackgraund` | `boolean` | Drop the page background. Spelled exactly like this, the typo is part of the schema |
+| `pageBackgroundColor` | `string` | |
+| `pagePadding` | `string` | |
+| `mobilePadding` | `string` | |
+| `visibleIf` / `disableIf` / `readonlyIf` | `string` | JEXL |
+
+A page's children are **not** listed here. They live in `pages[*].rows`; see [Layout model](./layout-model).
+
 ### `panel`
 
 | Property | Type | Notes |
@@ -283,10 +320,15 @@ Value shape: the upload response object stored verbatim (or an array of them whe
 | `contentJustify` | `string` | Flexbox justify: `flex-start` `center` `flex-end` `space-between` `space-around` `space-evenly` |
 | `contentAlign` | `string` | Flexbox align: `flex-start` `center` `flex-end` `stretch` |
 | `contentGap` | `string` | Gap between child elements |
+| `titleUnderlineColor` | `string` | Underline color (when `titleUnderline`) |
+| `titleUnderlineWidth` | `string` | Underline thickness (when `titleUnderline`) |
+| `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
+
+**A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](./layout-model#nesting-the-mistake-that-breaks-everything).
 
 ### `dynamicPanel`
 
-Same as `panel` plus inherits repeatable container behavior. Value shape: array of objects.
+Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
 
 ### `dynamicTable`
 
@@ -366,7 +408,10 @@ A column of `type: "element"` renders a real element in every row:
     "options": [{ "label": "New", "value": "new" }, { "label": "Done", "value": "done" }],
     "events": [
       { "trigger": "change", "type": "dataSource", "dataSourceName": "saveStatus",
-        "params": [["id", "{row.id}"], ["status", "{value}"]] }
+        "params": [
+          { "name": "id", "value": "{row.id}" },
+          { "name": "status", "value": "{value}" }
+        ] }
     ]
   }
 }
@@ -605,16 +650,44 @@ Only include settings actually needed by the form.
 
 ## `IDataSource` fields (top-level dataSources array)
 
+`{ name, title, type, params }`. `type` is one of `rest` `local` `route` `websocket`, and `params` is a plain object whose keys depend on that type.
+
 ```json
 {
-  "name": "loadCities",
-  "title": "Load cities",
-  "type": "rest",
-  "params": {}
+  "dataSources": [
+    { "name": "ds1", "title": "List", "type": "rest",
+      "params": { "url": "/api/items", "method": "GET" } },
+
+    { "name": "ds2", "title": "Save", "type": "rest",
+      "params": { "url": "/api/items/{id}", "method": "PUT", "body": { "name": "{el1}" } } },
+
+    { "name": "ds3", "title": "Paged table", "type": "rest",
+      "params": { "url": "/api/items/search", "method": "TABLE-POST" } },
+
+    { "name": "ds4", "title": "Static list", "type": "local",
+      "params": { "localMode": "json", "dataJson": "[{\"id\":1,\"name\":\"A\"}]" } },
+
+    { "name": "ds5", "title": "From form data", "type": "local",
+      "params": { "localMode": "dataPath", "dataPath": "el9.items" } },
+
+    { "name": "ds6", "title": "Route data", "type": "route",
+      "params": { "routeDataKey": "record", "routeDataPath": "data" } },
+
+    { "name": "ds7", "title": "Live feed", "type": "websocket",
+      "params": { "url": "wss://host/feed", "protocols": "", "message": "{}",
+                  "messagePath": "payload", "messageMode": "pushValuesInArray" } }
+  ]
 }
 ```
 
-`type` values: `rest` `route` `local`
+| `type` | `params` keys |
+|---|---|
+| `rest` | `url` (required), `method` (`GET` `POST` `PUT` `PATCH` `DELETE`, or `TABLE-POST` for a lazy `table`), `body` (alias `payload`) |
+| `local` | `localMode` (`json` or `dataPath`), then `dataJson` (a JSON **string**) and `dataFunction`, or `dataPath` |
+| `route` | `routeDataKey`, `routeDataPath` |
+| `websocket` | `url`, `protocols`, `message`, `messagePath`, `messageMode` (`replaceCurrent` or `pushValuesInArray`) |
+
+URL and body templates use **single** braces: `{el1}`, `{row.id}`, `{__variables.tenantId}`.
 
 ---
 
@@ -649,12 +722,12 @@ Only include settings actually needed by the form.
 ## Canonical type string list
 
 ```
-text | textarea | number | slider | phoneInput | code | fileUpload | button | numberStepper | signaturePad
-select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | dropdown | autocomplete | selectButton | listBox
+text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
+select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
 panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
-richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon
+richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
 page
 ```

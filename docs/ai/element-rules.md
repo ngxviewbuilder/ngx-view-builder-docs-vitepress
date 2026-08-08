@@ -80,10 +80,11 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 - Not intended for form value storage.
 - Common properties: `variant`, `events`, `actions`, `disabled`.
 
-### `code`
+### `richText` / `richTextViewer`
 
-- Use to display or edit code or a JSON fragment.
-- Value shape is typically `string`.
+- `richText` edits formatted HTML; `richTextViewer` only renders it.
+- Value shape is an HTML `string`.
+- There is no `code` element type. For a code or JSON fragment use `textarea`, or `customHtml` / `htmlSnippet` for read-only markup.
 
 ## Choice elements
 
@@ -172,10 +173,10 @@ Canonical example:
 - Value shape is typically a time string.
 - Combine with `datepicker` when both a date and a time are needed, or use a `text` element with a date-time input mask for single-field entry.
 
-### `dropdown`
+### `dropdown` does not exist
 
-- Dropdown-style selection or action menu for specific scenarios.
-- Use only when it genuinely matches the UX need.
+- There is no `dropdown` element type. `select` is the closed dropdown control.
+- For an action menu use `button` with `menuActions`, or `table.rowActions` with `rowActionsDisplayMode: "dropdown"`.
 
 ### `listBox`
 

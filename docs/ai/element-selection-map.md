@@ -33,7 +33,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Large searchable list | `autocomplete` | Do not use for small static lists |
 | File upload | `fileUpload` | Do not use for plain link text |
 | Triggering an action | `button` | Do not use for data input |
-| Code or JSON fragment | `code` | Do not use for plain text |
+| Code or JSON fragment | `textarea` | There is no `code` element type |
 | Small bounded quantity with +/- buttons | `numberStepper` | Do not use for large or precise ranges; prefer `number` |
 | Handwritten signature capture | `signaturePad` | Do not use for typed text |
 
@@ -51,7 +51,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Date selection | `datepicker` | Do not use for a date range |
 | Date range | `dateRange` | Do not use for a single date |
 | Time of day | `timePicker` | Combine with `datepicker` if both are needed |
-| Simple dropdown menu | `dropdown` | Do not use as a substitute for table row actions |
+| Simple dropdown menu | `button` with `menuActions` | There is no `dropdown` element type; `select` is the closed choice control |
 | Always-visible scrollable selection list | `listBox` | Do not use if a compact closed control is preferred; use `select` |
 | Connected button row for 2-4 short options | `selectButton` | Do not use for long option lists; prefer `radio` or `select` |
 

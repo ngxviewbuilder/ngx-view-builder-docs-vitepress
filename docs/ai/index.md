@@ -13,28 +13,50 @@ Everything here has one goal: the agent must behave as a **strict NGX View Build
 
 An agent (or a person building prompts) should consume the pages in this order:
 
+0. [Live builder command API](./command-api): check this first. If a builder is open and reachable, you edit it directly with JSON commands instead of handing back structure JSON. The authoring rules below still apply either way.
 1. [Generation contract](./generation-contract): the core rules of engagement and output modes.
-2. [JSON authoring rules](./json-authoring-rules): the structure skeleton and hard rules.
-3. [Element selection map](./element-selection-map): mapping user intent to the right element type.
-4. [Logic & expression properties](./logic-and-expressions): `visibleIf`, `expression`, and friends.
-5. [Element rules & value shapes](./element-rules): per-element expectations.
-6. [Canonical properties reference](./properties-reference): the authoritative property list.
-7. [Common mistakes](./common-mistakes): anti-patterns to avoid.
-8. [Legacy form migration](./legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
+2. [Layout model](./layout-model): how `pages`, `rows`, `columns` and `elementRef` relate to the flat `elements` map. **Non-negotiable prerequisite for writing any structure JSON.**
+3. [JSON authoring rules](./json-authoring-rules): the structure skeleton and hard rules.
+4. [Element selection map](./element-selection-map): mapping user intent to the right element type.
+5. [Logic & expression properties](./logic-and-expressions): `visibleIf`, `expression`, and friends.
+6. [Element rules & value shapes](./element-rules): per-element expectations.
+7. [Canonical properties reference](./properties-reference): the authoritative property list.
+8. [Common mistakes](./common-mistakes): anti-patterns to avoid.
+9. [Verified examples](./examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
+10. [Legacy form migration](./legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
 | Page | What it answers | Load when |
 | --- | --- | --- |
+| [Live builder command API](./command-api) | Driving an open builder directly: detection, bootstrap sequence, the `execute` contract, error recovery, row targeting | First, whenever `window.__NGX_VIEW_BUILDER_AI__` may exist |
 | [Generation contract](./generation-contract) | How the agent must behave; output modes; prompt templates | Always |
+| [Layout model](./layout-model) | The layout tree: `pages` → `rows` → `columns` → `elementRef`, container nesting, `tabRows`, where widths live, full worked example | Always, before any JSON is written |
 | [JSON authoring rules](./json-authoring-rules) | Skeleton, `pages`/`elements` rules, naming, layout, value shapes | Always |
 | [Canonical properties reference](./properties-reference) | Every supported property per element type, settings, data sources | Always |
 | [Element rules & value shapes](./element-rules) | Per-element usage rules and value shapes | Always |
 | [Common mistakes](./common-mistakes) | Known anti-patterns with corrections | Always; especially in review mode |
+| [Verified examples](./examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](./element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](./logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |
 | [Legacy form migration](./legacy-form-migration) | Element/property/expression mapping from a legacy form-builder JSON format | When converting legacy form JSON |
 | [API service reference](../developers/api-service), [Events reference](../developers/events) | What every host API method / event does, its parameters, payloads and return values | When the user asks a development or integration question |
+
+Every JSON block on those pages is machine-checked against the library source by `npm run validate:ai-json` in this repo: element types against the element registry, property names against the builder property datasets, sub-objects against their TypeScript interfaces. If a property appears in these docs, it exists.
+
+## Using this with ChatGPT, Claude or Gemini
+
+Three single-file bundles are published, in increasing size:
+
+| File | Contains | Use it when |
+| --- | --- | --- |
+| [`/llms.txt`](https://ngxviewbuilder.io/llms.txt) | a linked index, a few KB | the model can fetch URLs itself |
+| [`/llms-authoring.txt`](https://ngxviewbuilder.io/llms-authoring.txt) | **every page in this AI section**, roughly 55k tokens | the task is writing or fixing structure JSON. This is the one to paste into a chat |
+| [`/llms-full.txt`](https://ngxviewbuilder.io/llms-full.txt) | the whole site, roughly 135k tokens | the question also covers embedding, the host API, events, theming or plugins |
+
+`llms-authoring.txt` is deliberately the smaller bundle: it drops the creator guides, pricing and host-integration pages, which are noise when the only deliverable is JSON. Paste it once at the start of a session, then describe the view you want.
+
+A caveat worth stating plainly: a pasted file is reference material, not a guarantee. Models still skim long context. The two habits that matter most are asking for the layout tree to be stated in words before the JSON, and running the result back through the [pre-return checklist](./json-authoring-rules#pre-return-checklist).
 
 The agent does more than write JSON. It also **consults developers**: what an API method means, what it returns, how to wire an event, how to embed the builder or runtime. For those answers the retrieval map has a dedicated `developer` source group pointing at the developer documentation.
 

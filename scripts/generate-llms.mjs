@@ -5,7 +5,7 @@
 //                      that fetch a single URL instead of crawling links
 // Run via `npm run generate:llms`, or automatically before `docs:build`.
 
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,12 +35,14 @@ const MANUAL_TITLES = {
 const AI_PAGE_ORDER = [
   'ai/index.md',
   'ai/generation-contract.md',
+  'ai/layout-model.md',
   'ai/json-authoring-rules.md',
   'ai/element-selection-map.md',
   'ai/logic-and-expressions.md',
   'ai/element-rules.md',
   'ai/properties-reference.md',
   'ai/common-mistakes.md',
+  'ai/examples.md',
   'ai/legacy-form-migration.md',
 ];
 
@@ -177,7 +179,12 @@ for (const group of groups) {
   }
   llmsTxt += `\n`;
 }
-llmsTxt += `- [Machine index](${SITE_URL}/ai/retrieval-map.json): JSON map of request profiles to source files\n`;
+llmsTxt +=
+  `## Single-file bundles\n\n` +
+  `- [JSON authoring reference](${SITE_URL}/llms-authoring.txt): every AI reference page in one file. ` +
+  `Paste this when the task is writing or fixing NGX View Builder structure JSON.\n` +
+  `- [Everything](${SITE_URL}/llms-full.txt): the full site, including host integration, theming and plugins.\n` +
+  `- [Machine index](${SITE_URL}/ai/retrieval-map.json): JSON map of request profiles to source files.\n`;
 
 writeFileSync(path.join(DOCS_DIR, 'public', 'llms.txt'), `${llmsTxt.trimEnd()}\n`);
 
@@ -197,4 +204,51 @@ for (const group of groups) {
 
 writeFileSync(path.join(DOCS_DIR, 'public', 'llms-full.txt'), `${llmsFull.trimEnd()}\n`);
 
-console.log(`generate-llms: indexed ${pages.length} pages -> llms.txt + llms-full.txt`);
+// --- llms-authoring.txt: the AI reference only ---
+//
+// llms-full.txt carries the whole site (pricing, privacy, creator guides, host
+// integration), which is roughly three times the size and mostly irrelevant when
+// the only task is "write me a view as NGX View Builder JSON". This file is the
+// /ai/ section alone: the rules, the property reference and the worked examples.
+// It is the file to paste into ChatGPT/Claude/Gemini for a JSON-authoring session.
+
+const aiGroup = groups.find((g) => g.title.startsWith('AI reference'));
+
+let llmsAuthoring =
+  `# NGX View Builder: JSON authoring reference\n\n> ${SUMMARY}\n\n` +
+  `This file is the complete AI reference for AUTHORING NGX View Builder structure JSON: ` +
+  `the rules of engagement, the layout model, every supported property, and verified end-to-end examples. ` +
+  `It is self-contained on purpose, so it can be pasted whole into a chat as system material.\n\n` +
+  `Read it as a specification, not as inspiration. Element types, property names and object shapes are exact ` +
+  `and case-sensitive; every JSON block here is machine-checked against the library source. ` +
+  `A property that does not appear in this file does not exist, and writing one is silently ignored at runtime, ` +
+  `so the view ships broken with no error anywhere.\n\n` +
+  `For host-side integration (embedding the builder, the runtime API, events, theming, plugins) ` +
+  `see ${SITE_URL}/llms-full.txt instead.\n\n---\n\n`;
+
+for (const p of aiGroup?.pages ?? []) {
+  const body = absolutizeLinks(p.relFromDocs, p.body);
+  llmsAuthoring += `## ${p.title}\n\nSource: ${p.url}\n\n${body}\n\n---\n\n`;
+}
+
+writeFileSync(path.join(DOCS_DIR, 'public', 'llms-authoring.txt'), `${llmsAuthoring.trimEnd()}\n`);
+
+// --- publish retrieval-map.json ---
+//
+// The map lives at docs/ai/retrieval-map.json because that is where the reference
+// backend reads it from (see ngx-view-builder-ai-agent/src/reference-context.js).
+// VitePress only copies docs/public verbatim, so without this step the documented
+// URL https://ngxviewbuilder.io/ai/retrieval-map.json is a 404 in production.
+
+const retrievalMapSource = path.join(DOCS_DIR, 'ai', 'retrieval-map.json');
+const retrievalMapTarget = path.join(DOCS_DIR, 'public', 'ai', 'retrieval-map.json');
+mkdirSync(path.dirname(retrievalMapTarget), { recursive: true });
+copyFileSync(retrievalMapSource, retrievalMapTarget);
+
+const kb = (s) => `${Math.round(s.length / 1024)} KB`;
+console.log(
+  `generate-llms: indexed ${pages.length} pages -> ` +
+    `llms.txt (${kb(llmsTxt)}), llms-full.txt (${kb(llmsFull)}), ` +
+    `llms-authoring.txt (${kb(llmsAuthoring)}, ${aiGroup?.pages.length ?? 0} AI pages), ` +
+    `public/ai/retrieval-map.json`,
+);

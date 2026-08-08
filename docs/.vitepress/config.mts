@@ -201,7 +201,9 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "Overview & index", link: "/ai/" },
+            { text: "Live builder command API", link: "/ai/command-api" },
             { text: "Generation contract", link: "/ai/generation-contract" },
+            { text: "Layout model", link: "/ai/layout-model" },
             { text: "JSON authoring rules", link: "/ai/json-authoring-rules" },
             {
               text: "Element selection map",
@@ -211,6 +213,7 @@ export default defineConfig({
             { text: "Element rules & value shapes", link: "/ai/element-rules" },
             { text: "Properties reference", link: "/ai/properties-reference" },
             { text: "Common mistakes", link: "/ai/common-mistakes" },
+            { text: "Verified examples", link: "/ai/examples" },
             {
               text: "Legacy form migration",
               link: "/ai/legacy-form-migration",
@@ -255,6 +258,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "API service reference", link: "/developers/api-service" },
+            { text: "AI command API", link: "/developers/ai-command-api" },
             { text: "Events reference", link: "/developers/events" },
             {
               text: "Runtime variables",

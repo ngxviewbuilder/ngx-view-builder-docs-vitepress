@@ -20,11 +20,12 @@ The core idea is simple: when producing structures, the agent must operate not a
 
 ## What the agent should read first
 
-1. [JSON authoring rules](./json-authoring-rules)
-2. [Element selection map](./element-selection-map)
-3. [Logic and expression properties](./logic-and-expressions)
-4. [Element rules and value shapes](./element-rules)
-5. [Common mistakes](./common-mistakes)
+1. [Layout model](./layout-model)
+2. [JSON authoring rules](./json-authoring-rules)
+3. [Element selection map](./element-selection-map)
+4. [Logic and expression properties](./logic-and-expressions)
+5. [Element rules and value shapes](./element-rules)
+6. [Common mistakes](./common-mistakes)
 
 After that, consult the general reference pages:
 
@@ -43,10 +44,13 @@ For developer-consulting answers, the sources of truth are:
 
 ## Mandatory rules
 
-- `pages` describes layout.
-- `elements` is a map where the key matches `element.name`.
-- `pages[*].rows[*].columns[*].elementRef` must point to an existing `elements` entry.
+- `pages` describes layout. `elements` describes configuration. Neither ever does the other's job.
+- `elements` is a **flat** map where the key matches `element.name`. It never nests.
+- `pages[*].rows[*].columns[*].elementRef` is a string that must point to an existing `elements` entry.
 - Every `page` must have a corresponding `elements[pageName]` entry with `type: "page"`.
+- **A container element never contains its children.** The children of a `panel`, `dynamicPanel`, `dialog` or `emptyBlock` are attached to the column that references it, in `column.rows`; for `tabs`, `tabsPro`, `accordion`, `splitter` and `progressFlow`, in `column.tabRows`. Writing `rows` (or `children`, `items`, `fields`) inside an element definition produces an empty container and orphaned fields, with no error anywhere.
+- A row object has only `columns`. A column object has only `elementRef` plus `rows` / `tabRows`. Widths and other properties on a column are silently dropped; they belong on the element.
+- Columns with no width split their row evenly. Do not add `"width": "50%"` to get halves.
 - If there is interdependency logic between fields, use `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `expression`, and, when needed, `logicExecutionMode: "onChange"`.
 - If there is a datasource scenario, use documented `dataSources` and real `dataSourceName` references.
 - Do not use self-reference expressions, e.g. `"{el2} == 'x' ? 'y' : {el2}"`.
@@ -63,11 +67,33 @@ If the user asks to generate or modify a form, return only valid JSON.
 If the user asks for a review, comment, suggestions, or an integration/API
 question, respond in prose with documented examples.
 
+The structure has two independent halves:
+- "pages" is a layout tree: pages -> rows -> columns, each column carrying an
+  "elementRef" STRING.
+- "elements" is a FLAT map of definitions, keyed by element name. It never nests.
+
+Container elements (page, panel, dynamicPanel, dialog, emptyBlock, tabs, tabsPro,
+accordion, splitter, progressFlow) do NOT contain their children. The children are
+attached to the COLUMN that references the container, in column.rows (or
+column.tabRows for the tab-like ones). Writing "rows"/"children"/"items" inside an
+element definition renders an empty container and drops the fields silently.
+
+A row object has only "columns". A column object has only "elementRef" plus
+"rows"/"tabRows". Widths (width, tabletWidth, mobileWidth, fitContent) go on the
+ELEMENT, and only when the split must be uneven: columns with no width already
+split their row evenly.
+
+A page is a step or screen. Titled sections on one screen are panel elements
+inside a single page, never separate pages.
+
 Before generating:
 1. Decide which NGX View Builder elements best match the task.
-2. Verify the required value shape and mandatory properties.
-3. Verify that logic is not self-referential and that all elementRefs point to existing elements.
-4. If extending an existing form, do not modify unrelated parts.
+2. List the visual rows top to bottom and count the fields per row before writing JSON.
+3. Verify the required value shape and mandatory properties.
+4. Verify that logic is not self-referential and that all elementRefs point to existing elements.
+5. Verify that no element definition contains a rows/children/items array and that no
+   column carries anything besides elementRef/rows/tabRows.
+6. If extending an existing form, do not modify unrelated parts.
 ```
 
 ## Recommended user prompt format

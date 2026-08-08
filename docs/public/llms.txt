@@ -4,20 +4,24 @@
 
 ## AI reference (machine-first, start here)
 
+- [Live builder command API](https://ngxviewbuilder.io/ai/command-api): How an agent drives an open builder directly, instead of only emitting structure JSON.
 - [AI reference](https://ngxviewbuilder.io/ai/): The canonical, indexed knowledge base an AI agent needs to generate or modify NGX View Builder structure JSON.
 - [AI: Generation contract](https://ngxviewbuilder.io/ai/generation-contract): How an AI agent must behave when generating, modifying, reviewing NGX View Builder JSON or consulting on integration questions.
+- [AI: Layout model (pages, rows, columns, elementRef)](https://ngxviewbuilder.io/ai/layout-model): The exact layout tree an AI agent must produce. How pages, rows, columns and elementRef relate to the flat elements map, how containers nest, and where widths belong.
 - [AI: JSON authoring rules](https://ngxviewbuilder.io/ai/json-authoring-rules): The structure skeleton and hard rules an AI agent must follow when constructing NGX View Builder JSON.
 - [AI: Element selection map](https://ngxviewbuilder.io/ai/element-selection-map): How an AI agent maps user intent to the right NGX View Builder element type.
 - [AI: Logic and expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions): Which expression fields an AI agent may use in NGX View Builder JSON and the rules they must follow.
 - [AI: Element rules and value shapes](https://ngxviewbuilder.io/ai/element-rules): AI-oriented summary of the primary NGX View Builder elements, their usage rules and value shapes.
 - [AI: Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference): The authoritative property reference for AI JSON generation. Only properties listed here are supported.
 - [AI: Common mistakes and anti-patterns](https://ngxviewbuilder.io/ai/common-mistakes): Known anti-patterns AI agents repeat when generating NGX View Builder JSON, with corrections.
+- [AI: Verified example structures](https://ngxviewbuilder.io/ai/examples): A library of complete, verified NGX View Builder JSON examples covering layout, every element family, the full table feature set, dynamic tables and panels, data sources, runtime variables and expressions.
 - [AI: Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON, covering element, property, and expression mapping.
 
 ## Developer documentation
 
 - [Angular form & view builder for developers](https://ngxviewbuilder.io/developers/): Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
 - [AI assistant backend](https://ngxviewbuilder.io/developers/ai-chat): Wire the builder's AI chat panel to your own AI service, covering configuration, protocol, models, and the reference backend.
+- [AI command API](https://ngxviewbuilder.io/developers/ai-command-api): A JSON command surface that lets an external agent read and edit a view while the builder is open.
 - [API service reference](https://ngxviewbuilder.io/developers/api-service): Every public method of NgxViewBuilderApiService, area by area.
 - [Architecture](https://ngxviewbuilder.io/developers/architecture): How the builder, runtime, shared core, and plugins fit together.
 - [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration): Host the visual builder, persist structures, and customize the header.
@@ -84,4 +88,8 @@
 - [Pricing](https://ngxviewbuilder.io/pricing): The runtime that renders your views in production is free forever and never needs a license key. The builder is free to use today and becomes a licensed product at the 1.0.0 release.
 - [Privacy Policy](https://ngxviewbuilder.io/privacy): How ngxviewbuilder.io handles analytics, cookies, and the data you enter in the live demo.
 
-- [Machine index](https://ngxviewbuilder.io/ai/retrieval-map.json): JSON map of request profiles to source files
+## Single-file bundles
+
+- [JSON authoring reference](https://ngxviewbuilder.io/llms-authoring.txt): every AI reference page in one file. Paste this when the task is writing or fixing NGX View Builder structure JSON.
+- [Everything](https://ngxviewbuilder.io/llms-full.txt): the full site, including host integration, theming and plugins.
+- [Machine index](https://ngxviewbuilder.io/ai/retrieval-map.json): JSON map of request profiles to source files.

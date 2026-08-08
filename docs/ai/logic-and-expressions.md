@@ -26,8 +26,12 @@ The agent must know that expression logic does not live only in the main fields.
 
 ### Data source parameters
 
-- `dataSources[*].paramMap[*].value`
-- element actions `paramMap[*].value`
+The field is called `params`, never `paramMap`:
+
+- an element's `dataSource.params[*].value`, shaped `[{ "name": ..., "value": ... }]`
+- an action's `params[*].value`, the same shape
+- a `table`'s own lazy-load request params, which are different: `[{ "paramName": ..., "paramValue": ... }]`
+- `{placeholder}` tokens inside a REST source's `params.url` and `params.body`
 
 These can use expression fragments such as:
 
@@ -51,8 +55,9 @@ Inside a column of `type: "element"`, the hosted element's own texts, templates,
 
 Expressions are often used in actions in:
 
-- `paramMap`
-- action visibility or conditional execution properties, if documented in the specific action schema
+- `params[*].value`
+- `condition`, which gates whether the action runs at all (per row for a table row action)
+- `setValueValue` when `setValueMode` is `template` or `expression`
 
 ## When to use `logicExecutionMode`
 
@@ -253,10 +258,25 @@ Rules for the agent:
 
 ### Dynamic blocks and tables
 
-- `{row.field}`
-- `{item.field}`
-- `{parentRow.field}`
-- index-based contexts, if documented in the specific location
+- `{row.field}` inside a `table` cell, a `dynamicTable` row, a row action or a column template
+- `{panel.field}` inside a `dynamicPanel` entry
+- `{item.field}` for the candidate option in `filterOptionsBy`
+- `{index}` and `{value}` inside a cell
+- a published `dynamicTable` column total, `{el1.column4-total}`
+
+### A table's own live state
+
+A `table` publishes its state so other elements can read it. `__table.<tableName>.*` is that table, bare `__table.*` is the last one touched:
+
+`rows` `allRows` `rowCount` `totalRecords` `page` `size` `sortField` `sortDirection` `quickSearch` `detailedFilters` `request` `selectedRows` `selectedKeys` `selectedItems` `selectedCount` `selectedRow` `selectedRowKey` `selectedRowIndex` `activeRow` `activeRowKey`
+
+```text
+toNumber({__table.el2.selectedCount}) > 0
+notEmpty({__table.el2.selectedRowKey})
+{__table.el2.selectedRow}.column2
+```
+
+This is what drives selection-aware buttons, counters and master/detail screens. Full examples: [Verified examples, 6.5 and 6.6](./examples#_6-5-the-table-s-live-state-table).
 
 In such cases, do not guess. If `table` or `dynamicPanel` is used, consult:
 
