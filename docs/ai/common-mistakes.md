@@ -119,11 +119,43 @@ Typical mistakes:
 
 ### Why
 
-- the correct logic execution mode is missing
+- the execution mode is missing, and the default is `onBlur`
+
+With `onBlur` the logic only re-runs once the field loses focus, so someone typing in the form sees nothing happen and reports the logic as broken.
 
 ### Rule
 
-- if one field's value must immediately affect another field, `logicExecutionMode: "onChange"` is often required
+- if one field's value must immediately affect another field, set `logicExecutionMode: "onChange"`
+- if validation has to follow the typing, set `validationExecutionMode: "onChange"` as well
+
+## 8b. `hideIf` and other logic keys that do not exist
+
+### Mistake
+
+```json
+{
+  "name": "companyCode",
+  "hideIf": "{customerType} != 'company'"
+}
+```
+
+### Problem
+
+There is no `hideIf`. The logic keys are exactly `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf` and `expression`, and they are matched exactly, so `readOnlyIf` with a capital O misses too.
+
+This is the worst kind of mistake to debug, because nothing complains. The property is stored, the JSON reviews as correct, no dependency is ever registered for it, and the field simply stays visible forever. Deleting the element and adding the same rule by hand in the builder makes it work, which sends everyone hunting for a bug that is not there.
+
+### Correct
+
+`visibleIf` states when the element **is** shown, so invert the condition instead of renaming the key.
+
+```json
+{
+  "name": "companyCode",
+  "visibleIf": "{customerType} == 'company'",
+  "logicExecutionMode": "onChange"
+}
+```
 
 ## 9. Overly aggressive rewrite of an existing form
 
@@ -512,7 +544,8 @@ Before returning a response, the agent must verify:
 6. Are there no invented properties.
 7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
 8. Is the existing form context preserved.
-9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper.
+9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper, and spelled exactly. No `hideIf`, no `readOnlyIf`.
+9b. Does every element carrying logic or typing dependent validation set `logicExecutionMode` or `validationExecutionMode` to `onChange`, since both default to `onBlur`.
 10. Does any object in `elements` contain `rows`, `columns`, `children` or `items` as a way of holding child elements. It must not.
 11. Does any column object carry a key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 12. Are widths on elements rather than columns, and absent entirely wherever an even split is wanted.

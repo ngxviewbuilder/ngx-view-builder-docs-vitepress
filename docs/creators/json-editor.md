@@ -18,14 +18,14 @@ The **JSON** tab shows the entire view definition, the same JSON the application
 
 ```json
 {
-  "settings":     { "width": "1182", "language": "lt" },
+  "settings":     { "width": "1182", "language": "en" },
   "pages":        [ { "name": "page1", "rows": [ { "columns": [ { "elementRef": "firstName" } ] } ] } ],
   "elements":     {
     "page1":     { "name": "page1", "label": "Page 1", "type": "page" },
     "firstName": { "name": "firstName", "label": "First name", "type": "text", "required": true }
   },
   "dataSources":  [ { "name": "loadCountries", "type": "rest", "params": { "url": "..." } } ],
-  "localization": { "defaultLanguage": "lt", "languages": ["lt"], "texts": {} }
+  "localization": { "defaultLanguage": "en", "languages": ["en"], "texts": {} }
 }
 ```
 

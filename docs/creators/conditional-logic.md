@@ -75,6 +75,12 @@ Each row then decides for itself. In a panel of order lines, `visibleIf: panel.q
 
 Referring to a plain field name inside a repeater still points at the form-level field of that name, which is what you want for conditions like `visibleIf: {orderType} == "wholesale"` applied to every row at once.
 
+## When the rule re-runs
+
+A rule is re-evaluated according to the element's **Logic execution mode**, in the Behavior category. Left alone it is **On blur**, so the rule waits until the field loses focus. That suits a heavy expression on a long text field and almost nothing else: someone typing an amount watches the dependent field sit still and concludes the logic is broken.
+
+Set it to **On change** on any element whose rule should follow the typing. Validation has its own **Validation execution mode** with the same default, so set that one as well when an error should appear while the user types rather than after they leave the field.
+
 ## Several logic properties on one element
 
 They are independent and all apply. An element can be visible, required, and read only at the same time, and the combination is resolved in one pass, so the field is correct on the first change rather than after a second edit.

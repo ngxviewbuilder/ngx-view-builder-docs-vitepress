@@ -84,7 +84,7 @@ Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`
 
 ```json
 "localization": {
-  "defaultLanguage": "lt",
+  "defaultLanguage": "en",
   "languages": ["lt", "en"],
   "texts": { "en": { "elements.firstName.label": "First name" } }
 }

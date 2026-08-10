@@ -295,12 +295,12 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
 {
   "schemaVersion": 1,
   "settings": {
-    "language": "lt",
+    "language": "en",
     "locale": "lt-LT",
     "width": "640px",
     "widthUnit": "px",
     "renderMode": "dialog",
-    "dialogTitle": "Pridėti naują asmenį",
+    "dialogTitle": "Add a new person",
     "dialogWidth": "640px",
     "dialogShowCloseButton": true,
     "showSubmitButton": false
@@ -389,7 +389,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
   "elements": {
     "personPage": {
       "name": "personPage",
-      "label": "Pridėti naują asmenį",
+      "label": "Add a new person",
       "type": "page",
       "hideHeader": true
     },
@@ -407,14 +407,14 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "label": "Vardas",
       "type": "text",
       "required": true,
-      "requiredMessage": "Įveskite vardą"
+      "requiredMessage": "Enter the first name"
     },
     "lastName": {
       "name": "lastName",
-      "label": "Pavardė",
+      "label": "Last name",
       "type": "text",
       "required": true,
-      "requiredMessage": "Įveskite pavardę"
+      "requiredMessage": "Enter the last name"
     },
     "personalCode": {
       "name": "personalCode",
@@ -423,7 +423,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "maskType": "digits",
       "maxlength": 11,
       "required": true,
-      "requiredMessage": "Įveskite asmens kodą"
+      "requiredMessage": "Enter the personal code"
     },
     "birthDate": {
       "name": "birthDate",
@@ -436,7 +436,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "citizenship": {
       "name": "citizenship",
-      "label": "Pilietybė",
+      "label": "Citizenship",
       "type": "select",
       "showSearch": true,
       "strictOptions": true,
@@ -462,7 +462,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "isStudent",
       "label": "",
       "type": "singleCheckbox",
-      "checkboxLabel": "Asmuo atitinka studentą",
+      "checkboxLabel": "Person qualifies as a student",
       "defaultValue": false
     },
 
@@ -476,12 +476,12 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "email": {
       "name": "email",
-      "label": "El. paštas",
+      "label": "Email",
       "type": "text",
       "inputMode": "email",
       "required": true,
       "validators": [
-        { "type": "email", "message": "Neteisingas el. pašto formatas" }
+        { "type": "email", "message": "Invalid email format" }
       ]
     },
     "phone": {
@@ -500,7 +500,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "country": {
       "name": "country",
-      "label": "Šalis",
+      "label": "Country",
       "type": "select",
       "showSearch": true,
       "strictOptions": true,
@@ -510,8 +510,8 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
         { "value": "EE", "label": "Estija" }
       ]
     },
-    "locality": { "name": "locality", "label": "Gyvenvietė", "type": "text" },
-    "street": { "name": "street", "label": "Gatvė", "type": "text" },
+    "locality": { "name": "locality", "label": "Locality", "type": "text" },
+    "street": { "name": "street", "label": "Street", "type": "text" },
     "houseNumber": {
       "name": "houseNumber",
       "label": "Namo numeris",
@@ -526,20 +526,20 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "postCode": {
       "name": "postCode",
-      "label": "Pašto kodas",
+      "label": "Post code",
       "type": "text",
       "mobileWidth": "100%"
     },
 
     "panelBank": {
       "name": "panelBank",
-      "label": "Banko sąskaitos duomenys",
+      "label": "Bank account details",
       "type": "panel",
       "showBorder": false,
       "panelPadding": "0px",
       "titleUnderline": true
     },
-    "bankAccount": { "name": "bankAccount", "label": "Banko sąskaitos numeris", "type": "text" },
+    "bankAccount": { "name": "bankAccount", "label": "Bank account number", "type": "text" },
     "bankName": { "name": "bankName", "label": "Banko pavadinimas", "type": "text" },
     "bankSwift": {
       "name": "bankSwift",
@@ -580,7 +580,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "logicExecutionMode": "onChange",
       "options": [
         { "value": "PASSPORT", "label": "Pasas" },
-        { "value": "ID_CARD", "label": "Asmens tapatybės kortelė" }
+        { "value": "ID_CARD", "label": "ID card" }
       ]
     },
     "documentNumber": {
@@ -615,7 +615,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "cancelButton",
       "label": "",
       "type": "button",
-      "text": "Atšaukti",
+      "text": "Cancel",
       "variant": "outline",
       "tone": "neutral",
       "fitContent": true
@@ -624,7 +624,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "saveButton",
       "label": "",
       "type": "button",
-      "text": "Išsaugoti",
+      "text": "Save",
       "variant": "solid",
       "tone": "primary",
       "fitContent": true,
@@ -632,8 +632,8 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     }
   },
   "localization": {
-    "defaultLanguage": "lt",
-    "languages": ["lt"]
+    "defaultLanguage": "en",
+    "languages": ["en"]
   }
 }
 ```

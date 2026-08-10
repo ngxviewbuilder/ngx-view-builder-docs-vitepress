@@ -40,10 +40,13 @@ Run these four before writing anything. They cost one round trip and remove almo
 const api = window.__NGX_VIEW_BUILDER_AI__;
 
 api.available();                 // 1. is the door open
-api.help();                      // 2. the command catalog, with a schema per command
-api.describeElementTypes();      // 3. real element types and their real property keys
-api.getTree();                   // 4. what already exists, and the row indexes you need
+api.getSystemInstructions();     // 2. the whole contract as one block of text
+api.help();                      // 3. the command catalog, with a schema per command
+api.describeElementTypes();      // 4. real element types and their real property keys
+api.getTree();                   // 5. what already exists, and the row indexes you need
 ```
+
+`getSystemInstructions()` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `help().guidelines` carries the same rules on their own, and `help().capabilities` tells you which optional features are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -90,6 +93,8 @@ Hard rules:
 | `nameTaken` | Name already used | Pick another, or use `updateElement` |
 | `invalidName` | Name is not a valid identifier | Letters, digits, underscores, starting with a letter |
 | `cycle` | The target sits inside the element being moved | Pick a different parent |
+| `capabilityMissing` | The command needs a feature pack this builder does not have | Build without it, per the hint |
+| `unknownTemplate` | No template with that name | Call `describeTemplates()`, or create it with `upsertTemplate` |
 
 ## Layout is the part that goes wrong
 
@@ -123,11 +128,34 @@ await api.execute({
 
 ## What you can change
 
-Mutations: `addElement`, `insertJson`, `updateElement`, `deleteElement`, `moveElement`, `renameElement`, `duplicateElement`, `addRow`, `deleteRow`, `addPage`, `deletePage`, `renamePage`, `updatePage`, `setSettings`, `setHeader`, `upsertDataSource`, `deleteDataSource`, `upsertVariable`, `deleteVariable`, `upsertTrigger`, `deleteTrigger`, `upsertRule`, `deleteRule`, `upsertFragment`, `deleteFragment`, `setProcess`, `setLocalization`, `replaceStructure`.
+Mutations: `addElement`, `insertJson`, `upsertTemplate`, `useTemplate`, `updateElement`, `deleteElement`, `moveElement`, `renameElement`, `duplicateElement`, `addRow`, `deleteRow`, `addPage`, `deletePage`, `renamePage`, `updatePage`, `setSettings`, `setHeader`, `upsertDataSource`, `deleteDataSource`, `upsertVariable`, `deleteVariable`, `upsertTrigger`, `deleteTrigger`, `upsertRule`, `deleteRule`, `upsertFragment`, `deleteFragment`, `setProcess`, `setLocalization`, `replaceStructure`.
 
 Actions: `switchTab`, `focusElement`, `setData`, `validate`, `setLanguage`, `setUiTranslations`, `setTheme`, `saveTemplate`, `deleteTemplate`, `saveSidebarGroup`, `deleteSidebarGroup`, `setTableSettings`, `setTableFilters`, `setRuntimeVariableContext`, `reloadDataSource`, `undo`, `redo`.
 
 Mutations are applied to a draft in order and committed together. Actions run afterwards, in order. Call `help()` for the parameters of each.
+
+## Reuse before you invent
+
+Two habits save most of the rework.
+
+**Pick the element type that already does the job.** Call `describeElementTypes()` and choose from it. `customHtml` and hand written template markup carry no options, no validation and no events, so anything assembled that way has to be rebuilt later. The case that comes up most is a table column showing a status or a badge: that is a hosted element, `type: 'element'` with `elementType: 'badge'`, not markup.
+
+**Look in the template library before creating a template.** When `help().capabilities` includes `templates`, the view has one:
+
+```js
+api.describeTemplates();   // { available, hosts, templates: [{ name, slots, hasCss, ... }] }
+```
+
+If the user names a card and that name is already in the library, reuse it. Create a missing one with `upsertTemplate` and bind it with `useTemplate`, which resolves the right reference property for the element type on its own:
+
+```js
+await api.execute([
+  { op: 'upsertTemplate', name: 'person card', content: '<div><b>{{row[0]}}</b> {{row[1]}}</div>' },
+  { op: 'useTemplate', name: 'peopleGrid', template: 'person card', fieldMap: { '0': 'fullName', '1': 'email' } },
+]);
+```
+
+Both need the `templates` capability and fail with `capabilityMissing` without it, because the reference properties are hidden then and the binding would render nothing.
 
 ## Checking your own work
 
@@ -687,12 +715,12 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
 {
   "schemaVersion": 1,
   "settings": {
-    "language": "lt",
+    "language": "en",
     "locale": "lt-LT",
     "width": "640px",
     "widthUnit": "px",
     "renderMode": "dialog",
-    "dialogTitle": "Pridėti naują asmenį",
+    "dialogTitle": "Add a new person",
     "dialogWidth": "640px",
     "dialogShowCloseButton": true,
     "showSubmitButton": false
@@ -781,7 +809,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
   "elements": {
     "personPage": {
       "name": "personPage",
-      "label": "Pridėti naują asmenį",
+      "label": "Add a new person",
       "type": "page",
       "hideHeader": true
     },
@@ -799,14 +827,14 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "label": "Vardas",
       "type": "text",
       "required": true,
-      "requiredMessage": "Įveskite vardą"
+      "requiredMessage": "Enter the first name"
     },
     "lastName": {
       "name": "lastName",
-      "label": "Pavardė",
+      "label": "Last name",
       "type": "text",
       "required": true,
-      "requiredMessage": "Įveskite pavardę"
+      "requiredMessage": "Enter the last name"
     },
     "personalCode": {
       "name": "personalCode",
@@ -815,7 +843,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "maskType": "digits",
       "maxlength": 11,
       "required": true,
-      "requiredMessage": "Įveskite asmens kodą"
+      "requiredMessage": "Enter the personal code"
     },
     "birthDate": {
       "name": "birthDate",
@@ -828,7 +856,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "citizenship": {
       "name": "citizenship",
-      "label": "Pilietybė",
+      "label": "Citizenship",
       "type": "select",
       "showSearch": true,
       "strictOptions": true,
@@ -854,7 +882,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "isStudent",
       "label": "",
       "type": "singleCheckbox",
-      "checkboxLabel": "Asmuo atitinka studentą",
+      "checkboxLabel": "Person qualifies as a student",
       "defaultValue": false
     },
 
@@ -868,12 +896,12 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "email": {
       "name": "email",
-      "label": "El. paštas",
+      "label": "Email",
       "type": "text",
       "inputMode": "email",
       "required": true,
       "validators": [
-        { "type": "email", "message": "Neteisingas el. pašto formatas" }
+        { "type": "email", "message": "Invalid email format" }
       ]
     },
     "phone": {
@@ -892,7 +920,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "country": {
       "name": "country",
-      "label": "Šalis",
+      "label": "Country",
       "type": "select",
       "showSearch": true,
       "strictOptions": true,
@@ -902,8 +930,8 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
         { "value": "EE", "label": "Estija" }
       ]
     },
-    "locality": { "name": "locality", "label": "Gyvenvietė", "type": "text" },
-    "street": { "name": "street", "label": "Gatvė", "type": "text" },
+    "locality": { "name": "locality", "label": "Locality", "type": "text" },
+    "street": { "name": "street", "label": "Street", "type": "text" },
     "houseNumber": {
       "name": "houseNumber",
       "label": "Namo numeris",
@@ -918,20 +946,20 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     },
     "postCode": {
       "name": "postCode",
-      "label": "Pašto kodas",
+      "label": "Post code",
       "type": "text",
       "mobileWidth": "100%"
     },
 
     "panelBank": {
       "name": "panelBank",
-      "label": "Banko sąskaitos duomenys",
+      "label": "Bank account details",
       "type": "panel",
       "showBorder": false,
       "panelPadding": "0px",
       "titleUnderline": true
     },
-    "bankAccount": { "name": "bankAccount", "label": "Banko sąskaitos numeris", "type": "text" },
+    "bankAccount": { "name": "bankAccount", "label": "Bank account number", "type": "text" },
     "bankName": { "name": "bankName", "label": "Banko pavadinimas", "type": "text" },
     "bankSwift": {
       "name": "bankSwift",
@@ -972,7 +1000,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "logicExecutionMode": "onChange",
       "options": [
         { "value": "PASSPORT", "label": "Pasas" },
-        { "value": "ID_CARD", "label": "Asmens tapatybės kortelė" }
+        { "value": "ID_CARD", "label": "ID card" }
       ]
     },
     "documentNumber": {
@@ -1007,7 +1035,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "cancelButton",
       "label": "",
       "type": "button",
-      "text": "Atšaukti",
+      "text": "Cancel",
       "variant": "outline",
       "tone": "neutral",
       "fitContent": true
@@ -1016,7 +1044,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "name": "saveButton",
       "label": "",
       "type": "button",
-      "text": "Išsaugoti",
+      "text": "Save",
       "variant": "solid",
       "tone": "primary",
       "fitContent": true,
@@ -1024,8 +1052,8 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
     }
   },
   "localization": {
-    "defaultLanguage": "lt",
-    "languages": ["lt"]
+    "defaultLanguage": "en",
+    "languages": ["en"]
   }
 }
 ```
@@ -2176,15 +2204,25 @@ These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 | Field | Return type | Behavior |
 |---|---|---|
-| `visibleIf` | `boolean` | Element visible when `true` (native field) |
-| `hideIf` | `boolean` | Element hidden when `true`. Auto-converted to `visibleIf: !(expr)` |
+| `visibleIf` | `boolean` | Element visible when `true` |
 | `disableIf` | `boolean` | Element disabled when `true` |
 | `requireIf` | `boolean` | Element required when `true` |
-| `readonlyIf` | `boolean` | Element readonly when `true` (also `readOnlyIf`) |
+| `readonlyIf` | `boolean` | Element readonly when `true` |
 | `resetIf` | `boolean` | Element value cleared when `true` |
 | `expression` | `any` | Result is set as element value; also for `setElementProperty` calls |
 
 **All logic fields must contain valid JEXL expressions only.**
+
+**There is no `hideIf`, and no `readOnlyIf` with a capital O.** These six keys are the entire list and they are matched exactly. Anything else is an ordinary property as far as the runtime is concerned: it is stored, it is never evaluated, and no dependency is registered for it. What you get is a form that looks correct in the JSON and does nothing at all, with no error anywhere to point at. Write the visible condition rather than the hidden one, because `visibleIf` states when the element **is** shown, so a hide condition has to be inverted, not renamed.
+
+### Execution mode
+
+| Field | Default | Behavior |
+|---|---|---|
+| `logicExecutionMode` | `onBlur` | When the logic fields above are re-evaluated |
+| `validationExecutionMode` | `onBlur` | When validators are re-evaluated |
+
+Both fall back to `onBlur` when the property is missing, so logic only re-runs after the field loses focus. To anyone typing in the form that reads as broken logic, so set `onChange` on every element whose logic or validation has to follow the typing, unless another mode was asked for.
 
 ---
 
@@ -2759,7 +2797,7 @@ Only include settings actually needed by the form.
 
 | Field | Type | Notes |
 |---|---|---|
-| `language` | `string` | Required. E.g. `"en"`, `"lt"` |
+| `language` | `string` | Required. E.g. `"en"`, `"de"` |
 | `locale` | `string` | E.g. `"en-US"`, `"lt-LT"` |
 | `width` | `string` | Form width |
 | `widthUnit` | `"px" \| "%"` | |
@@ -2987,11 +3025,43 @@ Typical mistakes:
 
 ### Why
 
-- the correct logic execution mode is missing
+- the execution mode is missing, and the default is `onBlur`
+
+With `onBlur` the logic only re-runs once the field loses focus, so someone typing in the form sees nothing happen and reports the logic as broken.
 
 ### Rule
 
-- if one field's value must immediately affect another field, `logicExecutionMode: "onChange"` is often required
+- if one field's value must immediately affect another field, set `logicExecutionMode: "onChange"`
+- if validation has to follow the typing, set `validationExecutionMode: "onChange"` as well
+
+## 8b. `hideIf` and other logic keys that do not exist
+
+### Mistake
+
+```json
+{
+  "name": "companyCode",
+  "hideIf": "{customerType} != 'company'"
+}
+```
+
+### Problem
+
+There is no `hideIf`. The logic keys are exactly `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf` and `expression`, and they are matched exactly, so `readOnlyIf` with a capital O misses too.
+
+This is the worst kind of mistake to debug, because nothing complains. The property is stored, the JSON reviews as correct, no dependency is ever registered for it, and the field simply stays visible forever. Deleting the element and adding the same rule by hand in the builder makes it work, which sends everyone hunting for a bug that is not there.
+
+### Correct
+
+`visibleIf` states when the element **is** shown, so invert the condition instead of renaming the key.
+
+```json
+{
+  "name": "companyCode",
+  "visibleIf": "{customerType} == 'company'",
+  "logicExecutionMode": "onChange"
+}
+```
 
 ## 9. Overly aggressive rewrite of an existing form
 
@@ -3380,7 +3450,8 @@ Before returning a response, the agent must verify:
 6. Are there no invented properties.
 7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
 8. Is the existing form context preserved.
-9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper.
+9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper, and spelled exactly. No `hideIf`, no `readOnlyIf`.
+9b. Does every element carrying logic or typing dependent validation set `logicExecutionMode` or `validationExecutionMode` to `onChange`, since both default to `onBlur`.
 10. Does any object in `elements` contain `rows`, `columns`, `children` or `items` as a way of holding child elements. It must not.
 11. Does any column object carry a key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 12. Are widths on elements rather than columns, and absent entirely wherever an even split is wanted.
@@ -5846,18 +5917,18 @@ Column labels, action labels and messages all go through `localization.texts` wh
 ```json
 {
   "schemaVersion": 1,
-  "settings": { "language": "lt", "locale": "lt-LT", "width": "1100px", "widthUnit": "px" },
+  "settings": { "language": "en", "locale": "en-US", "width": "1100px", "widthUnit": "px" },
   "pages": [{ "name": "page1", "rows": [{ "columns": [{ "elementRef": "el1" }] }] }],
   "elements": {
-    "page1": { "name": "page1", "label": "Užsakymai", "type": "page", "hideHeader": true },
+    "page1": { "name": "page1", "label": "Orders", "type": "page", "hideHeader": true },
     "el1": {
       "name": "el1",
-      "label": "Užsakymai",
+      "label": "Orders",
       "type": "table",
       "dataSource": { "name": "ds1", "useFor": "value" },
-      "emptyMessage": "Įrašų nerasta",
+      "emptyMessage": "No records found",
       "loadingLabel": "Kraunama...",
-      "quickSearchPlaceholder": "Ieškoti",
+      "quickSearchPlaceholder": "Search",
       "actionsLabel": "Veiksmai",
       "showQuickSearch": true,
       "columnsConfig": [
@@ -5874,7 +5945,7 @@ Column labels, action labels and messages all go through `localization.texts` wh
         },
         {
           "key": "column3",
-          "label": "Būsena",
+          "label": "Status",
           "type": "element",
           "elementType": "customHtml",
           "showInTable": true,
@@ -5884,13 +5955,13 @@ Column labels, action labels and messages all go through `localization.texts` wh
     }
   },
   "dataSources": [
-    { "name": "ds1", "title": "Užsakymai", "type": "rest", "params": { "url": "/api/orders", "method": "GET" } }
+    { "name": "ds1", "title": "Orders", "type": "rest", "params": { "url": "/api/orders", "method": "GET" } }
   ],
   "localization": {
-    "defaultLanguage": "lt",
-    "languages": ["lt", "en"],
+    "defaultLanguage": "en",
+    "languages": ["en", "de"],
     "texts": {
-      "lt": { "new": "Naujas", "paid": "Apmokėtas", "late": "Vėluoja" },
+      "de": { "new": "Neu", "paid": "Bezahlt", "late": "Überfällig" },
       "en": { "new": "New", "paid": "Paid", "late": "Late" }
     }
   }
@@ -6706,10 +6777,10 @@ Several entries in `pages` become steps. Each still needs its twin in `elements`
   },
   "localization": {
     "defaultLanguage": "en",
-    "languages": ["en", "lt"],
+    "languages": ["en", "de"],
     "texts": {
       "en": { "submitButtonText": "Submit" },
-      "lt": { "submitButtonText": "Pateikti" }
+      "de": { "submitButtonText": "Absenden" }
     }
   }
 }

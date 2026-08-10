@@ -2457,18 +2457,18 @@ Column labels, action labels and messages all go through `localization.texts` wh
 ```json
 {
   "schemaVersion": 1,
-  "settings": { "language": "lt", "locale": "lt-LT", "width": "1100px", "widthUnit": "px" },
+  "settings": { "language": "en", "locale": "en-US", "width": "1100px", "widthUnit": "px" },
   "pages": [{ "name": "page1", "rows": [{ "columns": [{ "elementRef": "el1" }] }] }],
   "elements": {
-    "page1": { "name": "page1", "label": "Užsakymai", "type": "page", "hideHeader": true },
+    "page1": { "name": "page1", "label": "Orders", "type": "page", "hideHeader": true },
     "el1": {
       "name": "el1",
-      "label": "Užsakymai",
+      "label": "Orders",
       "type": "table",
       "dataSource": { "name": "ds1", "useFor": "value" },
-      "emptyMessage": "Įrašų nerasta",
+      "emptyMessage": "No records found",
       "loadingLabel": "Kraunama...",
-      "quickSearchPlaceholder": "Ieškoti",
+      "quickSearchPlaceholder": "Search",
       "actionsLabel": "Veiksmai",
       "showQuickSearch": true,
       "columnsConfig": [
@@ -2485,7 +2485,7 @@ Column labels, action labels and messages all go through `localization.texts` wh
         },
         {
           "key": "column3",
-          "label": "Būsena",
+          "label": "Status",
           "type": "element",
           "elementType": "customHtml",
           "showInTable": true,
@@ -2495,13 +2495,13 @@ Column labels, action labels and messages all go through `localization.texts` wh
     }
   },
   "dataSources": [
-    { "name": "ds1", "title": "Užsakymai", "type": "rest", "params": { "url": "/api/orders", "method": "GET" } }
+    { "name": "ds1", "title": "Orders", "type": "rest", "params": { "url": "/api/orders", "method": "GET" } }
   ],
   "localization": {
-    "defaultLanguage": "lt",
-    "languages": ["lt", "en"],
+    "defaultLanguage": "en",
+    "languages": ["en", "de"],
     "texts": {
-      "lt": { "new": "Naujas", "paid": "Apmokėtas", "late": "Vėluoja" },
+      "de": { "new": "Neu", "paid": "Bezahlt", "late": "Überfällig" },
       "en": { "new": "New", "paid": "Paid", "late": "Late" }
     }
   }
@@ -3317,10 +3317,10 @@ Several entries in `pages` become steps. Each still needs its twin in `elements`
   },
   "localization": {
     "defaultLanguage": "en",
-    "languages": ["en", "lt"],
+    "languages": ["en", "de"],
     "texts": {
       "en": { "submitButtonText": "Submit" },
-      "lt": { "submitButtonText": "Pateikti" }
+      "de": { "submitButtonText": "Absenden" }
     }
   }
 }

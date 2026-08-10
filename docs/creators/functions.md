@@ -193,7 +193,7 @@ Values coming from an API never pass through the Translations tab, because that 
 | --- | --- | --- |
 | `translate(value, fallback?)` | the translated text | `translate({row.status})` |
 | `t(value, fallback?)` | alias of `translate` | `t({row.status}, "Unknown")` |
-| `currentLanguage()` | active language code | `currentLanguage() == "lt"` |
+| `currentLanguage()` | active language code | `currentLanguage() == "en"` |
 
 See [Translations](./translations#translating-values-that-come-from-data) for where the keys live.
 

@@ -14,7 +14,9 @@ window.__NGX_VIEW_BUILDER_AI__
   .version                                  // contract version, currently 1
   .available()                              // false whenever the builder is not on screen
   .help()                                   // the full command catalog, with schemas
+  .getSystemInstructions()                  // the contract as one prompt ready block
   .describeElementTypes(type?)              // element types and their properties
+  .describeTemplates(name?)                 // the template library, and what can host a template
   .getTree()                                // compact outline of pages and elements
   .getStructure()                           // the whole view JSON
   .getElement(name)                         // one element body
@@ -59,17 +61,62 @@ The worst a runaway agent can do is leave unsaved edits in an open tab, which a 
 A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an agent can cause a data source call or a navigation without a click. That is a side effect, not a commit, but it is worth knowing when reviewing what an agent wrote.
 :::
 
-## Start with help()
+## Try it on the public demo
 
-`help()` returns the command catalog with parameters and a worked example per command, plus the tab codes and a list of behaviour notes. An agent that calls it first does not need any of this page in its prompt.
+The API is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder), so you can point a browser driving assistant at that page and watch it build. The builder logs one line when it arms, which is how an assistant inspecting the page finds the API without being told the global by name.
 
-`describeElementTypes()` is the other one worth calling before writing anything. It returns every registered type, whether it can hold children, and the real property keys for each. Without it a model guesses property names and every command comes back with an error.
+Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
+
+## Start with getSystemInstructions()
+
+`getSystemInstructions()` returns the whole contract as one block of text: what the API is, the working order, the rules worth following, which capabilities this builder has, and which templates are on hand. It is meant to go straight into a system prompt.
+
+It exists because of a failure that has nothing to do with the schema. An agent told to "build this form through the AI API" often answers by describing the JSON it would send, or hands it over for someone to paste, because nothing in its context said the API is live and reachable right now. The instructions say that in the first line.
 
 ```js
 const api = window.__NGX_VIEW_BUILDER_AI__;
-api.help().commands.length;                       // 45
+console.log(api.getSystemInstructions());
+```
+
+`help()` is the machine readable version of the same thing: the command catalog with parameters and a worked example per command, the tab codes, behaviour notes, and three fields worth reading on their own.
+
+| Field | What it carries |
+| --- | --- |
+| `notes` | How to call the API: batching, dry runs, idempotent names. |
+| `guidelines` | How to decide what to build. Kept apart from `notes` so a host can put these in a prompt without the call mechanics. |
+| `capabilities` | What the registered feature packs contribute, such as `templates`. |
+| `featurePacks` | The packs themselves, by id and title. |
+
+`describeElementTypes()` is the other one to call before writing anything. It returns every registered type, whether it can hold children, and the real property keys for each. Without it a model guesses property names and every command comes back with an error.
+
+```js
+api.help().commands.length;                       // 47
+api.help().capabilities;                          // ['templates']
 api.describeElementTypes('select')[0].properties; // options, showSearch, required, ...
 ```
+
+## Build from element types first
+
+The guidelines exist because an agent with a blank canvas reaches for markup far too early. Markup is the expensive answer: a `customHtml` element or a hand written template carries no options, no validation and no events, so everything built that way has to be rebuilt by hand later.
+
+The case that comes up most is a status column. A table column that shows a badge, a status, a toggle or a checkbox is a hosted element, not markup:
+
+```js
+await api.execute({
+  op: 'updateElement',
+  name: 'ordersTable',
+  properties: {
+    columnsConfig: [
+      { key: 'status', label: 'Status', type: 'element', elementType: 'badge' },
+    ],
+  },
+});
+```
+
+The command layer reports both of these as warnings rather than errors, since an agent that was explicitly asked for custom markup is right to carry on. Read the warnings anyway:
+
+- adding a `customHtml` element
+- a column that sets `templateName` while its `type` is not `element`
 
 ## execute()
 
@@ -149,11 +196,73 @@ Containers that hold children directly are `panel`, `dialog`, `splitter`, `dynam
 
 Do not set a percentage `width` on fields you want side by side. Columns in a row already share the space, and a fixed width fights that. Use `mobileWidth: '100%'` when you want a pair to stack on narrow screens.
 
+## Templates
+
+When the [templates plugin](./plugin-templates) is registered, the view carries a template library and several element types can render a template instead of their own markup. The API surfaces the library so an agent can reuse what is already there rather than inventing a second version of the same card.
+
+```js
+api.describeTemplates();
+// {
+//   available: true,
+//   capability: 'templates',
+//   hosts: [
+//     { type: 'listGrid',   property: 'cardTemplateName', fieldMap: 'cardTemplateFieldMap' },
+//     { type: 'customHtml', property: 'htmlTemplateName', fieldMap: 'htmlTemplateFieldMap' },
+//   ],
+//   templates: [
+//     { name: 'person card', slots: ['0', '1'], hasCss: true, contentPreview: '<div class="person">...' },
+//   ],
+// }
+```
+
+`available` is the gate. It is false when the plugin is not registered, and then the reference properties stay hidden in the builder, so writing one would bind a template nothing renders. Both template commands refuse with `capabilityMissing` in that case rather than writing a property that goes nowhere.
+
+`hosts` is read from the property catalog rather than hard coded, so an element type a host registers with its own template property shows up there too.
+
+Two commands go with it:
+
+| Command | What it does |
+| --- | --- |
+| `upsertTemplate` | Creates or replaces a template by name. It lands in the draft, so a `useTemplate` later in the same batch can already reference it. |
+| `useTemplate` | Points an element at a template and maps its slots. |
+
+`useTemplate` resolves the reference property itself. A `listGrid` keeps it in `cardTemplateName` and a `customHtml` in `htmlTemplateName`, and expecting a caller to know that mapping is how bindings end up on the wrong key.
+
+```js
+await api.execute([
+  {
+    op: 'upsertTemplate',
+    name: 'person card',
+    content: '<div class="person"><b>{{row[0]}}</b><span>{{row[1]}}</span></div>',
+    css: '.person { display: grid; gap: 4px; }',
+  },
+  { op: 'addElement', type: 'listGrid', name: 'peopleGrid', properties: { label: 'People' } },
+  {
+    op: 'useTemplate',
+    name: 'peopleGrid',
+    template: 'person card',
+    fieldMap: { '0': 'fullName', '1': 'email' },
+  },
+]);
+```
+
+The order matters and the batch is atomic, so either the template and its binding both land or neither does.
+
+A few details worth knowing:
+
+- Slots are positional. Markup addresses its fields as `row[0]`, `item[1]` and so on, and the field map binds each slot to a data path. Do not bake values into the markup.
+- Ask for a template by name before creating one. If `describeTemplates('person card')` returns it, reuse it.
+- `column` binds one table column instead of the element itself, matched by `key`, and it comes with the warning above about hosted elements being the better answer.
+- Passing an empty `template` clears the binding and its field map.
+- Templates live in the view JSON, so saving the view persists them. Committing a batch also fires the template saved event, which is what a host mirroring the library into its own storage listens for.
+
 ## Mutation commands
 
 | Command | What it does |
 | --- | --- |
 | `addElement` | Creates an element and places it. Pass `name` to make the command idempotent. |
+| `upsertTemplate` | Creates or replaces a library template. Needs the `templates` capability. |
+| `useTemplate` | Binds a library template to an element or a table column. Needs the `templates` capability. |
 | `insertJson` | Inserts a whole subtree: elements keyed by name, which one is the root, and the layout under it. Renames colliding names unless `rename: false`. |
 | `updateElement` | Patches an element body. `merge: false` replaces it instead. |
 | `deleteElement` | Removes an element, its layout slot, and everything nested under it. |
@@ -199,20 +308,20 @@ await api.execute([
   {
     op: 'setLocalization',
     defaultLanguage: 'en',
-    languages: ['en', 'lt'],
+    languages: ['en', 'de'],
     texts: {
-      lt: {
-        'header.label': 'Pridėti naują asmenį',
-        'elements.firstName.label': 'Vardas',
-        'elements.gender.options[0].label': 'Vyras',
+      de: {
+        'header.label': 'Neue Person hinzufügen',
+        'elements.firstName.label': 'Vorname',
+        'elements.gender.options[0].label': 'Männlich',
       },
     },
   },
   {
     op: 'setUiTranslations',
-    dictionaries: { lt: { 'select.placeholder': 'Pasirinkti' } },
+    dictionaries: { de: { 'select.placeholder': 'Auswählen' } },
   },
-  { op: 'setLanguage', language: 'lt' },
+  { op: 'setLanguage', language: 'de' },
 ]);
 ```
 

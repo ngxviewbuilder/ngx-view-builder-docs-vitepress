@@ -168,7 +168,7 @@ Details: [Runtime variables](./runtime-variables).
 
 ```ts
 const handle = api.startLanguageSync({
-  supportedLanguages: ['en', 'lt'],
+  supportedLanguages: ['en', 'de'],
   fallbackLanguage: 'en',
 });
 // later: handle.stop();

@@ -45,15 +45,25 @@ These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 | Field | Return type | Behavior |
 |---|---|---|
-| `visibleIf` | `boolean` | Element visible when `true` (native field) |
-| `hideIf` | `boolean` | Element hidden when `true`. Auto-converted to `visibleIf: !(expr)` |
+| `visibleIf` | `boolean` | Element visible when `true` |
 | `disableIf` | `boolean` | Element disabled when `true` |
 | `requireIf` | `boolean` | Element required when `true` |
-| `readonlyIf` | `boolean` | Element readonly when `true` (also `readOnlyIf`) |
+| `readonlyIf` | `boolean` | Element readonly when `true` |
 | `resetIf` | `boolean` | Element value cleared when `true` |
 | `expression` | `any` | Result is set as element value; also for `setElementProperty` calls |
 
 **All logic fields must contain valid JEXL expressions only.**
+
+**There is no `hideIf`, and no `readOnlyIf` with a capital O.** These six keys are the entire list and they are matched exactly. Anything else is an ordinary property as far as the runtime is concerned: it is stored, it is never evaluated, and no dependency is registered for it. What you get is a form that looks correct in the JSON and does nothing at all, with no error anywhere to point at. Write the visible condition rather than the hidden one, because `visibleIf` states when the element **is** shown, so a hide condition has to be inverted, not renamed.
+
+### Execution mode
+
+| Field | Default | Behavior |
+|---|---|---|
+| `logicExecutionMode` | `onBlur` | When the logic fields above are re-evaluated |
+| `validationExecutionMode` | `onBlur` | When validators are re-evaluated |
+
+Both fall back to `onBlur` when the property is missing, so logic only re-runs after the field loses focus. To anyone typing in the form that reads as broken logic, so set `onChange` on every element whose logic or validation has to follow the typing, unless another mode was asked for.
 
 ---
 
@@ -628,7 +638,7 @@ Only include settings actually needed by the form.
 
 | Field | Type | Notes |
 |---|---|---|
-| `language` | `string` | Required. E.g. `"en"`, `"lt"` |
+| `language` | `string` | Required. E.g. `"en"`, `"de"` |
 | `locale` | `string` | E.g. `"en-US"`, `"lt-LT"` |
 | `width` | `string` | Form width |
 | `widthUnit` | `"px" \| "%"` | |

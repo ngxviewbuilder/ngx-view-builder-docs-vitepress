@@ -11,6 +11,8 @@ Validation runs when the user submits, when a page changes in stepper mode, and 
 
 Turn on **Required** in the Validation section, or use **Require if** for conditional requirement. Set the error text in **Required field message**.
 
+The red asterisk that marks a required field belongs to the label. An element with no label text and no help tooltip renders no label row at all, so the asterisk is not drawn either: floating above an empty space it marks nothing. The field is still required and still validated. When a bare field has to advertise that it is mandatory, give it a label, or say so in its placeholder or description.
+
 ## The validator editor
 
 The **Validators** property holds a list of rules. Click **Add validator** to create one; each rule has these fields:

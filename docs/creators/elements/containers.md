@@ -72,7 +72,7 @@ A repeatable group. You design the fields once; users add, remove, and reorder e
 ```json
 "addresses": [
   { "city": "Vilnius", "street": "Gedimino pr. 1" },
-  { "city": "Kaunas",  "street": "Laisvės al. 10" }
+  { "city": "Springfield",  "street": "Freedom Ave 10" }
 ]
 ```
 

@@ -29,10 +29,13 @@ Run these four before writing anything. They cost one round trip and remove almo
 const api = window.__NGX_VIEW_BUILDER_AI__;
 
 api.available();                 // 1. is the door open
-api.help();                      // 2. the command catalog, with a schema per command
-api.describeElementTypes();      // 3. real element types and their real property keys
-api.getTree();                   // 4. what already exists, and the row indexes you need
+api.getSystemInstructions();     // 2. the whole contract as one block of text
+api.help();                      // 3. the command catalog, with a schema per command
+api.describeElementTypes();      // 4. real element types and their real property keys
+api.getTree();                   // 5. what already exists, and the row indexes you need
 ```
+
+`getSystemInstructions()` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `help().guidelines` carries the same rules on their own, and `help().capabilities` tells you which optional features are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -79,6 +82,8 @@ Hard rules:
 | `nameTaken` | Name already used | Pick another, or use `updateElement` |
 | `invalidName` | Name is not a valid identifier | Letters, digits, underscores, starting with a letter |
 | `cycle` | The target sits inside the element being moved | Pick a different parent |
+| `capabilityMissing` | The command needs a feature pack this builder does not have | Build without it, per the hint |
+| `unknownTemplate` | No template with that name | Call `describeTemplates()`, or create it with `upsertTemplate` |
 
 ## Layout is the part that goes wrong
 
@@ -112,11 +117,34 @@ await api.execute({
 
 ## What you can change
 
-Mutations: `addElement`, `insertJson`, `updateElement`, `deleteElement`, `moveElement`, `renameElement`, `duplicateElement`, `addRow`, `deleteRow`, `addPage`, `deletePage`, `renamePage`, `updatePage`, `setSettings`, `setHeader`, `upsertDataSource`, `deleteDataSource`, `upsertVariable`, `deleteVariable`, `upsertTrigger`, `deleteTrigger`, `upsertRule`, `deleteRule`, `upsertFragment`, `deleteFragment`, `setProcess`, `setLocalization`, `replaceStructure`.
+Mutations: `addElement`, `insertJson`, `upsertTemplate`, `useTemplate`, `updateElement`, `deleteElement`, `moveElement`, `renameElement`, `duplicateElement`, `addRow`, `deleteRow`, `addPage`, `deletePage`, `renamePage`, `updatePage`, `setSettings`, `setHeader`, `upsertDataSource`, `deleteDataSource`, `upsertVariable`, `deleteVariable`, `upsertTrigger`, `deleteTrigger`, `upsertRule`, `deleteRule`, `upsertFragment`, `deleteFragment`, `setProcess`, `setLocalization`, `replaceStructure`.
 
 Actions: `switchTab`, `focusElement`, `setData`, `validate`, `setLanguage`, `setUiTranslations`, `setTheme`, `saveTemplate`, `deleteTemplate`, `saveSidebarGroup`, `deleteSidebarGroup`, `setTableSettings`, `setTableFilters`, `setRuntimeVariableContext`, `reloadDataSource`, `undo`, `redo`.
 
 Mutations are applied to a draft in order and committed together. Actions run afterwards, in order. Call `help()` for the parameters of each.
+
+## Reuse before you invent
+
+Two habits save most of the rework.
+
+**Pick the element type that already does the job.** Call `describeElementTypes()` and choose from it. `customHtml` and hand written template markup carry no options, no validation and no events, so anything assembled that way has to be rebuilt later. The case that comes up most is a table column showing a status or a badge: that is a hosted element, `type: 'element'` with `elementType: 'badge'`, not markup.
+
+**Look in the template library before creating a template.** When `help().capabilities` includes `templates`, the view has one:
+
+```js
+api.describeTemplates();   // { available, hosts, templates: [{ name, slots, hasCss, ... }] }
+```
+
+If the user names a card and that name is already in the library, reuse it. Create a missing one with `upsertTemplate` and bind it with `useTemplate`, which resolves the right reference property for the element type on its own:
+
+```js
+await api.execute([
+  { op: 'upsertTemplate', name: 'person card', content: '<div><b>{{row[0]}}</b> {{row[1]}}</div>' },
+  { op: 'useTemplate', name: 'peopleGrid', template: 'person card', fieldMap: { '0': 'fullName', '1': 'email' } },
+]);
+```
+
+Both need the `templates` capability and fail with `capabilityMissing` without it, because the reference properties are hidden then and the binding would render nothing.
 
 ## Checking your own work
 

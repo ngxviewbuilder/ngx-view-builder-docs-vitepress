@@ -52,7 +52,7 @@ The panel makes exactly two kinds of connections:
 
 ```jsonc
 // request
-{ "language": "lt" }
+{ "language": "en" }
 // response
 { "session_id": "..." }
 ```
@@ -71,7 +71,7 @@ The `http(s)` scheme is swapped for `ws(s)` automatically.
 {
   "type": "user_message",
   "text": "Add a client details panel",
-  "language": "lt",
+  "language": "en",
   "agent": { "model": "gemini-2.5-flash" },           // present when a model is picked
   "context": { "structure": { /* current IStructure */ } }, // always sent, never stale
   "images": [ { "mediaType": "image/png", "dataUrl": "data:image/png;base64,..." } ],

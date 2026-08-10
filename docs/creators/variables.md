@@ -54,6 +54,8 @@ Besides the **Set value** action, any expression can write into a variable:
 
 Handy for running totals and for collecting rows out of a dynamic panel. A `manual` variable is the right type here, since nothing recalculates it behind your back. Details and the function form in [Writing values back](./functions#writing-values-back).
 
+A total collected this way belongs to one run of the form, not to the view. Leaving Preview clears it along with the rest of the working data, so coming back into Preview starts from the fallback again instead of carrying on from the previous total.
+
 ## Using variables
 
 ```text
