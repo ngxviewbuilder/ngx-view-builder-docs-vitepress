@@ -94,7 +94,7 @@ The canonical full list is in [Common mistakes, entry 14](./common-mistakes#_14-
 - The key must match `element.name`.
 - Every element must have at least `name`, `label`, and `type`.
 - If `pages[*].name = "pageCustomer"`, there must be an `elements.pageCustomer` entry with `type: "page"`.
-- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is `table` / `dynamicTable`, whose cells are declared in `columnsConfig`.
+- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is the two tables, whose cells are not layout: `table` declares them in `columnsConfig` keyed by `key`, and `dynamicTable` declares them in `columns` keyed by `name`.
 
 ### `localization`
 

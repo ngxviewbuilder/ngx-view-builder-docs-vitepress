@@ -195,7 +195,7 @@ Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElemen
 
 **Every other type is a leaf.** `text`, `select`, `table`, `dynamicTable`, `messageCard`, `statsCard`, `richText` and the rest never receive `rows`.
 
-`dynamicTable` is the exception that proves the rule: its cells are declared in its own `columnsConfig` property, not in the layout tree. `table` likewise uses `columnsConfig`. Neither uses `column.rows`.
+The two tables are the exception that proves the rule: their cells are declared on the element, not in the layout tree, and the two do not use the same property. `table` uses `columnsConfig`, and each entry is a column keyed by `key`. `dynamicTable` uses `columns`, and each entry is a full element definition keyed by `name`, because every cell is an editable control. Neither uses `column.rows`.
 
 ### `tabRows` keys
 
@@ -279,7 +279,7 @@ Run all of these mentally before returning JSON.
 1. Every `elementRef` string resolves to a key in `elements`.
 2. Every key in `elements` appears exactly once as some `elementRef` (or is a `page`).
 3. Every entry of `pages` has a matching `elements[name]` with `type: "page"`.
-4. No object in `elements` has a `rows`, `columns` or `children` key (except `table` / `dynamicTable` and their `columnsConfig`).
+4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
 7. `rows` on a column appears only when the referenced element is one of the ten container types.

@@ -35,7 +35,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 - Use for numbers, amounts, and quantities.
 - Value shape: `number` or `string`, depending on `valueStorageType`.
-- Use `toNumber(...)` when calculations are involved.
+- Do not wrap it in `toNumber(...)` in calculations. A `number` element already stores a number, so `{price} * {quantity}` is correct and `toNumber({price}) * toNumber({quantity})` only adds noise. The exception is `valueStorageType: "string"`, which really does store text.
 
 ### `slider`
 

@@ -1366,7 +1366,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "text": "Selected: {__table.el4.selectedCount}",
       "variant": "info",
       "pill": true,
-      "visibleIf": "toNumber({__table.el4.selectedCount}) > 0"
+      "visibleIf": "{__table.el4.selectedCount} > 0"
     },
     "el2": {
       "name": "el2",
@@ -1376,7 +1376,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "variant": "solid",
       "tone": "primary",
       "fitContent": true,
-      "disableIf": "toNumber({__table.el4.selectedCount}) == 0",
+      "disableIf": "{__table.el4.selectedCount} == 0",
       "events": [
         {
           "trigger": "click",
@@ -2651,7 +2651,7 @@ Enumerations, exact values:
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalUseGrouping": true,
@@ -2672,7 +2672,7 @@ Enumerations, exact values:
       "label": "Invoice total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1.column4-total})",
+      "expression": "{el1.column4-total}",
       "logicExecutionMode": "onChange"
     }
   }
@@ -2781,7 +2781,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalFractionDigits": 2
@@ -2794,7 +2794,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
       "label": "Project cost",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({panel.el4.column4-total})",
+      "expression": "{panel.el4.column4-total}",
       "logicExecutionMode": "onChange"
     },
 
@@ -3040,7 +3040,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1}) * toNumber({el2})",
+      "expression": "{el1} * {el2}",
       "logicExecutionMode": "onChange",
       "dependsOn": ["el1", "el2"]
     },
@@ -3070,7 +3070,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "name": "el6",
       "label": "Discount %",
       "type": "number",
-      "disableIf": "toNumber({el3}) < 100",
+      "disableIf": "{el3} < 100",
       "readonlyIf": "{__variables.isEdit} != true",
       "logicExecutionMode": "onChange",
       "validators": [
@@ -3078,7 +3078,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
         { "type": "max", "value": 50, "message": "50% is the maximum", "applyIf": "{el4} == 'person'" },
         {
           "type": "custom",
-          "condition": "toNumber({el6}) > 0 && isEmpty({el7})",
+          "condition": "{el6} > 0 && isEmpty({el7})",
           "message": "Give a reason for the discount"
         }
       ]
@@ -3111,7 +3111,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Summary",
       "type": "text",
       "readOnly": true,
-      "expression": "getLabel({el4}) + ': ' + toNumber({el3}) + ' EUR'",
+      "expression": "getLabel({el4}) + ': ' + {el3} + ' EUR'",
       "logicExecutionMode": "onChange"
     },
 

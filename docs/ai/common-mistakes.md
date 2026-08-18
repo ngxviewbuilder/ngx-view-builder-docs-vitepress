@@ -542,7 +542,7 @@ Before returning a response, the agent must verify:
 4. Is there no self-reference expression.
 5. Is the value shape correct.
 6. Are there no invented properties.
-7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
+7. Do `table.columnsConfig[*]` entries use `key`, and `dynamicTable.columns[*]` entries use `name`. The two tables do not share a column shape.
 8. Is the existing form context preserved.
 9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper, and spelled exactly. No `hideIf`, no `readOnlyIf`.
 9b. Does every element carrying logic or typing dependent validation set `logicExecutionMode` or `validationExecutionMode` to `onChange`, since both default to `onBlur`.

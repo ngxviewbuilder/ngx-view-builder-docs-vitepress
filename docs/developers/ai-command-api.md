@@ -5,38 +5,39 @@ description: A JSON command surface that lets an external agent read and edit a 
 
 # AI command API
 
-The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so the same contract works from a browser console, a Playwright script, a websocket bridge, or an MCP server, without anything Angular shaped leaking out.
+The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so nothing Angular shaped leaks out and the whole contract survives a trip through a websocket.
 
-It exposes one write door and a handful of read methods:
+An agent reaches it over MCP. The browser dials out to the MCP server and the server forwards each method call back down that socket, so the user's machine never has to accept an inbound connection.
 
-```js
-window.__NGX_VIEW_BUILDER_AI__
-  .version                                  // contract version, currently 1
-  .available()                              // false whenever the builder is not on screen
-  .help()                                   // the full command catalog, with schemas
-  .getSystemInstructions()                  // the contract as one prompt ready block
-  .describeElementTypes(type?)              // element types and their properties
-  .describeTemplates(name?)                 // the template library, and what can host a template
-  .getTree()                                // compact outline of pages and elements
-  .getStructure()                           // the whole view JSON
-  .getElement(name)                         // one element body
-  .getElementProperty(name, propertyKey)    // one property value
-  .getData()                                // current working data
-  .execute(commands, options?)              // the only way to change anything
-```
+It exposes one write door and a handful of read methods, one MCP tool each:
+
+| Method | MCP tool | What it does |
+| --- | --- | --- |
+| `available()` | part of `nvb_status` | false whenever the builder is not on screen |
+| `help()` | `nvb_get_instructions` | the full command catalog, with schemas |
+| `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
+| `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
+| `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
+| `getTree()` | `nvb_get_tree` | compact outline of pages and elements |
+| `getStructure()` | `nvb_get_structure` | the whole view JSON |
+| `getElement(name)` | `nvb_get_element` | one element body |
+| `getElementProperty(name, key)` | `nvb_get_element_property` | one property value |
+| `getData()` | `nvb_get_data` | current working data |
+| `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
+| `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
 
 ## When it exists
 
-The global is installed only while `<ngx-view-builder-builder>` is mounted, and only when the host opted in. A runtime only host never grows one, no matter who calls what. Leaving the builder removes it again.
+The bridge connects only while `<ngx-view-builder-builder>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderAiApi } from 'ngx-view-builder';
+import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideNgxViewBuilderRuntime(),
-    provideNgxViewBuilderAiApi({ allowedOrigins: ['http://localhost:4200'] }),
+    provideNgxViewBuilderMcp({ url: 'wss://mcp.ngx-view-builder.io/bridge' }),
   ],
 });
 ```
@@ -44,12 +45,20 @@ bootstrapApplication(AppComponent, {
 | Option | Description |
 | --- | --- |
 | `enabled` | Default `true`. Set `false` to keep the provider registered but leave the API closed. |
-| `globalKey` | Defaults to `__NGX_VIEW_BUILDER_AI__`. |
-| `allowedOrigins` | When set, the global is installed only if `location.origin` is in the list, so an accidental production build refuses to arm itself. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. |
+| `autoConnect` | Default `true`. Set `false` to connect by hand through `NgxViewBuilderMcpBridgeService`. |
+| `client` | App and page labels, shown in `nvb_status` so a user with several tabs open can tell which one an agent is attached to. |
+| `sessionKey` | A key your own backend issued, string or resolver. Supply it and the pair code disappears: your backend already knows the key, so it can hand the same one to whatever AI client it wires up. |
+| `auth` | Token your MCP server's authorization service understands. Forwarded untouched, never interpreted. |
+| `metadata` | Anything your authorization service should see: tenant, user, plan hint. Echoed back in `nvb_status`. |
+
+Without a `sessionKey`, the builder shows a pair code in its AI panel and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
+
+The MCP server itself holds no user table. It asks whatever authorization service you configure and does what it is told, which is what lets you run it next to your own product and drive it from your own backend. See its README for the auth webhook contract.
 
 ## The two guarantees
 
-**It runs only while the builder is on screen.** Three things must all hold: the host registered the provider, the builder component is mounted, and the origin passes the allowlist if one is configured. Leaving the builder disarms the API and deletes the global. Disarming is what matters: deleting the global only stops future lookups, while anything that captured a reference earlier keeps a working object. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
+**It runs only while the builder is on screen.** Three things must all hold: the host registered the provider, the builder component is mounted, and a person paired a code. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
 
 **It cannot save.** There is no save, publish or submit command, and none of the mutation commands reach the host's save path. `saveTemplate` and `saveSidebarGroup` write reusable builder library items, not the view.
 
@@ -63,7 +72,7 @@ A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an a
 
 ## Try it on the public demo
 
-The API is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder), so you can point a browser driving assistant at that page and watch it build. The builder logs one line when it arms, which is how an assistant inspecting the page finds the API without being told the global by name.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the AI panel, copy the pair code, point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -73,10 +82,7 @@ Nothing there can be saved to anything of yours: the demo keeps its view in your
 
 It exists because of a failure that has nothing to do with the schema. An agent told to "build this form through the AI API" often answers by describing the JSON it would send, or hands it over for someone to paste, because nothing in its context said the API is live and reachable right now. The instructions say that in the first line.
 
-```js
-const api = window.__NGX_VIEW_BUILDER_AI__;
-console.log(api.getSystemInstructions());
-```
+Call `nvb_get_instructions` first in a session. It returns both the prompt ready text and the machine readable `help()` object in one round trip.
 
 `help()` is the machine readable version of the same thing: the command catalog with parameters and a worked example per command, the tab codes, behaviour notes, and three fields worth reading on their own.
 
@@ -89,10 +95,12 @@ console.log(api.getSystemInstructions());
 
 `describeElementTypes()` is the other one to call before writing anything. It returns every registered type, whether it can hold children, and the real property keys for each. Without it a model guesses property names and every command comes back with an error.
 
-```js
-api.help().commands.length;                       // 47
-api.help().capabilities;                          // ['templates']
-api.describeElementTypes('select')[0].properties; // options, showSearch, required, ...
+```json
+// nvb_get_instructions -> result.help
+{ "commands": [ /* 47 entries */ ], "capabilities": ["templates"] }
+
+// nvb_describe_element_types { "type": "select" }
+{ "properties": ["options", "showSearch", "required", "..."] }
 ```
 
 ## Build from element types first
@@ -121,6 +129,8 @@ The command layer reports both of these as warnings rather than errors, since an
 ## execute()
 
 `execute()` takes one command or an array. An array is atomic: commands are folded into a draft copy of the structure, and if any of them fails, none of them are applied.
+
+Over MCP this is `nvb_execute`, with the array under `commands` and the options as flat arguments (`dry_run`, `return_tree`, `return_structure`). The snippets on this page show the command shapes, which are the same either way.
 
 ```js
 const result = await api.execute([

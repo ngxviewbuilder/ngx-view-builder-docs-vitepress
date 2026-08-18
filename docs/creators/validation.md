@@ -44,7 +44,7 @@ A `custom` rule is a true/false [expression](./expressions) that describes the *
 ```text
 dateDiffDays({startDate}, {endDate}) < 1        error: end date not after start
 {password} != {passwordRepeat}                  error: fields don't match
-toNumber({advance}) > toNumber({total})         error: advance exceeds total
+{advance} > {total}                             error: advance exceeds total
 len({phone}) > 0 && !startsWithAny({phone}, "+370")   error: filled but wrong prefix
 ```
 

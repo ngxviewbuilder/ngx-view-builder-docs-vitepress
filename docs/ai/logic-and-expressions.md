@@ -80,7 +80,7 @@ This is especially important when:
 - Use only NGX View Builder expression syntax, not full `JavaScript`.
 - Read field values via `{fieldName}` or `{object.field}`.
 - Use quotes for string values.
-- Use `toNumber(...)` for calculations to be safe.
+- Do not add `toNumber(...)` by reflex. Number elements already hold numbers, so `{price} * {quantity}` works as written. Reach for it only when the value genuinely arrives as text: a `text` element, a data source field, a select whose values are strings, or a number element with `valueStorageType: "string"`.
 - Use `isEmpty(...)` and `notEmpty(...)` for empty checks.
 - Use `contains`, `containsAny`, `containsAll`, and `len` for arrays.
 
@@ -124,7 +124,7 @@ This is especially important when:
 {
   "name": "totalAmount",
   "type": "number",
-  "expression": "toNumber({price}) * toNumber({quantity})",
+  "expression": "{price} * {quantity}",
   "logicExecutionMode": "onChange"
 }
 ```
@@ -271,7 +271,7 @@ A `table` publishes its state so other elements can read it. `__table.<tableName
 `rows` `allRows` `rowCount` `totalRecords` `page` `size` `sortField` `sortDirection` `quickSearch` `detailedFilters` `request` `selectedRows` `selectedKeys` `selectedItems` `selectedCount` `selectedRow` `selectedRowKey` `selectedRowIndex` `activeRow` `activeRowKey`
 
 ```text
-toNumber({__table.el2.selectedCount}) > 0
+{__table.el2.selectedCount} > 0
 notEmpty({__table.el2.selectedRowKey})
 {__table.el2.selectedRow}.column2
 ```

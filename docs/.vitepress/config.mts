@@ -243,6 +243,10 @@ export default defineConfig({
               text: "Rendering views (runtime)",
               link: "/developers/runtime-integration",
             },
+            {
+              text: "Standalone elements",
+              link: "/developers/standalone-elements",
+            },
             { text: "Headless validation", link: "/developers/validator" },
             { text: "Structure JSON", link: "/developers/structure-json" },
             {

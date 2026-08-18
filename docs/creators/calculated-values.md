@@ -12,7 +12,7 @@ Two Logic properties produce values instead of true/false.
 **Expression** continuously calculates the element's value. Whenever a referenced field changes, the result is recomputed and written into the field.
 
 ```text
-toNumber({price}) * toNumber({quantity})        line total
+{price} * {quantity}                            line total
 {firstName} + " " + {lastName}                  full name
 {isCompany} ? {companyCode} : {personalCode}    pick one of two codes
 sumInArray({orderLines}, "total")               sum over table rows
@@ -62,4 +62,4 @@ Common defaults:
 | `quantity` | Number | Default value `1` |
 | `unitPrice` | Number | filled from a product data source |
 | `discount` | Number | Default value `0` |
-| `lineTotal` | Number, read-only | Expression: `toNumber({quantity}) * toNumber({unitPrice}) * (1 - toNumber({discount}) / 100)` |
+| `lineTotal` | Number, read-only | Expression: `{quantity} * {unitPrice} * (1 - {discount} / 100)` |

@@ -298,7 +298,7 @@ Inside a dynamic panel the table exists once per entry, so the key carries the e
 
 Example: order lines:
 
-- Columns: `product` (select with data source), `quantity` (number), `price` (number, read-only, filled by expression from the product), `total` (number, *Expression*: `toNumber(row.quantity) * toNumber(row.price)`).
+- Columns: `product` (select with data source), `quantity` (number), `price` (number, read-only, filled by expression from the product), `total` (number, *Expression*: `{row.quantity} * {row.price}`).
 - Below the table, a read-only Number named `orderTotal` with *Expression*: `sumInArray({orderLines}, "total")`.
 
 ## List grid (`listGrid`)

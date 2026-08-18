@@ -43,7 +43,7 @@ Examples:
 ```text
 isEmpty({companyCode})
 contains({roles}, "admin")
-toNumber({price}) * toNumber({quantity})
+{price} * {quantity}
 dateDiffDays({startDate}, {endDate})
 ```
 

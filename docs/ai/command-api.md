@@ -9,33 +9,30 @@ Everything else in this section teaches you to **write** structure JSON. This pa
 
 ## Detect the mode first
 
-```js
-typeof window.__NGX_VIEW_BUILDER_AI__ === 'object'
-```
+The live mode arrives as an MCP server. If your client has the `nvb_*` tools, call `nvb_status`.
 
 | Result | What it means | What to do |
 | --- | --- | --- |
-| Present, `available()` is `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
-| Present, `available()` is `false` | The global exists but the builder is not on screen | Ask the user to open the builder. |
-| Absent | Runtime only host, or the host did not opt in | Fall back to authoring structure JSON as the rest of this section describes. |
+| `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
+| `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
+| `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
+| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder's AI panel. |
+| No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
-The global is installed only while the builder component is mounted. It disappears when the user leaves the builder, so re-check before a long sequence.
+The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
 
 ## Bootstrap sequence
 
-Run these four before writing anything. They cost one round trip and remove almost every source of error.
+Run these before writing anything. They cost one round trip and remove almost every source of error.
 
-```js
-const api = window.__NGX_VIEW_BUILDER_AI__;
-
-api.available();                 // 1. is the door open
-api.getSystemInstructions();     // 2. the whole contract as one block of text
-api.help();                      // 3. the command catalog, with a schema per command
-api.describeElementTypes();      // 4. real element types and their real property keys
-api.getTree();                   // 5. what already exists, and the row indexes you need
+```text
+nvb_status                    1. is the door open
+nvb_get_instructions          2. the contract as text, plus the command catalog
+nvb_describe_element_types    3. real element types and their real property keys
+nvb_get_tree                  4. what already exists, and the row indexes you need
 ```
 
-`getSystemInstructions()` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `help().guidelines` carries the same rules on their own, and `help().capabilities` tells you which optional features are present.
+`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. It returns `help()` in the same call, so `help.guidelines` carries the rules on their own and `help.capabilities` tells you which optional features are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -46,6 +43,10 @@ api.getTree();                   // 5. what already exists, and the row indexes 
 ```js
 const result = await api.execute(commandOrArray, options);
 ```
+
+Over MCP that is `nvb_execute`, with the array under `commands` and the options as flat
+arguments (`dry_run`, `return_tree`, `return_structure`). The snippets below show the command
+shapes, which are the same either way.
 
 Hard rules:
 

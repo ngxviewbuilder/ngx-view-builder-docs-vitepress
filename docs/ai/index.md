@@ -29,7 +29,7 @@ An agent (or a person building prompts) should consume the pages in this order:
 
 | Page | What it answers | Load when |
 | --- | --- | --- |
-| [Live builder command API](./command-api) | Driving an open builder directly: detection, bootstrap sequence, the `execute` contract, error recovery, row targeting | First, whenever `window.__NGX_VIEW_BUILDER_AI__` may exist |
+| [Live builder command API](./command-api) | Driving an open builder directly: detection, bootstrap sequence, the `execute` contract, error recovery, row targeting | First, whenever the `nvb_*` MCP tools are available |
 | [Generation contract](./generation-contract) | How the agent must behave; output modes; prompt templates | Always |
 | [Layout model](./layout-model) | The layout tree: `pages` → `rows` → `columns` → `elementRef`, container nesting, `tabRows`, where widths live, full worked example | Always, before any JSON is written |
 | [JSON authoring rules](./json-authoring-rules) | Skeleton, `pages`/`elements` rules, naming, layout, value shapes | Always |

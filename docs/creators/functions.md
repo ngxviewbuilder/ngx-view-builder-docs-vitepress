@@ -31,8 +31,19 @@ All functions available in expressions, grouped by purpose. Your project may add
 
 | Function | Returns | Example |
 | --- | --- | --- |
-| `toNumber(value)` | value as number (invalid → 0) | `toNumber({price}) > 10` |
+| `toNumber(value)` | value as number (invalid → 0) | `toNumber({codeFromApi}) > 10` |
 | `inRange(value, min, max)` | true if min ≤ value ≤ max | `inRange({age}, 18, 65)` |
+
+::: tip When toNumber is actually needed
+A Number field already stores a number, so `{price} * {quantity}` is correct as written and
+wrapping both sides adds nothing. Use `toNumber` when the value really arrives as text: a
+Text field, a value from a data source, a select whose options carry string values, or a
+Number field switched to *Store value as: string*.
+
+It has a second, deliberate use. `toNumber` turns anything invalid into `0`, so an empty
+field becomes zero instead of leaving the whole calculation empty. If that is the behaviour
+you want, keep it, and know that you kept it for the default and not for the conversion.
+:::
 
 ## Array aggregation
 

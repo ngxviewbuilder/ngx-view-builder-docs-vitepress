@@ -26,7 +26,7 @@ isEmpty({companyCode})
 notEmpty({email}) && notEmpty({phone})
 contains({roles}, "admin")
 containsAny({roles}, ["admin", "manager"])
-toNumber({price}) * toNumber({quantity})
+{price} * {quantity}
 len({selectedItems}) > 0
 inRange({age}, 18, 65)
 ```
@@ -36,7 +36,7 @@ inRange({age}, 18, 65)
 ```text
 {isCompany} ? {companyCode} : {personalCode}
 {country} == "US" ? "Domestic" : "International"
-toNumber({quantity}) > 0 ? toNumber({sum}) / toNumber({quantity}) : 0
+{quantity} > 0 ? {sum} / {quantity} : 0
 ```
 
 Nested:
@@ -81,7 +81,7 @@ isWeekend({deliveryDate})                    weekend check
 
 ```text
 row.status == "active"
-toNumber(panel.amount) > 1000
+panel.amount > 1000
 {el1[parentIndex].country} == "US"
 ```
 
