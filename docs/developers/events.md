@@ -109,7 +109,6 @@ api.onDataSourceLoadFailed.add(({ sourceName, errorMessage }) =>
 | --- | --- |
 | `onThemeModeChanged` / `onCustomThemeChanged` | theme switches |
 | `onCssVariablesChanged` / `onCustomCssChanged` / `onCustomCssUrlsChanged` | style updates |
-| `onAiAssistantConfigChanged` | the AI assistant backend config changed (`config.backendUrl`) |
 
 ## Templates & sidebar library
 

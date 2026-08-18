@@ -48,4 +48,4 @@ The Site is not directed at children, and we do not knowingly collect data from 
 
 ## Changes
 
-We may update this policy as the product evolves (for example, once accounts, billing, or the AI assistant backend go live). The "last updated" date above will reflect any change.
+We may update this policy as the product evolves (for example, once accounts or billing go live). The "last updated" date above will reflect any change.

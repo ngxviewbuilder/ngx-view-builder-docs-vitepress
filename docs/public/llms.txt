@@ -51,7 +51,6 @@
 ## Creator documentation
 
 - [Angular form builder for creators](https://ngxviewbuilder.io/creators/): Build Angular forms, dashboards, and data views without writing code. Drag elements onto a canvas, set their properties in a sidebar, and save the result as JSON.
-- [AI assistant](https://ngxviewbuilder.io/creators/ai-assistant): The built-in AI chat panel. Describe changes in plain language and let AI edit the view.
 - [Calculated values](https://ngxviewbuilder.io/creators/calculated-values): Expression and Default value, for computing field values from other fields.
 - [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): The most common expression patterns, copy-paste ready.
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.

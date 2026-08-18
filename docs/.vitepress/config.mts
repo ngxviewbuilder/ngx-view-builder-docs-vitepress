@@ -131,7 +131,6 @@ export default defineConfig({
             { text: "Introduction", link: "/creators/" },
             { text: "The builder workspace", link: "/creators/workspace" },
             { text: "Your first form", link: "/creators/first-form" },
-            { text: "AI assistant", link: "/creators/ai-assistant" },
           ],
         },
         {

@@ -28,7 +28,7 @@ Structures saved before `schemaVersion` existed carry no version at all. Those a
 
 ## What happens on load
 
-Every entry point that accepts a structure runs the same chain, including the JSON editor and the AI panel:
+Every entry point that accepts a structure runs the same chain, including the JSON editor and the MCP command API:
 
 1. Read the version the JSON declares.
 2. Apply each migration in order until the structure reaches the version the runtime speaks.

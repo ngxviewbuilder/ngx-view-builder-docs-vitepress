@@ -23,7 +23,7 @@ The live mode arrives as an MCP server. If your client has the `nvb_*` tools, ca
 | `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
 | `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
 | `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
-| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder's AI panel. |
+| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder settings, under AI access (MCP). |
 | No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
 The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
@@ -7005,7 +7005,7 @@ bootstrapApplication(AppComponent, {
 | `auth` | Token your MCP server's authorization service understands. Forwarded untouched, never interpreted. |
 | `metadata` | Anything your authorization service should see: tenant, user, plan hint. Echoed back in `nvb_status`. |
 
-Without a `sessionKey`, the builder shows a pair code in its AI panel and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
+Without a `sessionKey`, the builder shows a pair code in its settings, under AI access (MCP), and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
 
 The MCP server itself holds no user table. It asks whatever authorization service you configure and does what it is told, which is what lets you run it next to your own product and drive it from your own backend. See its README for the auth webhook contract.
 
@@ -7025,7 +7025,7 @@ A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an a
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the AI panel, copy the pair code, point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the builder settings, copy the pair code from AI access (MCP), point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -7582,8 +7582,6 @@ Use together with the table events to persist per-user column layouts and saved 
 | --- | --- |
 | `switchToTab(tab): void` | Switches the builder to a tab (`'editor'`, `'preview'`, `'jsonEditor'`, `'formSettings'`, `'translations'`, `'variables'`, or a plugin tab code). |
 | `requestTabChange(tab): void` | Emits `onTabChangeRequested`. The builder decides whether to honour it (useful when the host wraps tab navigation). |
-| `setAiAssistantConfig(config): void` | Sets the AI assistant backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
-| `getAiAssistantConfig(): INgxViewBuilderAiAssistantConfig` | Current AI assistant config. |
 
 ---
 
@@ -7720,7 +7718,6 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
-  aiAssistant: { enabled: true, backendUrl: 'https://ai.example.com' },  // AI assistant
   licenseKey: 'NVB-...',
 };
 ```
@@ -8662,7 +8659,6 @@ api.onDataSourceLoadFailed.add(({ sourceName, errorMessage }) =>
 | --- | --- |
 | `onThemeModeChanged` / `onCustomThemeChanged` | theme switches |
 | `onCssVariablesChanged` / `onCustomCssChanged` / `onCustomCssUrlsChanged` | style updates |
-| `onAiAssistantConfigChanged` | the AI assistant backend config changed (`config.backendUrl`) |
 
 ## Templates & sidebar library
 
@@ -9618,7 +9614,7 @@ Structures saved before `schemaVersion` existed carry no version at all. Those a
 
 ## What happens on load
 
-Every entry point that accepts a structure runs the same chain, including the JSON editor and the AI panel:
+Every entry point that accepts a structure runs the same chain, including the JSON editor and the MCP command API:
 
 1. Read the version the JSON declares.
 2. Apply each migration in order until the structure reaches the version the runtime speaks.
@@ -10930,54 +10926,6 @@ Give every value-producing element a short, stable name like `firstName` or `del
 | Validate user input | [Validation](https://ngxviewbuilder.io/creators/validation) |
 
 Or open the [live demo](https://ngxviewbuilder.io/demo) from the **Demo** link in the top menu and explore as you read.
-
----
-
-## AI assistant
-
-Source: https://ngxviewbuilder.io/creators/ai-assistant
-
-# AI assistant
-
-The builder has a built-in AI chat. Click the **AI** button in the builder header and the chat panel opens **in place of the properties sidebar** on the right. Click the button again to switch back to properties.
-
-::: info Needs a backend
-The AI assistant talks to an AI service configured by your developer. If you see *"Host application has not provided AI assistant backend URL via API yet"*, the service isn't connected in your project.
-:::
-
-## What it can do
-
-- **Edit the view for you.** Describe a change (*"add a client details panel with name, e-mail, and phone"*, *"make the comment field required when status is rejected"*) and the assistant edits the view. When the answer contains an updated structure, it is **applied to the canvas immediately**.
-- **Answer questions about your form.** The assistant always receives your current structure, so it can explain what a field does or where a value comes from.
-- **Generate from examples.** Attach a screenshot of a design or a document with requirements, and ask for a matching form.
-
-The panel always sends your **current** structure with every message, so the AI never works from a stale snapshot. Anything you changed by hand is taken into account.
-
-## Working in the chat
-
-| Control | What it does |
-| --- | --- |
-| **Message box** | Type your request. **Enter** sends, **Shift+Enter** adds a new line. |
-| **Model picker** | Choose which AI model answers. The list is configured by your project (by default: Gemini 2.5 Pro, Flash, and Flash Lite). Pick a stronger model for complex restructuring, a faster one for small tweaks. |
-| **Attach files** | Add context to your request, see below. |
-| **Status line** | Shows what the assistant is doing while it works. |
-| **Code blocks** | Answers can include code/JSON fragments with a **copy** button. |
-
-The conversation survives switching between the Builder and Preview tabs, so you can test a generated form and come back to continue the chat.
-
-## Attachments
-
-| Attachment | How it's used |
-| --- | --- |
-| **Images** (`png`, `jpg`, …) | Sent as pictures. Ideal for design mockups or screenshots to reproduce. |
-| **Files** (`docx`, `txt`, `md`, `csv`, `json`, `xml`, code files…) | Attached and sent to your AI service just as they are. What gets read from each file (Word text, spreadsheets, and so on) depends on how your team set that service up. Oversized files are skipped. |
-
-## Tips for good results
-
-- **Be specific about names**: *"set `visibleIf` on `discountPanel` to `{clientType} == "vip"`"* beats *"hide the discount thing sometimes"*.
-- **One change set per message.** Smaller requests apply more reliably than one giant redesign.
-- **Check the canvas after each apply**. The change is a normal edit: if you don't like it, use **Undo** in the header.
-- Mention the element type you want (*table*, *dynamic panel*, *stepper*). The assistant knows the whole [element catalog](https://ngxviewbuilder.io/creators/elements/).
 
 ---
 
@@ -14098,8 +14046,6 @@ Only the categories relevant to the selected element are shown. See [Common prop
 
 Developers can add more tabs through plugins. If you see extra tabs, they come from plugins installed in your application.
 
-The header also has an **AI** button that opens the [AI assistant](https://ngxviewbuilder.io/creators/ai-assistant) panel in place of the properties sidebar, where you can describe changes in plain language and let AI edit the view for you.
-
 ## Undo and history
 
 The builder tracks your edits. Use undo/redo in the header to step through recent changes before saving.
@@ -14356,6 +14302,6 @@ The Site is not directed at children, and we do not knowingly collect data from 
 
 ## Changes
 
-We may update this policy as the product evolves (for example, once accounts, billing, or the AI assistant backend go live). The "last updated" date above will reflect any change.
+We may update this policy as the product evolves (for example, once accounts or billing go live). The "last updated" date above will reflect any change.
 
 ---

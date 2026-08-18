@@ -52,7 +52,7 @@ bootstrapApplication(AppComponent, {
 | `auth` | Token your MCP server's authorization service understands. Forwarded untouched, never interpreted. |
 | `metadata` | Anything your authorization service should see: tenant, user, plan hint. Echoed back in `nvb_status`. |
 
-Without a `sessionKey`, the builder shows a pair code in its AI panel and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
+Without a `sessionKey`, the builder shows a pair code in its settings, under AI access (MCP), and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
 
 The MCP server itself holds no user table. It asks whatever authorization service you configure and does what it is told, which is what lets you run it next to your own product and drive it from your own backend. See its README for the auth webhook contract.
 
@@ -72,7 +72,7 @@ A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an a
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the AI panel, copy the pair code, point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the builder settings, copy the pair code from AI access (MCP), point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 

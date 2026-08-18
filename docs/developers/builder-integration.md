@@ -73,7 +73,6 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
-  aiAssistant: { enabled: true, backendUrl: 'https://ai.example.com' },  // AI assistant
   licenseKey: 'NVB-...',
 };
 ```

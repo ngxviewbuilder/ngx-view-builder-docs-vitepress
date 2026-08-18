@@ -27,7 +27,7 @@ The live mode arrives as an MCP server. If your client has the `nvb_*` tools, ca
 | `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
 | `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
 | `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
-| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder's AI panel. |
+| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder settings, under AI access (MCP). |
 | No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
 The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.

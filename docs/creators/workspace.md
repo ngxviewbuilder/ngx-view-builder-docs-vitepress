@@ -69,8 +69,6 @@ Only the categories relevant to the selected element are shown. See [Common prop
 
 Developers can add more tabs through plugins. If you see extra tabs, they come from plugins installed in your application.
 
-The header also has an **AI** button that opens the [AI assistant](./ai-assistant) panel in place of the properties sidebar, where you can describe changes in plain language and let AI edit the view for you.
-
 ## Undo and history
 
 The builder tracks your edits. Use undo/redo in the header to step through recent changes before saving.
