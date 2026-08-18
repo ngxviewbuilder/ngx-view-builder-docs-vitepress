@@ -7,11 +7,12 @@ const props = defineProps<{ base?: string; prodBase?: string }>();
 
 const { isDark } = useData();
 
-const activeTab = ref<'builder' | 'runtime'>('builder');
+const activeTab = ref<'builder' | 'runtime' | 'nvbui'>('builder');
 const fullscreen = ref(false);
 const runtimeKey = ref(0);
 const builderFrame = ref<HTMLIFrameElement | null>(null);
 const runtimeFrame = ref<HTMLIFrameElement | null>(null);
+const nvbUiFrame = ref<HTMLIFrameElement | null>(null);
 // Resolved on mount (client only): localhost docs → local demo app, prod docs → hosted demo.
 const base = ref('');
 
@@ -21,8 +22,10 @@ const base = ref('');
 const MIN_LOADER_MS = 1500;
 const builderLoading = ref(true);
 const runtimeLoading = ref(true);
+const nvbUiLoading = ref(true);
 let builderLoadStartedAt = 0;
 let runtimeLoadStartedAt = 0;
+let nvbUiLoadStartedAt = 0;
 
 function onBuilderLoad(): void {
   const elapsed = Date.now() - builderLoadStartedAt;
@@ -35,6 +38,13 @@ function onRuntimeLoad(): void {
   const elapsed = Date.now() - runtimeLoadStartedAt;
   setTimeout(() => {
     runtimeLoading.value = false;
+  }, Math.max(0, MIN_LOADER_MS - elapsed));
+}
+
+function onNvbUiLoad(): void {
+  const elapsed = Date.now() - nvbUiLoadStartedAt;
+  setTimeout(() => {
+    nvbUiLoading.value = false;
   }, Math.max(0, MIN_LOADER_MS - elapsed));
 }
 
@@ -54,6 +64,8 @@ const builderSrc = ref('');
 const runtimeSrc = computed(
   () => `${base.value}/filler?embed=1&theme=${theme.value}&k=${runtimeKey.value}`,
 );
+// The element catalogue is a plain page, so it needs no key or reload dance.
+const nvbUiSrc = computed(() => `${base.value}/ngx-ui?embed=1&theme=${theme.value}`);
 
 function postTheme(frame: HTMLIFrameElement | null): void {
   frame?.contentWindow?.postMessage({ type: 'nvb-theme', theme: theme.value }, '*');
@@ -62,9 +74,14 @@ function postTheme(frame: HTMLIFrameElement | null): void {
 watch(theme, () => {
   postTheme(builderFrame.value);
   postTheme(runtimeFrame.value);
+  postTheme(nvbUiFrame.value);
 });
 
-function selectTab(tab: 'builder' | 'runtime'): void {
+function selectTab(tab: 'builder' | 'runtime' | 'nvbui'): void {
+  if (tab === 'nvbui' && activeTab.value !== 'nvbui') {
+    nvbUiLoading.value = true;
+    nvbUiLoadStartedAt = Date.now();
+  }
   if (tab === 'runtime') {
     // Re-create the runtime iframe so it picks up the latest structure
     // the builder auto-saved into localStorage.
@@ -134,6 +151,16 @@ onBeforeUnmount(() => {
         >
           Runtime
         </button>
+        <button
+          type="button"
+          role="tab"
+          class="demo-embed__tab"
+          :class="{ 'demo-embed__tab--active': activeTab === 'nvbui' }"
+          :aria-selected="activeTab === 'nvbui'"
+          @click="selectTab('nvbui')"
+        >
+          Nvb UI
+        </button>
       </div>
       <button
         type="button"
@@ -169,8 +196,22 @@ onBeforeUnmount(() => {
         @load="onRuntimeLoad"
       />
 
+      <iframe
+        v-if="activeTab === 'nvbui'"
+        ref="nvbUiFrame"
+        class="demo-embed__frame"
+        :src="nvbUiSrc"
+        title="NGX View Builder standalone elements"
+        allow="clipboard-read; clipboard-write"
+        @load="onNvbUiLoad"
+      />
+
       <div
-        v-if="(activeTab === 'builder' && builderLoading) || (activeTab === 'runtime' && runtimeLoading)"
+        v-if="
+          (activeTab === 'builder' && builderLoading) ||
+          (activeTab === 'runtime' && runtimeLoading) ||
+          (activeTab === 'nvbui' && nvbUiLoading)
+        "
         class="demo-embed__loader"
       >
         <span class="demo-embed__spinner" />

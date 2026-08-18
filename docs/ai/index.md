@@ -5,7 +5,7 @@ description: The canonical, indexed knowledge base an AI agent needs to generate
 
 # AI reference
 
-This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: the reference backend ([`ngx-view-builder-ai-agent`](../developers/ai-chat#the-reference-backend-ngx-view-builder-ai-agent)) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
+This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](../developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.
 
@@ -72,4 +72,4 @@ The agent also draws on the human documentation ([element pages](../creators/ele
 - **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
-Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). The reference backend loads this file at startup and reports missing sources on `/health`, so when documentation moves, updating this map is the only change needed. See [AI assistant backend](../developers/ai-chat) for the backend's configuration.
+Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.

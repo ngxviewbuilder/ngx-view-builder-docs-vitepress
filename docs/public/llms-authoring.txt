@@ -196,7 +196,7 @@ Source: https://ngxviewbuilder.io/ai/
 
 # AI reference
 
-This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: the reference backend ([`ngx-view-builder-ai-agent`](https://ngxviewbuilder.io/developers/ai-chat#the-reference-backend-ngx-view-builder-ai-agent)) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
+This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](https://ngxviewbuilder.io/developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.
 
@@ -263,7 +263,7 @@ The agent also draws on the human documentation ([element pages](https://ngxview
 - **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
-Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). The reference backend loads this file at startup and reports missing sources on `/health`, so when documentation moves, updating this map is the only change needed. See [AI assistant backend](https://ngxviewbuilder.io/developers/ai-chat) for the backend's configuration.
+Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.
 
 ---
 
@@ -616,7 +616,7 @@ Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElemen
 
 **Every other type is a leaf.** `text`, `select`, `table`, `dynamicTable`, `messageCard`, `statsCard`, `richText` and the rest never receive `rows`.
 
-`dynamicTable` is the exception that proves the rule: its cells are declared in its own `columnsConfig` property, not in the layout tree. `table` likewise uses `columnsConfig`. Neither uses `column.rows`.
+The two tables are the exception that proves the rule: their cells are declared on the element, not in the layout tree, and the two do not use the same property. `table` uses `columnsConfig`, and each entry is a column keyed by `key`. `dynamicTable` uses `columns`, and each entry is a full element definition keyed by `name`, because every cell is an editable control. Neither uses `column.rows`.
 
 ### `tabRows` keys
 
@@ -700,7 +700,7 @@ Run all of these mentally before returning JSON.
 1. Every `elementRef` string resolves to a key in `elements`.
 2. Every key in `elements` appears exactly once as some `elementRef` (or is a `page`).
 3. Every entry of `pages` has a matching `elements[name]` with `type: "page"`.
-4. No object in `elements` has a `rows`, `columns` or `children` key (except `table` / `dynamicTable` and their `columnsConfig`).
+4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
 7. `rows` on a column appears only when the referenced element is one of the ten container types.
@@ -1174,7 +1174,7 @@ The canonical full list is in [Common mistakes, entry 14](https://ngxviewbuilder
 - The key must match `element.name`.
 - Every element must have at least `name`, `label`, and `type`.
 - If `pages[*].name = "pageCustomer"`, there must be an `elements.pageCustomer` entry with `type: "page"`.
-- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is `table` / `dynamicTable`, whose cells are declared in `columnsConfig`.
+- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is the two tables, whose cells are not layout: `table` declares them in `columnsConfig` keyed by `key`, and `dynamicTable` declares them in `columns` keyed by `name`.
 
 ### `localization`
 
@@ -1501,7 +1501,7 @@ This is especially important when:
 - Use only NGX View Builder expression syntax, not full `JavaScript`.
 - Read field values via `{fieldName}` or `{object.field}`.
 - Use quotes for string values.
-- Use `toNumber(...)` for calculations to be safe.
+- Do not add `toNumber(...)` by reflex. Number elements already hold numbers, so `{price} * {quantity}` works as written. Reach for it only when the value genuinely arrives as text: a `text` element, a data source field, a select whose values are strings, or a number element with `valueStorageType: "string"`.
 - Use `isEmpty(...)` and `notEmpty(...)` for empty checks.
 - Use `contains`, `containsAny`, `containsAll`, and `len` for arrays.
 
@@ -1545,7 +1545,7 @@ This is especially important when:
 {
   "name": "totalAmount",
   "type": "number",
-  "expression": "toNumber({price}) * toNumber({quantity})",
+  "expression": "{price} * {quantity}",
   "logicExecutionMode": "onChange"
 }
 ```
@@ -1692,7 +1692,7 @@ A `table` publishes its state so other elements can read it. `__table.<tableName
 `rows` `allRows` `rowCount` `totalRecords` `page` `size` `sortField` `sortDirection` `quickSearch` `detailedFilters` `request` `selectedRows` `selectedKeys` `selectedItems` `selectedCount` `selectedRow` `selectedRowKey` `selectedRowIndex` `activeRow` `activeRowKey`
 
 ```text
-toNumber({__table.el2.selectedCount}) > 0
+{__table.el2.selectedCount} > 0
 notEmpty({__table.el2.selectedRowKey})
 {__table.el2.selectedRow}.column2
 ```
@@ -1756,7 +1756,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 - Use for numbers, amounts, and quantities.
 - Value shape: `number` or `string`, depending on `valueStorageType`.
-- Use `toNumber(...)` when calculations are involved.
+- Do not wrap it in `toNumber(...)` in calculations. A `number` element already stores a number, so `{price} * {quantity}` is correct and `toNumber({price}) * toNumber({quantity})` only adds noise. The exception is `valueStorageType: "string"`, which really does store text.
 
 ### `slider`
 
@@ -3449,7 +3449,7 @@ Before returning a response, the agent must verify:
 4. Is there no self-reference expression.
 5. Is the value shape correct.
 6. Are there no invented properties.
-7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
+7. Do `table.columnsConfig[*]` entries use `key`, and `dynamicTable.columns[*]` entries use `name`. The two tables do not share a column shape.
 8. Is the existing form context preserved.
 9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper, and spelled exactly. No `hideIf`, no `readOnlyIf`.
 9b. Does every element carrying logic or typing dependent validation set `logicExecutionMode` or `validationExecutionMode` to `onChange`, since both default to `onBlur`.
@@ -4827,7 +4827,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "text": "Selected: {__table.el4.selectedCount}",
       "variant": "info",
       "pill": true,
-      "visibleIf": "toNumber({__table.el4.selectedCount}) > 0"
+      "visibleIf": "{__table.el4.selectedCount} > 0"
     },
     "el2": {
       "name": "el2",
@@ -4837,7 +4837,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "variant": "solid",
       "tone": "primary",
       "fitContent": true,
-      "disableIf": "toNumber({__table.el4.selectedCount}) == 0",
+      "disableIf": "{__table.el4.selectedCount} == 0",
       "events": [
         {
           "trigger": "click",
@@ -6112,7 +6112,7 @@ Enumerations, exact values:
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalUseGrouping": true,
@@ -6133,7 +6133,7 @@ Enumerations, exact values:
       "label": "Invoice total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1.column4-total})",
+      "expression": "{el1.column4-total}",
       "logicExecutionMode": "onChange"
     }
   }
@@ -6242,7 +6242,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalFractionDigits": 2
@@ -6255,7 +6255,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
       "label": "Project cost",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({panel.el4.column4-total})",
+      "expression": "{panel.el4.column4-total}",
       "logicExecutionMode": "onChange"
     },
 
@@ -6501,7 +6501,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1}) * toNumber({el2})",
+      "expression": "{el1} * {el2}",
       "logicExecutionMode": "onChange",
       "dependsOn": ["el1", "el2"]
     },
@@ -6531,7 +6531,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "name": "el6",
       "label": "Discount %",
       "type": "number",
-      "disableIf": "toNumber({el3}) < 100",
+      "disableIf": "{el3} < 100",
       "readonlyIf": "{__variables.isEdit} != true",
       "logicExecutionMode": "onChange",
       "validators": [
@@ -6539,7 +6539,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
         { "type": "max", "value": 50, "message": "50% is the maximum", "applyIf": "{el4} == 'person'" },
         {
           "type": "custom",
-          "condition": "toNumber({el6}) > 0 && isEmpty({el7})",
+          "condition": "{el6} > 0 && isEmpty({el7})",
           "message": "Give a reason for the discount"
         }
       ]
@@ -6572,7 +6572,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Summary",
       "type": "text",
       "readOnly": true,
-      "expression": "getLabel({el4}) + ': ' + toNumber({el3}) + ' EUR'",
+      "expression": "getLabel({el4}) + ': ' + {el3} + ' EUR'",
       "logicExecutionMode": "onChange"
     },
 

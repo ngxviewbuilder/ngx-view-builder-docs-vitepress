@@ -258,5 +258,5 @@ Use together with the table events to persist per-user column layouts and saved 
 | --- | --- |
 | `switchToTab(tab): void` | Switches the builder to a tab (`'editor'`, `'preview'`, `'jsonEditor'`, `'formSettings'`, `'translations'`, `'variables'`, or a plugin tab code). |
 | `requestTabChange(tab): void` | Emits `onTabChangeRequested`. The builder decides whether to honour it (useful when the host wraps tab navigation). |
-| `setAiAssistantConfig(config): void` | Sets the [AI assistant](./ai-chat) backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
+| `setAiAssistantConfig(config): void` | Sets the AI assistant backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
 | `getAiAssistantConfig(): INgxViewBuilderAiAssistantConfig` | Current AI assistant config. |

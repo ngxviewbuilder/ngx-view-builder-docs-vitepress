@@ -192,7 +192,7 @@ Source: https://ngxviewbuilder.io/ai/
 
 # AI reference
 
-This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: the reference backend ([`ngx-view-builder-ai-agent`](https://ngxviewbuilder.io/developers/ai-chat#the-reference-backend-ngx-view-builder-ai-agent)) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
+This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](https://ngxviewbuilder.io/developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.
 
@@ -259,7 +259,7 @@ The agent also draws on the human documentation ([element pages](https://ngxview
 - **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
-Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). The reference backend loads this file at startup and reports missing sources on `/health`, so when documentation moves, updating this map is the only change needed. See [AI assistant backend](https://ngxviewbuilder.io/developers/ai-chat) for the backend's configuration.
+Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.
 
 ---
 
@@ -612,7 +612,7 @@ Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElemen
 
 **Every other type is a leaf.** `text`, `select`, `table`, `dynamicTable`, `messageCard`, `statsCard`, `richText` and the rest never receive `rows`.
 
-`dynamicTable` is the exception that proves the rule: its cells are declared in its own `columnsConfig` property, not in the layout tree. `table` likewise uses `columnsConfig`. Neither uses `column.rows`.
+The two tables are the exception that proves the rule: their cells are declared on the element, not in the layout tree, and the two do not use the same property. `table` uses `columnsConfig`, and each entry is a column keyed by `key`. `dynamicTable` uses `columns`, and each entry is a full element definition keyed by `name`, because every cell is an editable control. Neither uses `column.rows`.
 
 ### `tabRows` keys
 
@@ -696,7 +696,7 @@ Run all of these mentally before returning JSON.
 1. Every `elementRef` string resolves to a key in `elements`.
 2. Every key in `elements` appears exactly once as some `elementRef` (or is a `page`).
 3. Every entry of `pages` has a matching `elements[name]` with `type: "page"`.
-4. No object in `elements` has a `rows`, `columns` or `children` key (except `table` / `dynamicTable` and their `columnsConfig`).
+4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
 7. `rows` on a column appears only when the referenced element is one of the ten container types.
@@ -1170,7 +1170,7 @@ The canonical full list is in [Common mistakes, entry 14](https://ngxviewbuilder
 - The key must match `element.name`.
 - Every element must have at least `name`, `label`, and `type`.
 - If `pages[*].name = "pageCustomer"`, there must be an `elements.pageCustomer` entry with `type: "page"`.
-- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is `table` / `dynamicTable`, whose cells are declared in `columnsConfig`.
+- **No element definition lists its children.** `rows`, `columns`, `children`, `items`, `fields` on a `panel` / `dynamicPanel` / `tabs` / `dialog` do not exist and are ignored. The exception is the two tables, whose cells are not layout: `table` declares them in `columnsConfig` keyed by `key`, and `dynamicTable` declares them in `columns` keyed by `name`.
 
 ### `localization`
 
@@ -1497,7 +1497,7 @@ This is especially important when:
 - Use only NGX View Builder expression syntax, not full `JavaScript`.
 - Read field values via `{fieldName}` or `{object.field}`.
 - Use quotes for string values.
-- Use `toNumber(...)` for calculations to be safe.
+- Do not add `toNumber(...)` by reflex. Number elements already hold numbers, so `{price} * {quantity}` works as written. Reach for it only when the value genuinely arrives as text: a `text` element, a data source field, a select whose values are strings, or a number element with `valueStorageType: "string"`.
 - Use `isEmpty(...)` and `notEmpty(...)` for empty checks.
 - Use `contains`, `containsAny`, `containsAll`, and `len` for arrays.
 
@@ -1541,7 +1541,7 @@ This is especially important when:
 {
   "name": "totalAmount",
   "type": "number",
-  "expression": "toNumber({price}) * toNumber({quantity})",
+  "expression": "{price} * {quantity}",
   "logicExecutionMode": "onChange"
 }
 ```
@@ -1688,7 +1688,7 @@ A `table` publishes its state so other elements can read it. `__table.<tableName
 `rows` `allRows` `rowCount` `totalRecords` `page` `size` `sortField` `sortDirection` `quickSearch` `detailedFilters` `request` `selectedRows` `selectedKeys` `selectedItems` `selectedCount` `selectedRow` `selectedRowKey` `selectedRowIndex` `activeRow` `activeRowKey`
 
 ```text
-toNumber({__table.el2.selectedCount}) > 0
+{__table.el2.selectedCount} > 0
 notEmpty({__table.el2.selectedRowKey})
 {__table.el2.selectedRow}.column2
 ```
@@ -1752,7 +1752,7 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 - Use for numbers, amounts, and quantities.
 - Value shape: `number` or `string`, depending on `valueStorageType`.
-- Use `toNumber(...)` when calculations are involved.
+- Do not wrap it in `toNumber(...)` in calculations. A `number` element already stores a number, so `{price} * {quantity}` is correct and `toNumber({price}) * toNumber({quantity})` only adds noise. The exception is `valueStorageType: "string"`, which really does store text.
 
 ### `slider`
 
@@ -3445,7 +3445,7 @@ Before returning a response, the agent must verify:
 4. Is there no self-reference expression.
 5. Is the value shape correct.
 6. Are there no invented properties.
-7. Do `table.columnsConfig[*]` entries use `key`, not `name`.
+7. Do `table.columnsConfig[*]` entries use `key`, and `dynamicTable.columns[*]` entries use `name`. The two tables do not share a column shape.
 8. Is the existing form context preserved.
 9. Are logic fields (`expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `logicExecutionMode`) placed directly on the element, not inside a `logic` wrapper, and spelled exactly. No `hideIf`, no `readOnlyIf`.
 9b. Does every element carrying logic or typing dependent validation set `logicExecutionMode` or `validationExecutionMode` to `onChange`, since both default to `onBlur`.
@@ -4823,7 +4823,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "text": "Selected: {__table.el4.selectedCount}",
       "variant": "info",
       "pill": true,
-      "visibleIf": "toNumber({__table.el4.selectedCount}) > 0"
+      "visibleIf": "{__table.el4.selectedCount} > 0"
     },
     "el2": {
       "name": "el2",
@@ -4833,7 +4833,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "variant": "solid",
       "tone": "primary",
       "fitContent": true,
-      "disableIf": "toNumber({__table.el4.selectedCount}) == 0",
+      "disableIf": "{__table.el4.selectedCount} == 0",
       "events": [
         {
           "trigger": "click",
@@ -6108,7 +6108,7 @@ Enumerations, exact values:
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalUseGrouping": true,
@@ -6129,7 +6129,7 @@ Enumerations, exact values:
       "label": "Invoice total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1.column4-total})",
+      "expression": "{el1.column4-total}",
       "logicExecutionMode": "onChange"
     }
   }
@@ -6238,7 +6238,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
           "type": "number",
           "readOnly": true,
           "valueStorageType": "number",
-          "expression": "toNumber({row.column2}) * toNumber({row.column3})",
+          "expression": "{row.column2} * {row.column3}",
           "logicExecutionMode": "onChange",
           "useTotals": true,
           "totalFractionDigits": 2
@@ -6251,7 +6251,7 @@ Value shape: an array of objects, one per row, keyed by column `name`.
       "label": "Project cost",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({panel.el4.column4-total})",
+      "expression": "{panel.el4.column4-total}",
       "logicExecutionMode": "onChange"
     },
 
@@ -6497,7 +6497,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Total",
       "type": "number",
       "readOnly": true,
-      "expression": "toNumber({el1}) * toNumber({el2})",
+      "expression": "{el1} * {el2}",
       "logicExecutionMode": "onChange",
       "dependsOn": ["el1", "el2"]
     },
@@ -6527,7 +6527,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "name": "el6",
       "label": "Discount %",
       "type": "number",
-      "disableIf": "toNumber({el3}) < 100",
+      "disableIf": "{el3} < 100",
       "readonlyIf": "{__variables.isEdit} != true",
       "logicExecutionMode": "onChange",
       "validators": [
@@ -6535,7 +6535,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
         { "type": "max", "value": 50, "message": "50% is the maximum", "applyIf": "{el4} == 'person'" },
         {
           "type": "custom",
-          "condition": "toNumber({el6}) > 0 && isEmpty({el7})",
+          "condition": "{el6} > 0 && isEmpty({el7})",
           "message": "Give a reason for the discount"
         }
       ]
@@ -6568,7 +6568,7 @@ Every logic field is a **direct property of the element**. There is no `logic` w
       "label": "Summary",
       "type": "text",
       "readOnly": true,
-      "expression": "getLabel({el4}) + ': ' + toNumber({el3}) + ' EUR'",
+      "expression": "getLabel({el4}) + ': ' + {el3} + ' EUR'",
       "logicExecutionMode": "onChange"
     },
 
@@ -6949,184 +6949,6 @@ Your app (via outputs and NgxViewBuilderApiService)
 2. [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration) and [Rendering views](https://ngxviewbuilder.io/developers/runtime-integration).
 3. [API service overview](https://ngxviewbuilder.io/developers/api-service): the programmatic surface.
 4. [Extensions overview](https://ngxviewbuilder.io/developers/extensions): one config object for everything custom.
-
----
-
-## AI assistant backend
-
-Source: https://ngxviewbuilder.io/developers/ai-chat
-
-# AI assistant backend
-
-The builder ships with an [AI chat panel](https://ngxviewbuilder.io/creators/ai-assistant) that opens in place of the properties sidebar. The panel is **frontend only**: it speaks a small HTTP + WebSocket protocol to a backend that _you_ host. This page covers everything needed to connect one: settings, the wire protocol, model configuration, and the reference backend implementation.
-
-## Enabling and configuring
-
-The panel is controlled through the builder's `runtimeSettings`:
-
-```ts
-builderSettings: INgxViewBuilderBuilderSettings = {
-  // master switch (root-level alias: enableAiAssistant)
-  aiAssistant: {
-    enabled: true,
-    backendUrl: "https://ai.example.com", // default: http://localhost:8000
-    defaultModel: "gemini-2.5-flash",
-    models: [
-      { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite" },
-    ],
-  },
-};
-```
-
-| Option         | What it does                                                                                                                                                                                                                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`      | Shows/hides the AI button in the builder header. `enableAiAssistant` at the settings root is an alias; `aiAssistant.enabled` wins when both are set.                                                                                                                                          |
-| `backendUrl`   | Base URL of your AI service. Trailing slashes are stripped.                                                                                                                                                                                                                                   |
-| `defaultModel` | Pre-selected model id in the picker.                                                                                                                                                                                                                                                          |
-| `models`       | The model picker's entries (`{ id, label }`). When omitted, the built-in list is used (Gemini 2.5 Pro / Flash / Flash Lite). The `id` is passed verbatim to your backend, so it can be any string your service understands (a Gemini id, an OpenAI-compatible id, or your own routing alias). |
-
-The backend URL can also be set (or changed) at runtime through the API service:
-
-```ts
-api.setAiAssistantConfig({ backendUrl: 'https://ai.example.com' });
-api.getAiAssistantConfig();               // { backendUrl }
-api.onAiAssistantConfigChanged.add(({ config }) => ...);
-```
-
-Until a URL is known, the panel shows _"Host application has not provided AI assistant backend URL via API yet."_
-
-## The wire protocol
-
-The panel makes exactly two kinds of connections:
-
-### 1. Create a session: `POST {backendUrl}/ai/session`
-
-```jsonc
-// request
-{ "language": "en" }
-// response
-{ "session_id": "..." }
-```
-
-### 2. Chat: `WS {backendUrl → ws(s)}/ai/ws/{session_id}`
-
-The `http(s)` scheme is swapped for `ws(s)` automatically.
-
-**Client → server messages:**
-
-```jsonc
-// sent right after the socket opens: the current view definition
-{ "type": "set_context", "context": { "structure": { /* IStructure */ } } }
-
-// one per user message
-{
-  "type": "user_message",
-  "text": "Add a client details panel",
-  "language": "en",
-  "agent": { "model": "gemini-2.5-flash" },           // present when a model is picked
-  "context": { "structure": { /* current IStructure */ } }, // always sent, never stale
-  "images": [ { "mediaType": "image/png", "dataUrl": "data:image/png;base64,..." } ],
-  "files":  [ { "name": "requirements.docx", "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "size": 18234, "data": "UEsDBBQ..." } ]
-}
-```
-
-Notes: images arrive as data URLs. Files arrive as **raw bytes**, base64-encoded in `data` (no data-URL prefix), with the original `name`, `mimeType`, and `size`. The panel does not parse or convert anything, so your backend is responsible for reading each file (extracting text from `.docx`, decoding `.txt`/`.csv`, and so on). The panel rejects a single file over 10 MB and stops attaching once the batch passes 25 MB.
-
-**Server → client messages:**
-
-| Type                   | Payload                                                                        | Panel behaviour                                                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`               | `{ "message": "Generating structure…" }`                                       | Shown as the live status line.                                                                                                                                             |
-| `assistant_json_delta` | `{ "chunk": "..." }`                                                           | Streamed JSON fragments, buffered by the panel (keeps the socket alive on long generations).                                                                               |
-| `assistant_done`       | `{ "message": "...", "warnings": ["..."], "structure": { /* IStructure */ } }` | The chat message is appended; **if `structure` is a non-empty object it is applied to the canvas immediately** (rendered through the creator, exactly like a manual edit). |
-| `error`                | `{ "message": "..." }`                                                         | Shown as the error banner; loading state ends.                                                                                                                             |
-
-That's the whole contract. Any backend that implements these five message types works; language, framework, and AI provider are entirely your choice.
-
-## The reference backend (`ngx-view-builder-ai-agent`)
-
-A minimal Node.js implementation of this protocol ships alongside the library. It exposes:
-
-- `GET /health`
-- `POST /ai/session`
-- `POST /ai/session/:sessionId/context` (optional REST alternative to `set_context`)
-- `POST /ai/session/:sessionId/message` (optional REST alternative to the WS message)
-- `WS /ai/ws/:sessionId`
-
-### Setup
-
-```bash
-cd ngx-view-builder-ai-agent
-copy .env.example .env     # then edit the keys
-npm install
-npm start                  # or: npm run dev
-curl http://localhost:8000/health
-```
-
-### Environment variables
-
-| Variable                | What it does                                                                                                                        |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `NVB_AI_PROVIDER`       | Default provider: `gemini` (Google AI Studio, the default) or `openai` (any OpenAI-compatible endpoint).                            |
-| `NVB_AI_GEMINI_API_KEY` | Key for the Gemini provider (Google AI Studio → _Get API key_; the free tier works).                                                |
-| `NVB_AI_OPENAI_API_KEY` | Key for the OpenAI-compatible provider.                                                                                             |
-| `NVB_AI_DEFAULT_MODEL`  | Model used when the panel doesn't send one (default `gemini-2.5-flash`). The panel's `agent.model` overrides it per message.        |
-| `NVB_AI_WORKSPACE_ROOT` | Folder containing all `ngx-view-builder*` projects (defaults to two levels above `src/`). Used to resolve the knowledge-base files. |
-| `NVB_AI_REFERENCE_MAP`  | Explicit path to `retrieval-map.json` (defaults to `<workspace>/ngx-view-builder-docs-vitepress/docs/ai/retrieval-map.json`).       |
-| `NVB_AI_DOCS_SOURCE`    | Where documentation pages are read from: `auto` (default local file, published site as fallback), `local`, or `remote`.             |
-| `NVB_AI_DOCS_LLMS_URL`  | The published documentation bundle used by `auto`/`remote` (default `https://ngxviewbuilder.io/llms-full.txt`).                     |
-| `NVB_AI_DOCS_URL`       | Optional live-docs URL injected into prompts. Off by default, because the retrieval-map sources are the primary reference.          |
-
-Because the agent resolves `docs:` sources from disk _or_ from the published `llms-full.txt`, a deployed instance works without a checkout of the documentation repository. Only the `lib:` sources (library TypeScript interfaces and enums) are local-only, so keep the library repository next to the agent when you want those in the prompts.
-
-The provider is also inferred from the model id: `gemini-*` always routes to Gemini regardless of `NVB_AI_PROVIDER`. Legacy `PF_AI_*` variable names still work as a fallback.
-
-### How it builds answers
-
-- Its knowledge base is the **[AI reference](https://ngxviewbuilder.io/ai/) section of this documentation**, indexed by [`retrieval-map.json`](https://ngxviewbuilder.io/ai/#the-machine-index-retrieval-map-json). Based on the request profile (create/modify/review, element types, logic/data/actions, or a developer question) it loads a _selected_ slice of docs pages, library interfaces, enums, and property datasets into the prompt, not the whole repo, so prompts stay small.
-- It is not limited to generating JSON: **developer questions** (what an API method does, what it returns, how an event works, how to embed the builder) are answered in prose from the developer documentation via the map's `developer` source group.
-- `GET /health` reports `reference_map_loaded`, `reference_sources_total`, and `reference_sources_missing`; check it after moving any docs files.
-- Responses stream as `assistant_json_delta` chunks and finish with `assistant_done` carrying the generated/updated structure.
-
-### Where to customise
-
-| Concern                             | File                                               |
-| ----------------------------------- | -------------------------------------------------- |
-| Which docs/sources feed the prompts | `retrieval-map.json` in the docs repo (`docs/ai/`) |
-| LLM prompts & request profiling     | `src/prompts.js`                                   |
-| Reference-context loading & budgets | `src/reference-context.js`                         |
-| Gemini (Google AI Studio) API call  | `src/gemini.js`                                    |
-| OpenAI-compatible API call          | `src/openai.js`                                    |
-| Session storage                     | `src/session-store.js`                             |
-| Response JSON parsing               | `src/documentation.js`                             |
-| Routes & WebSocket wiring           | `src/server.js`                                    |
-
-## Adding models & providers
-
-**Models in the picker** are pure configuration. Extend `aiAssistant.models` with any `{ id, label }` pairs and make sure the backend maps those ids to a provider call:
-
-```ts
-aiAssistant: {
-  backendUrl: 'https://ai.example.com',
-  defaultModel: 'fast',
-  models: [
-    { id: 'fast',    label: 'Fast (small model)' },
-    { id: 'smart',   label: 'Smart (large model)' },
-    { id: 'private', label: 'On-prem model' },
-  ],
-}
-```
-
-With the reference backend, switching **provider** is one env var (`NVB_AI_PROVIDER`); with your own backend you can route each model id to a different provider. The panel doesn't care; it only ever sends the id.
-
-## Security checklist
-
-- Host the backend yourself and keep **API keys server-side only**. The panel never handles provider keys.
-- Put the endpoint behind your normal authentication (cookies/headers pass through the browser's `fetch` + WebSocket as usual for same-site setups).
-- Remember that the **whole view structure** is sent with every message, so treat the AI backend with the same data-protection rules as the rest of your app.
-- Validate/limit the structures your backend returns: whatever comes back in `assistant_done.structure` is applied to the canvas.
 
 ---
 
@@ -7760,7 +7582,7 @@ Use together with the table events to persist per-user column layouts and saved 
 | --- | --- |
 | `switchToTab(tab): void` | Switches the builder to a tab (`'editor'`, `'preview'`, `'jsonEditor'`, `'formSettings'`, `'translations'`, `'variables'`, or a plugin tab code). |
 | `requestTabChange(tab): void` | Emits `onTabChangeRequested`. The builder decides whether to honour it (useful when the host wraps tab navigation). |
-| `setAiAssistantConfig(config): void` | Sets the [AI assistant](https://ngxviewbuilder.io/developers/ai-chat) backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
+| `setAiAssistantConfig(config): void` | Sets the AI assistant backend config at runtime (`{ backendUrl }`); emits `onAiAssistantConfigChanged`. |
 | `getAiAssistantConfig(): INgxViewBuilderAiAssistantConfig` | Current AI assistant config. |
 
 ---
@@ -8840,7 +8662,7 @@ api.onDataSourceLoadFailed.add(({ sourceName, errorMessage }) =>
 | --- | --- |
 | `onThemeModeChanged` / `onCustomThemeChanged` | theme switches |
 | `onCssVariablesChanged` / `onCustomCssChanged` / `onCustomCssUrlsChanged` | style updates |
-| `onAiAssistantConfigChanged` | the [AI assistant](https://ngxviewbuilder.io/developers/ai-chat) backend config changed (`config.backendUrl`) |
+| `onAiAssistantConfigChanged` | the AI assistant backend config changed (`config.backendUrl`) |
 
 ## Templates & sidebar library
 
@@ -9907,6 +9729,815 @@ A batch upgrade of stored views is then a loop over your table: `inspect`, save 
 
 ---
 
+## Standalone element examples
+
+Source: https://ngxviewbuilder.io/developers/standalone-elements-examples
+
+# Examples
+
+Each recipe below is complete enough to paste into a component. They assume the setup from
+[Overview](https://ngxviewbuilder.io/developers/standalone-elements): runtime providers registered, stylesheet
+imported, icon font available.
+
+## A single field
+
+The smallest useful case. One input, one signal, nothing else.
+
+```ts
+import { Component, signal } from '@angular/core';
+import { NvbElement, NvbScope } from 'ngx-view-builder';
+
+@Component({
+  selector: 'app-search-bar',
+  imports: [NvbScope, NvbElement],
+  template: `
+    <nvb-scope [(data)]="filters">
+      <nvb-element type="text" [config]="queryConfig" />
+    </nvb-scope>
+  `,
+})
+export class SearchBarComponent {
+  filters = signal<Record<string, unknown>>({ query: '' });
+
+  queryConfig = {
+    name: 'query',
+    label: 'Search',
+    placeholder: 'Order number, customer, VAT code',
+  };
+}
+```
+
+`filters()` always holds the current value, so a computed can filter a list off it without
+any subscription.
+
+## Reacting to one field
+
+When you care about a single value rather than the whole object.
+
+```html
+<nvb-scope [(data)]="form">
+  <nvb-element type="select" [config]="warehouseConfig" (valueChange)="onWarehouse($event)" />
+</nvb-scope>
+```
+
+```ts
+warehouseConfig = {
+  name: 'warehouse',
+  label: 'Warehouse',
+  options: [
+    { label: 'Vilnius', value: 'VNO' },
+    { label: 'Kaunas', value: 'KUN' },
+  ],
+};
+
+onWarehouse(event: INvbElementValueChange): void {
+  this.loadStock(event.value as string);
+}
+```
+
+The event also fires when an expression writes the value, which is usually what you want.
+If you only care about what a person typed, compare `event.previousValue` or listen on the
+scope instead.
+
+## A button that runs your code
+
+Actions are declarative, so a button that should call your service gets an `actionCode` and
+no `type`. The library then does nothing on its own and simply reports it.
+
+```ts
+submitConfig = {
+  name: 'submit',
+  text: 'Create invoice',
+  icon: 'check',
+  tone: 'primary',
+  events: [{ trigger: 'click', actionCode: 'createInvoice' }],
+};
+```
+
+```html
+<nvb-element type="button" [config]="submitConfig" (action)="onAction($event)" />
+```
+
+```ts
+onAction(event: IElementActionRunEvent): void {
+  if (event.actionCode === 'createInvoice') {
+    this.invoices.create(this.form());
+  }
+}
+```
+
+To confirm first, keep it in the configuration rather than in your handler. The action only
+reaches you if the user agreed:
+
+```ts
+events: [
+  {
+    trigger: 'click',
+    actionCode: 'deleteInvoice',
+    confirmEnabled: true,
+    confirmTitle: 'Delete invoice',
+    confirmMessage: 'This cannot be undone.',
+  },
+],
+```
+
+## A form section with conditional fields
+
+The reason to put several elements in one scope: they can see each other.
+
+```html
+<nvb-scope [(data)]="form">
+  <nvb-element type="panel" [config]="deliveryPanel">
+    <nvb-element type="selectButton" [config]="methodConfig" />
+    <nvb-element type="text" [config]="addressConfig" />
+    <nvb-element type="select" [config]="pickupPointConfig" />
+  </nvb-element>
+</nvb-scope>
+```
+
+```ts
+deliveryPanel = { name: 'deliveryPanel', label: 'Delivery' };
+
+methodConfig = {
+  name: 'method',
+  label: 'Method',
+  options: [
+    { label: 'Courier', value: 'courier' },
+    { label: 'Pickup point', value: 'pickup' },
+  ],
+};
+
+addressConfig = {
+  name: 'address',
+  label: 'Address',
+  visibleIf: "method == 'courier'",
+  requireIf: "method == 'courier'",
+  resetOnHide: true,
+};
+
+pickupPointConfig = {
+  name: 'pickupPoint',
+  label: 'Pickup point',
+  visibleIf: "method == 'pickup'",
+  options: [
+    { label: 'Vilnius, Gedimino 1', value: 'vno-1' },
+    { label: 'Kaunas, Laisvės 10', value: 'kun-1' },
+  ],
+};
+```
+
+`resetOnHide` matters here. Without it the address the user typed stays in the data after
+they switch to pickup, and you post a shipment with both.
+
+## Calculated totals
+
+An expression writes into an element, and a validator guards the result.
+
+```html
+<nvb-scope [(data)]="order">
+  <nvb-element type="number" [config]="qtyConfig" />
+  <nvb-element type="number" [config]="priceConfig" />
+  <nvb-element type="number" [config]="totalConfig" />
+</nvb-scope>
+```
+
+```ts
+order = signal({ qty: 1, price: 49.9 });
+
+qtyConfig = { name: 'qty', label: 'Quantity', min: 1 };
+priceConfig = { name: 'price', label: 'Unit price' };
+
+totalConfig = {
+  name: 'total',
+  label: 'Total',
+  readOnly: true,
+  expression: '{qty} * {price}',
+  validators: [{ type: 'max', value: 10000, message: 'Order too large for self service' }],
+};
+```
+
+Both operands are number elements, so they already hold numbers and the expression needs no
+conversion. `toNumber()` belongs where a value arrives as text, or where an empty field
+should count as zero.
+
+## A tabbed form
+
+Each tab declares its own children.
+
+```html
+<nvb-scope [(data)]="product">
+  <nvb-element type="tabs" [config]="tabsConfig">
+    <nvb-tab value="general">
+      <nvb-element type="text" [config]="nameConfig" />
+      <nvb-element type="textarea" [config]="descriptionConfig" />
+    </nvb-tab>
+    <nvb-tab value="pricing">
+      <nvb-element type="number" [config]="priceConfig" />
+      <nvb-element type="number" [config]="vatConfig" />
+    </nvb-tab>
+  </nvb-element>
+</nvb-scope>
+```
+
+```ts
+tabsConfig = {
+  name: 'productTabs',
+  tabs: [
+    { label: 'General', value: 'general' },
+    { label: 'Pricing', value: 'pricing' },
+  ],
+};
+```
+
+Values from a tab that is not open are still in the data and still visible to expressions,
+so a condition on the general tab can depend on the price.
+
+Give tabs room. Below roughly 768 pixels of container width they switch to the stacked
+layout, which inside a narrow column looks like a bug but is the responsive behaviour.
+
+## A dialog
+
+The trigger and the content are one element.
+
+```html
+<nvb-scope [(data)]="form">
+  <nvb-element type="dialog" [config]="addressDialog">
+    <nvb-element type="text" [config]="streetConfig" />
+    <nvb-element type="text" [config]="cityConfig" />
+  </nvb-element>
+</nvb-scope>
+```
+
+```ts
+addressDialog = { name: 'addressDialog', label: 'Edit address' };
+```
+
+The dialog renders its own button, opens over the page and keeps its state under
+`__dialog.addressDialog` in the data, which you can read if you need to know whether it is
+open.
+
+## An editable line item table
+
+`dynamicTable` builds its columns from the configuration, and every column is an element,
+so each cell is a real control.
+
+```ts
+order = signal({
+  lines: [
+    { product: 'Keyboard', qty: 2, unit: 'pcs' },
+    { product: 'Coffee', qty: 1, unit: 'kg' },
+  ],
+});
+
+linesConfig = {
+  name: 'lines',
+  label: 'Order lines',
+  addRowButtonText: 'Add line',
+  confirmRowDeletion: true,
+  columns: [
+    { type: 'text', name: 'product', label: 'Product' },
+    { type: 'number', name: 'qty', label: 'Qty' },
+    {
+      type: 'select',
+      name: 'unit',
+      label: 'Unit',
+      options: [
+        { label: 'pcs', value: 'pcs' },
+        { label: 'kg', value: 'kg' },
+      ],
+    },
+  ],
+};
+```
+
+`order().lines` is an array of row objects, so posting it needs no transformation.
+
+## A read only data table
+
+`table` without a data source reads its rows from the scope data. Sorting, search and paging
+run in the browser.
+
+```ts
+data = signal({
+  invoices: [
+    { number: '2026-011', customer: 'Alfa UAB', issued: '2026-08-02', total: 1240.5 },
+    { number: '2026-012', customer: 'Beta AB', issued: '2026-08-05', total: 890 },
+  ],
+});
+
+invoicesConfig = {
+  name: 'invoices',
+  paginator: true,
+  pageSize: 10,
+  showQuickSearch: true,
+  quickSearchPlaceholder: 'Search invoices',
+  columnsConfig: [
+    { key: 'number', label: 'Number', sortable: true, width: 120 },
+    { key: 'customer', label: 'Customer', sortable: true },
+    { key: 'issued', label: 'Issued', type: 'date', sortable: true },
+    {
+      key: 'total',
+      label: 'Total',
+      type: 'number',
+      align: 'right',
+      sortable: true,
+      numberMinFractionDigits: 2,
+      numberMaxFractionDigits: 2,
+    },
+  ],
+};
+```
+
+Replacing the array in the signal replaces the rows, so this works just as well with data
+you fetched yourself.
+
+Watch the property names. `table` uses `columnsConfig` with a `key` per column,
+`dynamicTable` uses `columns` with a `name` per column. They are not interchangeable.
+
+## Validation before saving
+
+Validators live on the elements. To block a save, check the data yourself or let a
+`validateForm` action do it.
+
+```ts
+emailConfig = {
+  name: 'email',
+  label: 'Email',
+  required: true,
+  requiredMessage: 'We need an email to send the invoice',
+  validators: [{ type: 'email', message: 'That does not look like an email' }],
+};
+
+saveConfig = {
+  name: 'save',
+  text: 'Save',
+  tone: 'primary',
+  events: [{ trigger: 'click', actionCode: 'save', validateForm: true }],
+};
+```
+
+With `validateForm: true` the action stops when the form is invalid, so your `(action)`
+handler only runs on valid data.
+
+## A themed section
+
+Themes are CSS variables on the scope element, which keeps them local to that part of the
+screen.
+
+```html
+<nvb-scope [(data)]="form" [attr.style]="compactTheme">
+  <nvb-element type="text" [config]="codeConfig" />
+</nvb-scope>
+```
+
+```ts
+compactTheme = [
+  '--nvb-control-height: 28px',
+  '--nvb-input-height: 28px',
+  '--nvb-input-font-size: 12px',
+  '--nvb-input-radius: 2px',
+].join('; ');
+```
+
+Written as an attribute string rather than an object binding, because Angular's style object
+binding does not pass CSS custom properties through. It has to sit on the scope element
+itself, not on a wrapper around it.
+
+## A translated form
+
+```html
+<nvb-scope [(data)]="form" [language]="lang()" [translations]="texts">
+  <nvb-element type="text" [config]="emailConfig" />
+</nvb-scope>
+```
+
+```ts
+lang = signal('lt');
+
+texts = {
+  lt: {
+    'elements.email.label': 'El. paštas',
+    'elements.email.placeholder': 'jonas@imone.lt',
+  },
+};
+```
+
+Keys are structure paths, the same ones the builder exports. Anything without a translation
+keeps the text from the configuration, so a partial dictionary is fine.
+
+## Two independent forms on one screen
+
+Each scope is its own namespace, so the same field name in both is two unrelated keys.
+
+```html
+<nvb-scope [(data)]="sender">
+  <nvb-element type="text" [config]="addressConfig" />
+</nvb-scope>
+
+<nvb-scope [(data)]="receiver">
+  <nvb-element type="text" [config]="addressConfig" />
+</nvb-scope>
+```
+
+The same `addressConfig` object can be reused, because the name only has to be unique inside
+one scope. Expressions cannot cross the boundary either, which is exactly what you want
+here.
+
+---
+
+## Standalone elements
+
+Source: https://ngxviewbuilder.io/developers/standalone-elements
+
+# Standalone elements
+
+The runtime renders a whole saved view. Sometimes you only want one element, or a handful,
+placed inside a screen you wrote by hand. `<nvb-element>` does that: it takes the same
+configuration JSON the builder saves and renders that single element wherever you put it.
+
+This is meant for the screens you keep writing yourself. The checkout page, the settings
+form, the admin tool that never fitted the builder. Those screens can now use the same
+controls, the same tokens and the same conditional logic as everything else in your app,
+instead of a second set of components that only look similar.
+
+## Setup
+
+Register the runtime providers once, exactly as you would for the runtime component, and
+import the stylesheet:
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideNgxViewBuilderRuntime } from 'ngx-view-builder';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideNgxViewBuilderRuntime()],
+});
+```
+
+```css
+@import 'ngx-view-builder/styles/index.css';
+```
+
+Several elements draw Material Symbols glyphs: the plus and minus of a number stepper, the
+chevron of an accordion, the error markers. The font is not bundled, so add it in your
+application, either from a CDN or self hosted:
+
+```bash
+npm i material-symbols
+```
+
+```css
+@import 'material-symbols/index.css';
+```
+
+Without it those glyphs appear as their raw ligature names, `expand_more` and friends.
+
+## One element
+
+```ts
+import { Component, signal } from '@angular/core';
+import { NvbElement, NvbScope } from 'ngx-view-builder';
+
+@Component({
+  selector: 'app-quick-form',
+  imports: [NvbScope, NvbElement],
+  template: `
+    <nvb-scope [(data)]="form">
+      <nvb-element type="text" [config]="emailConfig" />
+    </nvb-scope>
+  `,
+})
+export class QuickFormComponent {
+  form = signal<Record<string, unknown>>({});
+
+  emailConfig = {
+    name: 'email',
+    label: 'Email',
+    placeholder: 'jane@company.com',
+    required: true,
+  };
+}
+```
+
+`type` is the element type, the same string the builder writes in a view. `config` is that
+element's own JSON. You can copy a definition out of a saved view and paste it here
+unchanged, which also means the property reference in these docs applies as is.
+
+## Scopes
+
+`<nvb-scope>` gives the elements inside it one shared data object and one shared namespace.
+That is what lets them see each other:
+
+```html
+<nvb-scope [(data)]="form">
+  <nvb-element type="select" [config]="countryConfig" />
+  <nvb-element type="text" [config]="vatConfig" />
+</nvb-scope>
+```
+
+```ts
+countryConfig = {
+  name: 'country',
+  label: 'Country',
+  options: [
+    { label: 'Lithuania', value: 'LT' },
+    { label: 'Latvia', value: 'LV' },
+  ],
+};
+
+vatConfig = {
+  name: 'vat',
+  label: 'VAT code',
+  visibleIf: "country == 'LT'",
+};
+```
+
+The element name is the key in the data object and the name expressions refer to. Rename an
+element and every expression pointing at the old name quietly stops matching, so treat the
+name as part of the contract.
+
+Use one scope per screen. Two scopes never see each other, which means two different pages
+can both have a field called `amount` without any risk of collision. An element written
+without a surrounding scope falls back to a shared application wide scope, which is fine for
+a single isolated control but becomes a trap as soon as names repeat, so prefer to always
+write the scope.
+
+## Getting data out
+
+Three ways, from the broadest to the narrowest.
+
+**The whole scope.** `[(data)]` is a two way binding to your own signal. It updates after
+every change, including values written by an expression rather than typed by a person, and
+writing to the signal pushes the values back into the elements.
+
+**One element.** `(valueChange)` fires when that element's own value changes, whoever
+changed it:
+
+```html
+<nvb-element type="select" [config]="countryConfig" (valueChange)="onCountry($event)" />
+```
+
+```ts
+onCountry(event: INvbElementValueChange): void {
+  // event.name, event.value, event.previousValue
+}
+```
+
+**Actions.** Buttons and other elements run the actions configured in their `events`. Give
+an action an `actionCode` and listen for it, which is how you run your own code from a
+button:
+
+```ts
+saveConfig = {
+  name: 'save',
+  text: 'Save',
+  tone: 'primary',
+  events: [{ trigger: 'click', actionCode: 'saveInvoice' }],
+};
+```
+
+```html
+<nvb-element type="button" [config]="saveConfig" (action)="onAction($event)" />
+```
+
+The event carries `actionCode`, `trigger`, the whole action configuration and whether it
+succeeded. Actions with a built in `type`, such as `navigate` or `dataSource`, still do
+their own work; the output simply lets you react to them as well.
+
+Reactive forms are not supported yet. There is no `ControlValueAccessor`, so
+`formControlName` will not bind. Use `[(data)]` or `(valueChange)` instead.
+
+## Containers
+
+Nest the tags to express containment:
+
+```html
+<nvb-scope [(data)]="form">
+  <nvb-element type="panel" [config]="addressPanel">
+    <nvb-element type="text" [config]="streetConfig" />
+    <nvb-element type="text" [config]="zipConfig" />
+  </nvb-element>
+</nvb-scope>
+```
+
+A nested tag renders nothing by itself. It contributes its definition and its position in
+the tree, and the container decides where and how many times its children appear. That is
+why an accordion shows its content inside the open section and a dialog shows it inside the
+overlay, without you arranging anything.
+
+`panel`, `dialog`, `accordion`, `progressFlow` and `emptyBlock` all work this way.
+
+### Tabs
+
+Tabs keep their children per tab, so the tab each child belongs to has to be stated:
+
+```html
+<nvb-element type="tabs" [config]="tabsConfig">
+  <nvb-tab value="details">
+    <nvb-element type="text" [config]="titleConfig" />
+  </nvb-tab>
+  <nvb-tab value="pricing">
+    <nvb-element type="number" [config]="priceConfig" />
+  </nvb-tab>
+</nvb-element>
+```
+
+```ts
+tabsConfig = {
+  name: 'productTabs',
+  tabs: [
+    { label: 'Details', value: 'details' },
+    { label: 'Pricing', value: 'pricing' },
+  ],
+};
+```
+
+The `value` of an `<nvb-tab>` has to match the `value` of one of the tabs in the config.
+
+### Not supported yet
+
+`dynamicPanel` and `splitter` are runtime only for now. The repeater builds a model per
+data row, and the splitter needs a marker per pane in the same way tabs do. For a screen
+that leans on either of them, render a saved view with `<ngx-view-builder-runtime>`
+instead.
+
+## Tables
+
+Both table elements work, and they take their data from different places.
+
+`dynamicTable` is the editable one. Its columns come from the configuration, and each
+column is an element definition:
+
+```ts
+linesConfig = {
+  name: 'lines',
+  label: 'Order lines',
+  addRowButtonText: 'Add line',
+  columns: [
+    { type: 'text', name: 'product', label: 'Product' },
+    { type: 'number', name: 'qty', label: 'Qty' },
+  ],
+};
+```
+
+`table` is the read only one. Without a data source it reads its rows straight from the
+scope data, so an array is all it needs. Sorting, quick search and paging then run in the
+browser:
+
+```ts
+form = signal({
+  invoices: [
+    { number: '2026-011', customer: 'Alfa UAB', total: 1240.5 },
+    { number: '2026-012', customer: 'Beta AB', total: 890 },
+  ],
+});
+
+invoicesConfig = {
+  name: 'invoices',
+  paginator: true,
+  pageSize: 5,
+  showQuickSearch: true,
+  columnsConfig: [
+    { key: 'number', label: 'Number', sortable: true },
+    { key: 'customer', label: 'Customer', sortable: true },
+    {
+      key: 'total',
+      label: 'Total',
+      type: 'number',
+      align: 'right',
+      numberMinFractionDigits: 2,
+      numberMaxFractionDigits: 2,
+    },
+  ],
+};
+```
+
+The two use different property names on purpose. `dynamicTable` has `columns`, and every
+entry is an element with a `name`, because each cell is an editable control. `table` has
+`columnsConfig`, and every entry is a column with a `key` naming the field to read from the
+row object.
+
+## Logic
+
+Everything the builder offers in the logic panel works here, because it is the same engine.
+Conditions live on the element and refer to other elements by name:
+
+```ts
+{ name: 'vat', visibleIf: "country == 'LT'" }
+{ name: 'discount', disableIf: 'total < 100' }
+{ name: 'total', expression: '{price} * {quantity}' }
+{ name: 'shipping', requireIf: "delivery == 'courier'" }
+```
+
+Expressions read the shared data object, not the element models. A field whose value sits
+in the data still resolves even when the element that owns it is not on screen, for example
+because it lives in a tab that is currently closed. A name that is not in the data at all
+resolves to `undefined`, which is not an error, just a condition that comes out false.
+
+Validators are configured the same way and run automatically, including on values that an
+expression computed rather than a person typed:
+
+```ts
+{
+  name: 'total',
+  expression: '{price} * {quantity}',
+  validators: [{ type: 'max', value: 400, message: 'Must not exceed 400' }],
+}
+```
+
+## Theming
+
+The elements read their appearance from CSS variables. Set them on the element container
+and the whole set follows, with no build step:
+
+```css
+.nvb-root {
+  --color-primary-500: #0f7b7b;
+  --nvb-input-radius: 12px;
+  --nvb-control-height: 44px;
+}
+```
+
+Two things are worth knowing before writing a theme.
+
+The variables have to sit on the element container itself or on something inside it.
+`.nvb-root` is where the tokens are declared, so a value set on an ancestor of it loses to
+that declaration. Putting the override on the `<nvb-scope>` element works, because an
+inline style wins over a class rule.
+
+The neutral ramp is a surface system, not only text. `--color-neutral-000` paints the
+background of panels, tab strips and accordions, `--color-neutral-300` draws their borders
+and `--color-neutral-800` colours the field labels. A dark theme that sets only the
+`--color-text-*` variables leaves all of those light and ends up half converted.
+
+The full token list is in [Theming and design tokens](https://ngxviewbuilder.io/developers/theming).
+
+## Translations
+
+Two separate systems, and both are driven from the scope.
+
+The strings the library ships with, such as the add row button or the confirmation dialog,
+come from the UI dictionary registered once in your application:
+
+```ts
+provideNgxViewBuilderUiTranslations({
+  lt: { 'confirm.confirm': 'Tęsti' },
+});
+```
+
+The labels and placeholders you wrote in the configuration are translated from a dictionary
+you pass to the scope, keyed by the structure path exactly as the builder exports it:
+
+```html
+<nvb-scope [(data)]="form" [language]="lang()" [translations]="texts">
+```
+
+```ts
+texts = {
+  lt: {
+    'elements.email.label': 'El. paštas',
+    'elements.email.placeholder': 'jonas@imone.lt',
+  },
+};
+```
+
+`language` switches both at once. A key with no translation keeps its original text.
+
+## Layout and width
+
+Several elements change their layout when their container gets narrow, and that is a
+measurement of the container, not of the window. Tabs stack vertically and tables switch to
+a label and value list below roughly 768 pixels of container width. On a wide screen inside
+a narrow column that still counts as narrow, so if a table or a tab strip suddenly looks
+like its mobile form, check how much width its column actually has.
+
+## Alongside the runtime
+
+A runtime component and standalone elements can sit on the same page. Each runtime creates
+its own services, and so does each scope, so identical names on both sides are unrelated
+keys and nothing collides. Styling is separate too, because the runtime renders inside a
+shadow root and re-declares its tokens there.
+
+One thing is shared. The runtime reports its measured content width to the whole
+application, and that is what the width based layout switching reads. A runtime inside a
+narrow column therefore makes every standalone element on the page believe the viewport is
+that narrow. If you combine the two at very different widths, check the result.
+
+## Reference
+
+| Tag | Input | Purpose |
+| --- | --- | --- |
+| `<nvb-scope>` | `[(data)]` | Two way binding to the shared data object |
+| | `[language]` | Language for both translation systems |
+| | `[translations]` | Label translations, keyed by structure path |
+| `<nvb-element>` | `[type]` | Element type, as written in a saved view |
+| | `[config]` | The element's own configuration JSON |
+| | `(valueChange)` | This element's value changed |
+| | `(action)` | This element ran one of its actions |
+| `<nvb-tab>` | `[value]` | Which tab of the parent tabs element the children belong to |
+
+---
+
 ## Structure JSON
 
 Source: https://ngxviewbuilder.io/developers/structure-json
@@ -10311,7 +10942,7 @@ Source: https://ngxviewbuilder.io/creators/ai-assistant
 The builder has a built-in AI chat. Click the **AI** button in the builder header and the chat panel opens **in place of the properties sidebar** on the right. Click the button again to switch back to properties.
 
 ::: info Needs a backend
-The AI assistant talks to an AI service configured by your developer ([setup guide](https://ngxviewbuilder.io/developers/ai-chat)). If you see *"Host application has not provided AI assistant backend URL via API yet"*, the service isn't connected in your project.
+The AI assistant talks to an AI service configured by your developer. If you see *"Host application has not provided AI assistant backend URL via API yet"*, the service isn't connected in your project.
 :::
 
 ## What it can do
@@ -10363,7 +10994,7 @@ Two Logic properties produce values instead of true/false.
 **Expression** continuously calculates the element's value. Whenever a referenced field changes, the result is recomputed and written into the field.
 
 ```text
-toNumber({price}) * toNumber({quantity})        line total
+{price} * {quantity}                            line total
 {firstName} + " " + {lastName}                  full name
 {isCompany} ? {companyCode} : {personalCode}    pick one of two codes
 sumInArray({orderLines}, "total")               sum over table rows
@@ -10413,7 +11044,7 @@ Common defaults:
 | `quantity` | Number | Default value `1` |
 | `unitPrice` | Number | filled from a product data source |
 | `discount` | Number | Default value `0` |
-| `lineTotal` | Number, read-only | Expression: `toNumber({quantity}) * toNumber({unitPrice}) * (1 - toNumber({discount}) / 100)` |
+| `lineTotal` | Number, read-only | Expression: `{quantity} * {unitPrice} * (1 - {discount} / 100)` |
 
 ---
 
@@ -10444,7 +11075,7 @@ isEmpty({companyCode})
 notEmpty({email}) && notEmpty({phone})
 contains({roles}, "admin")
 containsAny({roles}, ["admin", "manager"])
-toNumber({price}) * toNumber({quantity})
+{price} * {quantity}
 len({selectedItems}) > 0
 inRange({age}, 18, 65)
 ```
@@ -10454,7 +11085,7 @@ inRange({age}, 18, 65)
 ```text
 {isCompany} ? {companyCode} : {personalCode}
 {country} == "US" ? "Domestic" : "International"
-toNumber({quantity}) > 0 ? toNumber({sum}) / toNumber({quantity}) : 0
+{quantity} > 0 ? {sum} / {quantity} : 0
 ```
 
 Nested:
@@ -10499,7 +11130,7 @@ isWeekend({deliveryDate})                    weekend check
 
 ```text
 row.status == "active"
-toNumber(panel.amount) > 1000
+panel.amount > 1000
 {el1[parentIndex].country} == "US"
 ```
 
@@ -11875,7 +12506,7 @@ Inside a dynamic panel the table exists once per entry, so the key carries the e
 
 Example: order lines:
 
-- Columns: `product` (select with data source), `quantity` (number), `price` (number, read-only, filled by expression from the product), `total` (number, *Expression*: `toNumber(row.quantity) * toNumber(row.price)`).
+- Columns: `product` (select with data source), `quantity` (number), `price` (number, read-only, filled by expression from the product), `total` (number, *Expression*: `{row.quantity} * {row.price}`).
 - Below the table, a read-only Number named `orderTotal` with *Expression*: `sumInArray({orderLines}, "total")`.
 
 ## List grid (`listGrid`)
@@ -12303,7 +12934,7 @@ Examples:
 ```text
 isEmpty({companyCode})
 contains({roles}, "admin")
-toNumber({price}) * toNumber({quantity})
+{price} * {quantity}
 dateDiffDays({startDate}, {endDate})
 ```
 
@@ -12543,8 +13174,19 @@ All functions available in expressions, grouped by purpose. Your project may add
 
 | Function | Returns | Example |
 | --- | --- | --- |
-| `toNumber(value)` | value as number (invalid → 0) | `toNumber({price}) > 10` |
+| `toNumber(value)` | value as number (invalid → 0) | `toNumber({codeFromApi}) > 10` |
 | `inRange(value, min, max)` | true if min ≤ value ≤ max | `inRange({age}, 18, 65)` |
+
+::: tip When toNumber is actually needed
+A Number field already stores a number, so `{price} * {quantity}` is correct as written and
+wrapping both sides adds nothing. Use `toNumber` when the value really arrives as text: a
+Text field, a value from a data source, a select whose options carry string values, or a
+Number field switched to *Store value as: string*.
+
+It has a second, deliberate use. `toNumber` turns anything invalid into `0`, so an empty
+field becomes zero instead of leaving the whole calculation empty. If that is the behaviour
+you want, keep it, and know that you kept it for the default and not for the conversion.
+:::
 
 ## Array aggregation
 
@@ -13267,7 +13909,7 @@ A `custom` rule is a true/false [expression](https://ngxviewbuilder.io/creators/
 ```text
 dateDiffDays({startDate}, {endDate}) < 1        error: end date not after start
 {password} != {passwordRepeat}                  error: fields don't match
-toNumber({advance}) > toNumber({total})         error: advance exceeds total
+{advance} > {total}                             error: advance exceeds total
 len({phone}) > 0 && !startsWithAny({phone}, "+370")   error: filled but wrong prefix
 ```
 

@@ -20,7 +20,6 @@
 ## Developer documentation
 
 - [Angular form & view builder for developers](https://ngxviewbuilder.io/developers/): Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
-- [AI assistant backend](https://ngxviewbuilder.io/developers/ai-chat): Wire the builder's AI chat panel to your own AI service, covering configuration, protocol, models, and the reference backend.
 - [AI command API](https://ngxviewbuilder.io/developers/ai-command-api): A JSON command surface that lets an external agent read and edit a view while the builder is open.
 - [API service reference](https://ngxviewbuilder.io/developers/api-service): Every public method of NgxViewBuilderApiService, area by area.
 - [Architecture](https://ngxviewbuilder.io/developers/architecture): How the builder, runtime, shared core, and plugins fit together.
@@ -42,6 +41,8 @@
 - [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved view definitions to end users and collect their data.
 - [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Inject route params, user context, and derived values into views.
 - [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning): How stored views survive library upgrades, what schemaVersion means, and how to add your own migrations.
+- [Standalone element examples](https://ngxviewbuilder.io/developers/standalone-elements-examples): Working recipes for using the built-in elements inside your own templates.
+- [Standalone elements](https://ngxviewbuilder.io/developers/standalone-elements): Use the built-in elements directly in your own templates, without rendering a saved view.
 - [Structure JSON](https://ngxviewbuilder.io/developers/structure-json): The IStructure document, covering settings, pages, elements, data sources, and localization.
 - [Theming & design tokens](https://ngxviewbuilder.io/developers/theming): Light/dark modes, token overrides, and full custom themes.
 - [UI translations](https://ngxviewbuilder.io/developers/ui-translations): Translate the builder interface itself (tabs, buttons, property labels).

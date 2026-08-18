@@ -8,7 +8,7 @@ description: The built-in AI chat panel. Describe changes in plain language and 
 The builder has a built-in AI chat. Click the **AI** button in the builder header and the chat panel opens **in place of the properties sidebar** on the right. Click the button again to switch back to properties.
 
 ::: info Needs a backend
-The AI assistant talks to an AI service configured by your developer ([setup guide](../developers/ai-chat)). If you see *"Host application has not provided AI assistant backend URL via API yet"*, the service isn't connected in your project.
+The AI assistant talks to an AI service configured by your developer. If you see *"Host application has not provided AI assistant backend URL via API yet"*, the service isn't connected in your project.
 :::
 
 ## What it can do
