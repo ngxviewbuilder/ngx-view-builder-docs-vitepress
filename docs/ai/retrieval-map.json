@@ -1,5 +1,5 @@
 {
-  "$comment": "Machine index for AI agents (used by ngx-view-builder-ai-agent). Path prefixes: 'docs:' resolves against roots.docs, 'lib:' against roots.library; both roots are relative to the workspace root (the folder containing all ngx-view-builder* projects). maxChars is the per-source character budget injected into the prompt. When documentation moves, update this file; the agent code does not hardcode paths.",
+  "$comment": "Machine index for AI agents driving the builder over MCP. Path prefixes: 'docs:' resolves against roots.docs, 'lib:' against roots.library; both roots are relative to the workspace root (the folder containing all ngx-view-builder* projects). maxChars is the per-source character budget injected into the prompt. When documentation moves, update this file; the agent code does not hardcode paths.",
   "roots": {
     "docs": "ngx-view-builder-docs-vitepress/docs",
     "library": "ngx-view-builder/projects/ngx-view-builder/src"

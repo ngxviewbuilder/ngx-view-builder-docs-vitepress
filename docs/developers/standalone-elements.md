@@ -32,19 +32,23 @@ bootstrapApplication(AppComponent, {
 @import 'ngx-view-builder/styles/index.css';
 ```
 
-Several elements draw Material Symbols glyphs: the plus and minus of a number stepper, the
-chevron of an accordion, the error markers. The font is not bundled, so add it in your
-application, either from a CDN or self hosted:
+Icons need no setup. The plus and minus of a number stepper, the chevron of an accordion,
+the calendar of a datepicker: every glyph a built-in element draws is inline SVG that ships
+with the package, swapped in as the element renders. There is no icon font to install and
+nothing to load over the network. Your own icons go in through
+[Custom SVG icons](./icons), the same way they do in the runtime.
 
-```bash
-npm i material-symbols
-```
+If a host application's stylesheet is layered, so is this one: everything in `index.css`
+lives in `@layer reset, tokens, components, fpUtilities, elements`. Unlayered CSS in the
+host beats all of it whatever the specificity, and a plain CSS `@import` is always hoisted
+to the top of the bundle, so the layer order cannot be fixed by moving the import line.
+Declare the order yourself in a stylesheet loaded before the rest, listed first in the
+`styles` array of `angular.json`:
 
 ```css
-@import 'material-symbols/index.css';
+/* src/layers.css, with Tailwind as the example host */
+@layer theme, base, reset, tokens, components, fpUtilities, elements, utilities;
 ```
-
-Without it those glyphs appear as their raw ligature names, `expand_more` and friends.
 
 ## One element
 
