@@ -7790,6 +7790,8 @@ Declarative equivalents exist on `runtimeSettings` (`customCss`, `customCssUrls`
 
 ## Targeting elements
 
+- Every class the library renders starts with `nvb-`, so `nvb-field`, `nvb-panel`, `nvb-dropdown`. Anything without that prefix in a view belongs to you or to a template. Views written before 0.4.0 used unprefixed names and need updating.
+- Custom CSS is injected without a cascade layer, so it beats the library's own rules without needing `!important`.
 - Elements render with stable identity hooks, so prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
 - Template HTML ([template library](https://ngxviewbuilder.io/creators/templates)) carries its own scoped CSS, so for card layouts prefer a template's CSS over global custom CSS.
 - Custom-HTML elements can include class names that your custom CSS styles.
@@ -8881,11 +8883,38 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Component styles ship with the components themselves, so no global stylesheet import is required. Standalone CSS entry points are exported for advanced setups (e.g. styling outside the components):
+## Stylesheet
+
+Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. Import it once:
 
 ```css
 @import 'ngx-view-builder/styles/index.css';
 ```
+
+Leaving it out does not blank the UI, which is what makes it easy to miss. The components still render and still have their own layout, they simply lose every token: inputs come out around 26px instead of 40px, labels fall back to plain black, and surfaces turn transparent.
+
+### Layer order
+
+Everything in the stylesheet lives in `@layer reset, tokens, components, fpUtilities, elements`. Cascade layers only help if the host takes part in them, and two rules decide whether it does.
+
+Unlayered CSS beats layered CSS whatever the specificity. A host that writes its styles outside any layer, which is the default for Tailwind v3 and for most hand written stylesheets, will override every rule the library ships.
+
+A plain CSS `@import` is always hoisted to the top of the bundle, so the layer order cannot be fixed by moving the import line around. Declare the order yourself, in a stylesheet loaded before everything else:
+
+```css
+/* src/layers.css, with Tailwind as the example host */
+@layer theme, base, reset, tokens, components, fpUtilities, elements, utilities;
+```
+
+```json
+"styles": ["src/layers.css", "src/styles.scss"]
+```
+
+Our layers now sit after the host's base and reset, and the host's utilities still win over element styles, which is usually what you want.
+
+### Name collisions
+
+Every class and every custom property the library ships is prefixed with `nvb-`, so `nvb-field`, `nvb-dropdown`, `--nvb-color-neutral-300`. Nothing in the package answers to a generic name any more, and a host is free to keep its own `.field` or `--color-neutral-300` meaning whatever it likes. Before 0.4.0 those names were shared, which broke both directions at once.
 
 ## Initialization
 
@@ -10180,17 +10209,11 @@ with the package, swapped in as the element renders. There is no icon font to in
 nothing to load over the network. Your own icons go in through
 [Custom SVG icons](https://ngxviewbuilder.io/developers/icons), the same way they do in the runtime.
 
-If a host application's stylesheet is layered, so is this one: everything in `index.css`
-lives in `@layer reset, tokens, components, fpUtilities, elements`. Unlayered CSS in the
-host beats all of it whatever the specificity, and a plain CSS `@import` is always hoisted
-to the top of the bundle, so the layer order cannot be fixed by moving the import line.
-Declare the order yourself in a stylesheet loaded before the rest, listed first in the
-`styles` array of `angular.json`:
-
-```css
-/* src/layers.css, with Tailwind as the example host */
-@layer theme, base, reset, tokens, components, fpUtilities, elements, utilities;
-```
+The stylesheet is not optional here. Element components carry their own layout, but every
+size, colour and radius comes from tokens that only this file declares, so without it the
+controls render at the wrong height with no theme at all. If your application already uses
+cascade layers, read [Layer order](https://ngxviewbuilder.io/developers/installation#layer-order) as well: ours has to be
+placed among yours or unlayered host CSS quietly wins over all of it.
 
 ## One element
 
@@ -10452,7 +10475,7 @@ and the whole set follows, with no build step:
 
 ```css
 .nvb-root {
-  --color-primary-500: #0f7b7b;
+  --nvb-color-primary-500: #0f7b7b;
   --nvb-input-radius: 12px;
   --nvb-control-height: 44px;
 }
@@ -10465,10 +10488,10 @@ The variables have to sit on the element container itself or on something inside
 that declaration. Putting the override on the `<nvb-scope>` element works, because an
 inline style wins over a class rule.
 
-The neutral ramp is a surface system, not only text. `--color-neutral-000` paints the
-background of panels, tab strips and accordions, `--color-neutral-300` draws their borders
-and `--color-neutral-800` colours the field labels. A dark theme that sets only the
-`--color-text-*` variables leaves all of those light and ends up half converted.
+The neutral ramp is a surface system, not only text. `--nvb-color-neutral-000` paints the
+background of panels, tab strips and accordions, `--nvb-color-neutral-300` draws their borders
+and `--nvb-color-neutral-800` colours the field labels. A dark theme that sets only the
+`--nvb-color-text-*` variables leaves all of those light and ends up half converted.
 
 The full token list is in [Theming and design tokens](https://ngxviewbuilder.io/developers/theming).
 
@@ -10662,13 +10685,23 @@ All visuals derive from CSS custom properties (design tokens): color scales, fon
 
 | Family | Tokens | Used for |
 | --- | --- | --- |
-| Primary | `--color-primary-050 … 950` | brand, focus, active states |
-| Neutral | `--color-neutral-000 … 950` | surfaces, borders, text |
-| Risk / Warning / Caution | `--color-risk-*`, `--color-warning-*` | destructive & warning states |
-| Success / Info | `--color-success-*`, `--color-info-*` | positive & informational states |
+| Primary | `--nvb-color-primary-050 … 950` | brand, focus, active states |
+| Neutral | `--nvb-color-neutral-000 … 950` | surfaces, borders, text |
+| Risk / Warning / Caution | `--nvb-color-risk-*`, `--nvb-color-warning-*` | destructive & warning states |
+| Success / Info | `--nvb-color-success-*`, `--nvb-color-info-*` | positive & informational states |
 | Typography | `--nvb-font-family-base` | base font stack |
 
 Values are `oklch(...)` colors on an 050-950 scale (050 lightest). Components mix tokens with `color-mix()`, so overriding a scale re-colors everything consistently.
+
+## Where the tokens live
+
+Every name carries the `nvb-` prefix, and the declarations sit on `.nvb-root` and on the runtime's shadow host, never on `:root`. Both parts matter for a host application.
+
+The prefix keeps our palette out of yours. A design system that stores its colors as HSL channel triplets for Tailwind writes `--color-neutral-300: 214 32% 91%`, and before 0.4.0 we declared that same name as an oklch color. Ours won inside the view, so any host rule that still applied there computed `hsl(oklch(...))`, which is not a color at all, and the declaration fell back to `currentColor`. Inputs came out with thick black borders and nothing in the browser pointed at the cause.
+
+Not putting them on `:root` keeps the reverse true: importing our stylesheet cannot change how the rest of your application looks.
+
+`--nvb-surface` is the one token meant for the host rather than for us. `.nvb-root` paints its own background so a light theme stays readable on a dark page, and setting `--nvb-surface: transparent` turns that off when the view already sits on a surface you control.
 
 ## Light / dark mode
 
@@ -10685,20 +10718,20 @@ or `api.setThemeMode('dark')`. Creators can also set a default in Form settings.
 
 ```ts
 api.setCssVariables({
-  '--color-primary-500': 'oklch(64% 0.19 145)',   // brand green
+  '--nvb-color-primary-500': 'oklch(64% 0.19 145)',   // brand green
   '--nvb-font-family-base': "'Inter', sans-serif",
 });
 ```
 
-or declaratively: `[cssVariables]="{ '--color-primary-500': '...' }"`.
+or declaratively: `[cssVariables]="{ '--nvb-color-primary-500': '...' }"`.
 
 **Full custom theme**, with per-mode token sets:
 
 ```ts
 api.setCustomTheme({
   shared: { '--nvb-font-family-base': "'Inter', sans-serif" },
-  light:  { '--color-primary-500': 'oklch(64% 0.19 145)' },
-  dark:   { '--color-primary-500': 'oklch(72% 0.17 145)' },
+  light:  { '--nvb-color-primary-500': 'oklch(64% 0.19 145)' },
+  dark:   { '--nvb-color-primary-500': 'oklch(72% 0.17 145)' },
   mergeWithDefaults: true,     // start from the built-in theme
 });
 ```
@@ -10711,9 +10744,9 @@ Write custom element styles against the tokens and they follow every theme autom
 
 ```css
 .note {
-  background: color-mix(in oklab, var(--color-info-100) 24%, var(--color-neutral-000));
-  border: 1px solid var(--color-neutral-300);
-  color: var(--color-neutral-900);
+  background: color-mix(in oklab, var(--nvb-color-info-100) 24%, var(--nvb-color-neutral-000));
+  border: 1px solid var(--nvb-color-neutral-300);
+  color: var(--nvb-color-neutral-900);
 }
 ```
 
@@ -10818,6 +10851,83 @@ One-off resolution: `api.resolveHostLanguage(...)` / `api.applyHostLanguage(...)
 2. Translate the values; keep the keys.
 3. Register via the provider; set `language` or wire `startLanguageSync`.
 4. Untranslated keys fall back to built-in English texts.
+
+---
+
+## Upgrading to 0.4.0
+
+Source: https://ngxviewbuilder.io/developers/upgrading-0-4-0
+
+# Upgrading to 0.4.0
+
+One idea runs through this release: nothing the library puts into your stylesheet answers to a generic name any more. 1145 classes and 144 custom properties gained an `nvb-` prefix.
+
+The rename is mechanical, but it is not cosmetic. Sharing names with a host application broke real applications in ways that were hard to trace back, and the two bugs fixed alongside it were both symptoms of the same idea being applied too loosely.
+
+## What changed
+
+| Before | After |
+| --- | --- |
+| `.field`, `.field__label` | `.nvb-field`, `.nvb-field__label` |
+| `.box`, `.panel`, `.row`, `.column` | `.nvb-box`, `.nvb-panel`, `.nvb-row`, `.nvb-column` |
+| `.dropdown`, `.input-wrapper`, `.select-container` | `.nvb-dropdown`, `.nvb-input-wrapper`, `.nvb-select-container` |
+| `.preview-form-body`, `.page__header` | `.nvb-preview-form-body`, `.nvb-page__header` |
+| `--color-primary-500`, `--color-neutral-300` | `--nvb-color-primary-500`, `--nvb-color-neutral-300` |
+| `--radius-md`, `--space-3`, `--text-body1` | `--nvb-radius-md`, `--nvb-space-3`, `--nvb-text-body1` |
+
+Names that were never ours are untouched, so `cdk-*`, `ng-*`, `cm-*` and `material-symbols-outlined` stay exactly as they were.
+
+## Why the custom properties mattered most
+
+The class rename fixes an ordinary collision: a host rule such as `.field { border: 2px solid }` used to land on our fields, because our `.field` set no border of its own and nothing was there to compete.
+
+The token rename fixes something less obvious. A design system that feeds Tailwind stores its palette as HSL channel triplets:
+
+```css
+:root {
+  --color-neutral-300: 214 32% 91%;
+}
+```
+
+We declared the same name as an oklch color on `.nvb-root`, and inside a view ours won. Any host rule that still applied there, a global `input` style for instance, then resolved to `hsl(oklch(86.94% 0.0199 253.37) / 1)`. That is not a color, so the whole declaration fell back to `currentColor`, and inputs appeared with thick black borders that matched the text. Nothing in the browser pointed at the palette.
+
+Both palettes now coexist, because they no longer share a single name.
+
+## Fixing your integration
+
+Search your own code for the old names. Most projects have only a handful of hits, usually in one place.
+
+```bash
+grep -rnE "\.(field|box|panel|row|column|dropdown|page|view|preview-[a-z-]+)\b" src
+grep -rn -- "--color-\|--radius-\|--space-\|--text-" src
+```
+
+Four places tend to have them:
+
+**Host stylesheets and directives** that reach into a rendered view. Add the prefix.
+
+**Saved views**, in `settings.customCss`. These live in your database rather than your repository, so they are the easiest to forget. There is no automatic migration, because rewriting CSS a creator wrote is not something a migration should do quietly.
+
+**Theme variables** passed through `api.setCssVariables()`, `setCustomTheme()` or `runtimeSettings`. Keys have to match the new names or the override does nothing.
+
+**Custom element and template CSS** that reads tokens, such as `var(--color-neutral-300)`.
+
+If you have to support both versions for a while, list both spellings side by side. A selector list costs nothing and lets the change land before the package bump:
+
+```css
+.nvb-page__header,
+.page__header {
+  display: none;
+}
+```
+
+## Two fixes worth knowing about
+
+**Floating panels no longer open in the wrong place.** Menus use `position: fixed` and were positioned from viewport coordinates, which the browser resolves against the nearest ancestor that establishes a containing block. Host applications create one routinely with `transform`, `filter` or `will-change`, and the menu then landed off by the whole scroll offset. On a long form that is hundreds of pixels, far enough to look as though clicking did nothing at all. Select, multi select, autocomplete, phone country, datepicker, date range, time picker and label tooltips now resolve their real containing block first.
+
+**Views stay readable on a dark page.** `.nvb-root` now paints its own surface and declares its color scheme rather than borrowing whatever the host uses. Previously the near black labels disappeared into a dark background while the inputs kept their own white fill and looked correct, which read as the labels being missing. Set `--nvb-surface: transparent` where a view already sits on a surface you control.
+
+See [Theming](https://ngxviewbuilder.io/developers/theming) for the token families and [Layer order](https://ngxviewbuilder.io/developers/installation#layer-order) if your application uses cascade layers.
 
 ---
 

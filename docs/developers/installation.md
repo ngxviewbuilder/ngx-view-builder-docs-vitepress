@@ -41,11 +41,38 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Component styles ship with the components themselves, so no global stylesheet import is required. Standalone CSS entry points are exported for advanced setups (e.g. styling outside the components):
+## Stylesheet
+
+Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. Import it once:
 
 ```css
 @import 'ngx-view-builder/styles/index.css';
 ```
+
+Leaving it out does not blank the UI, which is what makes it easy to miss. The components still render and still have their own layout, they simply lose every token: inputs come out around 26px instead of 40px, labels fall back to plain black, and surfaces turn transparent.
+
+### Layer order
+
+Everything in the stylesheet lives in `@layer reset, tokens, components, fpUtilities, elements`. Cascade layers only help if the host takes part in them, and two rules decide whether it does.
+
+Unlayered CSS beats layered CSS whatever the specificity. A host that writes its styles outside any layer, which is the default for Tailwind v3 and for most hand written stylesheets, will override every rule the library ships.
+
+A plain CSS `@import` is always hoisted to the top of the bundle, so the layer order cannot be fixed by moving the import line around. Declare the order yourself, in a stylesheet loaded before everything else:
+
+```css
+/* src/layers.css, with Tailwind as the example host */
+@layer theme, base, reset, tokens, components, fpUtilities, elements, utilities;
+```
+
+```json
+"styles": ["src/layers.css", "src/styles.scss"]
+```
+
+Our layers now sit after the host's base and reset, and the host's utilities still win over element styles, which is usually what you want.
+
+### Name collisions
+
+Every class and every custom property the library ships is prefixed with `nvb-`, so `nvb-field`, `nvb-dropdown`, `--nvb-color-neutral-300`. Nothing in the package answers to a generic name, which leaves you free to keep your own `.field` or `--color-neutral-300` meaning whatever they mean in your application.
 
 ## Initialization
 

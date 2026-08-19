@@ -38,17 +38,11 @@ with the package, swapped in as the element renders. There is no icon font to in
 nothing to load over the network. Your own icons go in through
 [Custom SVG icons](./icons), the same way they do in the runtime.
 
-If a host application's stylesheet is layered, so is this one: everything in `index.css`
-lives in `@layer reset, tokens, components, fpUtilities, elements`. Unlayered CSS in the
-host beats all of it whatever the specificity, and a plain CSS `@import` is always hoisted
-to the top of the bundle, so the layer order cannot be fixed by moving the import line.
-Declare the order yourself in a stylesheet loaded before the rest, listed first in the
-`styles` array of `angular.json`:
-
-```css
-/* src/layers.css, with Tailwind as the example host */
-@layer theme, base, reset, tokens, components, fpUtilities, elements, utilities;
-```
+The stylesheet is not optional here. Element components carry their own layout, but every
+size, colour and radius comes from tokens that only this file declares, so without it the
+controls render at the wrong height with no theme at all. If your application already uses
+cascade layers, read [Layer order](./installation#layer-order) as well: ours has to be
+placed among yours or unlayered host CSS quietly wins over all of it.
 
 ## One element
 
@@ -310,7 +304,7 @@ and the whole set follows, with no build step:
 
 ```css
 .nvb-root {
-  --color-primary-500: #0f7b7b;
+  --nvb-color-primary-500: #0f7b7b;
   --nvb-input-radius: 12px;
   --nvb-control-height: 44px;
 }
@@ -323,10 +317,10 @@ The variables have to sit on the element container itself or on something inside
 that declaration. Putting the override on the `<nvb-scope>` element works, because an
 inline style wins over a class rule.
 
-The neutral ramp is a surface system, not only text. `--color-neutral-000` paints the
-background of panels, tab strips and accordions, `--color-neutral-300` draws their borders
-and `--color-neutral-800` colours the field labels. A dark theme that sets only the
-`--color-text-*` variables leaves all of those light and ends up half converted.
+The neutral ramp is a surface system, not only text. `--nvb-color-neutral-000` paints the
+background of panels, tab strips and accordions, `--nvb-color-neutral-300` draws their borders
+and `--nvb-color-neutral-800` colours the field labels. A dark theme that sets only the
+`--nvb-color-text-*` variables leaves all of those light and ends up half converted.
 
 The full token list is in [Theming and design tokens](/developers/theming).
 
