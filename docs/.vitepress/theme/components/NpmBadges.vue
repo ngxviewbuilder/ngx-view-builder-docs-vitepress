@@ -5,13 +5,15 @@
 // nepersiduoda, tad klases cia savos.
 import { computed, onMounted, ref } from 'vue';
 
-const PACKAGE = 'ngx-view-builder';
+// Runtime, ne designer: ji idiegia kiekvienas, ir ji nemokama. Abu paketai
+// leidziami kartu ta pacia versija, tad runtime versija = produkto versija.
+const PACKAGE = 'ngx-view-builder-runtime';
 const PACKAGE_URL = `https://www.npmjs.com/package/${PACKAGE}`;
 
 // Tas pats dviguba cache kaip zvaigzduciu badge: modulyje SPA navigacijai ir
 // localStorage perkrovimams. npm registry limitu neriboja taip grieztai kaip
 // GitHub, bet badge yra kiekviename puslapyje, tad uzklausu neverta kartoti.
-const VERSION_CACHE_KEY = 'nvb:npm-version';
+const VERSION_CACHE_KEY = 'nvb:npm-version:runtime';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
 let cachedVersion: string | null = null;
@@ -80,8 +82,8 @@ onMounted(() => {
     rel="noopener"
     :aria-label="
       version === null
-        ? 'ngx-view-builder on npm'
-        : `ngx-view-builder on npm, version ${version}`
+        ? `${PACKAGE} on npm`
+        : `${PACKAGE} on npm, version ${version}`
     "
   >
     <svg class="npm-badge__mark" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
