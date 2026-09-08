@@ -11,7 +11,7 @@ A plugin is just a package (or app module) that calls `provideNgxViewBuilderExte
 
 ```ts
 import { EnvironmentProviders } from '@angular/core';
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-designer';
 import { MyStudio } from './my-studio/my-studio';
 
 export const MY_FEATURE_PACK_ID = 'acme-audit';
@@ -73,7 +73,9 @@ Useful building blocks:
 ## Packaging checklist
 
 - [ ] Ship as an Angular library with a single `provideX()` entry point.
-- [ ] Peer-depend on `ngx-view-builder` (never bundle it).
+- [ ] Peer-depend on `ngx-view-builder-designer` (never bundle it). A plugin adds a
+      builder tab, so the designer is the package it extends; the runtime surface
+      reaches you through the designer's re-exports.
 - [ ] Version-lock releases to the core version you built against.
 - [ ] Keep tab `id` stable, since hosts may persist the active tab.
 - [ ] Style with the design tokens so themes work ([Theming](./theming)).

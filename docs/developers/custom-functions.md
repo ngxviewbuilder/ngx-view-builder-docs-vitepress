@@ -10,7 +10,7 @@ Creators write expressions like `isEmpty({email})`. You can add your own functio
 ## Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from 'ngx-view-builder-runtime';
 
 const functions: IJexlFunctionRegistration[] = [
   {

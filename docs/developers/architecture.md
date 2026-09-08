@@ -1,26 +1,81 @@
 ---
 title: Architecture
-description: How the builder, runtime, shared core, and plugins fit together.
+description: How the runtime and designer packages, the shared core, and plugins fit together.
 ---
 
 # Architecture
 
-## Package layout
+## Two packages
+
+The library is published as two npm packages that split it along the line between
+designing a view and running one.
 
 ```
-ngx-view-builder
-├─ ngx-view-builder-builder/    builder shell (tabs, sidebars, history)
-├─ ngx-view-builder-runtime/    runtime shell (rendering + runtime services)
-├─ ngx-view-builder/            unified host component
-├─ ngx-view-builder-renderer/   low-level renderer
-├─ ngx-view-builder-validator/  headless validation component
+ngx-view-builder-runtime            free, no license key
+├─ ngx-view-builder-runtime/        runtime shell (rendering + runtime services)
+├─ ngx-view-builder/                unified host component
+├─ ngx-view-builder-renderer/       low-level renderer
+├─ ngx-view-builder-validator/      headless validation component
 └─ core/
-   ├─ builder/    builder-only: drag & drop, property editing, registries, datasets
-   ├─ runtime/    runtime-only: rendering helpers, lazy element loading
-   └─ shared/     both sides: models, elements, services, providers, expressions
+   ├─ runtime/    rendering helpers, lazy element loading
+   └─ shared/     models, the 55 elements, services, providers, expressions
+
+ngx-view-builder-designer           commercial license
+├─ ngx-view-builder-designer/       designer shell (tabs, sidebars, history)
+└─ builder/                         drag & drop, property editing, registries,
+                                    datasets, license service
 ```
 
-Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register builder tabs and feature packs through the extensions API. The core never auto-loads them.
+Roughly 72% of the code sits in the runtime, including every element and the whole
+service layer: expressions, data sources, validation, i18n, rules and process. The
+designer is the remaining 28%, and it is all editor UI.
+
+Dependencies point one way only. The designer imports the runtime; the runtime knows
+nothing about the designer and never loads it. That was already true inside the old
+single package, which is what made the split a packaging change rather than a rewrite.
+
+Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register
+builder tabs and feature packs through the extensions API. They sit on top of the
+designer, since a tab needs an editor to appear in. The core never auto-loads them.
+
+### Why the packages are split
+
+Both halves used to ship as one `ngx-view-builder` package. That put two costs on
+applications that only render views, which is most of them:
+
+- **Code they never run.** The editor was installed and resolved even when no user
+  could ever open it.
+- **A license they do not need.** The runtime is free forever and needs no key, but a
+  single package meant a single `LICENSE.md`, and it read as commercial software.
+  Procurement reviews the package, not your intentions.
+
+Splitting them also moved `license.service.ts` where it belongs. It used to live in
+`core/shared`, which is the half that is free forever, so the free runtime carried the
+code that enforced payment for the other half. It now lives in the designer.
+
+The two packages are versioned in lockstep and the designer's peer dependency pins the
+exact runtime version, so they cannot drift apart.
+
+### One runtime instance, not two
+
+The designer re-exports the runtime's public surface so a host that embeds the editor
+has a single import site. This is a re-export, never a bundled copy: the runtime stays
+an external package that both resolve to.
+
+That distinction matters more than it looks. Services like `EventService` and
+`NgxViewBuilderApiService` are root-provided singletons. If the runtime were duplicated
+into the designer's bundle, Angular would see two distinct classes and create two
+instances, and the editor would quietly stop hearing the runtime's events. The
+published builds are checked for this: the designer's bundle imports the runtime rather
+than inlining it.
+
+### Public and internal surface
+
+The runtime exports two tiers. The documented surface is what host applications build
+against and follows semver. Below it, a section marked `Internal API` exports the
+components, registries and services the designer needs to do its job. Those are
+reachable, but they change without a major version, and code that imports them is
+choosing to track the designer's release cycle.
 
 ## Key concepts
 
@@ -52,6 +107,15 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 4. Pages render rows → columns → element components (optionally lazily).
 5. User input → data service → dependent expressions → validation → events.
 
-## Builder vs. runtime boundary
+## Designer vs. runtime boundary
 
-Builder-side code (property sidebars, drag & drop, datasets) is never needed to *render* a view. If your end-user app only displays views, you ship the runtime component and pay no builder cost at runtime (lazy element rendering and preloading are tunable).
+Designer-side code (property sidebars, drag & drop, datasets) is never needed to
+*render* a view. If your end-user app only displays views, it installs
+`ngx-view-builder-runtime` alone and pays no editor cost at all: not in the bundle, not
+in the dependency tree, and not in licensing. Lazy element rendering and preloading are
+tunable on top of that.
+
+The boundary is worth keeping in mind when you split your own application, too. A
+common shape is one internal admin app that installs both packages and hosts the
+editor, and one or more customer-facing apps that install the runtime only and render
+the JSON the first one produced.

@@ -70,7 +70,7 @@ hero:
 **Developers** get a serious integration surface instead of a black box:
 
 ```ts
-import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 @Component({
   imports: [NgxViewBuilderRuntime],

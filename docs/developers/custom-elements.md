@@ -16,7 +16,7 @@ The library's own demo (`projects/test-app/src/app/demo/`) contains this exact e
 ## 1. Model
 
 ```ts
-import { ElementBaseModel } from 'ngx-view-builder';
+import { ElementBaseModel } from 'ngx-view-builder-runtime';
 
 export class NoteElementModel extends ElementBaseModel {
   text = '';
@@ -39,7 +39,7 @@ Fields you declare here are persisted in the structure JSON and editable through
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { NgxViewBuilderApiService, TemplateEngineService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService, TemplateEngineService } from 'ngx-view-builder-runtime';
 import { NoteElementModel } from './note-element.model';
 
 @Component({
@@ -89,7 +89,7 @@ For value-producing elements, write through the data service path (`api.setValue
 ## 3. Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
 import { NoteElementComponent } from './note-element.component';
 import { NoteElementModel } from './note-element.model';
 
@@ -159,7 +159,7 @@ Nothing extra is needed for values and events: the library gives the cell model 
 If your component renders its own text template, resolve it against the row explicitly:
 
 ```ts
-import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder';
+import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder-runtime';
 
 const context = buildElementRowRuntimeContext(this.model(), (path) =>
   this.dataService.getValue(path),

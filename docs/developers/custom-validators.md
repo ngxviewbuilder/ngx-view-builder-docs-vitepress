@@ -15,7 +15,7 @@ A registered type appears in the builder's **Type** list next to the built-ins, 
 import {
   provideNgxViewBuilderExtensions,
   INgxViewBuilderValidatorTypeRegistration,
-} from "ngx-view-builder";
+} from "ngx-view-builder-runtime";
 
 const validatorTypes: INgxViewBuilderValidatorTypeRegistration[] = [
   {

@@ -15,7 +15,7 @@ Two translation systems exist. Don't mix them up:
 ## Providing dictionaries
 
 ```ts
-import { provideNgxViewBuilderUiTranslations } from 'ngx-view-builder';
+import { provideNgxViewBuilderUiTranslations } from 'ngx-view-builder-runtime';
 import { LT_UI_DICTIONARY } from './i18n/lt';
 
 providers: [
@@ -28,7 +28,7 @@ providers: [
 The library exports its own complete English dictionary, every translatable key with its default text, so you don't have to hunt them down one by one:
 
 ```ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder';
+import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
 
 console.log(Object.keys(EN_UI_DICTIONARY).length); // every translatable key
 ```
@@ -37,7 +37,7 @@ Copy it, translate the values, keep the keys:
 
 ```ts
 // i18n/de.ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder';
+import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
 
 export const DE_UI_DICTIONARY: Record<string, string> = {
   ...EN_UI_DICTIONARY,

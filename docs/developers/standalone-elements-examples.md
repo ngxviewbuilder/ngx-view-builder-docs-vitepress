@@ -15,7 +15,7 @@ The smallest useful case. One input, one signal, nothing else.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder';
+import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
 
 @Component({
   selector: 'app-search-bar',

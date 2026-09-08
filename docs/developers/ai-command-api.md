@@ -28,11 +28,11 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 ## When it exists
 
-The bridge connects only while `<ngx-view-builder-builder>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder';
+import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder-runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [

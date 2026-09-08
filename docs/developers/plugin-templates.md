@@ -181,10 +181,10 @@ async ngOnInit(): Promise<void> {
 
 Two equivalent ways to hear about edits pick whichever fits how your app is wired:
 
-**A. Component outputs**, if you embed `<ngx-view-builder-builder>` directly:
+**A. Component outputs**, if you embed `<ngx-view-builder-designer>` directly:
 
 ```html
-<ngx-view-builder-builder
+<ngx-view-builder-designer
   [model]="builderModel"
   (templateSaved)="onTemplateSaved($event)"
   (templateDeleted)="onTemplateDeleted($event)"

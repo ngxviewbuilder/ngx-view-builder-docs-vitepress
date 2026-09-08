@@ -9,7 +9,7 @@ description: Every public method of NgxViewBuilderApiService, area by area.
 
 ```ts
 import { inject } from '@angular/core';
-import { NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 private api = inject(NgxViewBuilderApiService);
 ```

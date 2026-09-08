@@ -22,7 +22,7 @@
 - [Angular form & view builder for developers](https://ngxviewbuilder.io/developers/): Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
 - [AI command API](https://ngxviewbuilder.io/developers/ai-command-api): A JSON command surface that lets an external agent read and edit a view while the builder is open.
 - [API service reference](https://ngxviewbuilder.io/developers/api-service): Every public method of NgxViewBuilderApiService, area by area.
-- [Architecture](https://ngxviewbuilder.io/developers/architecture): How the builder, runtime, shared core, and plugins fit together.
+- [Architecture](https://ngxviewbuilder.io/developers/architecture): How the runtime and designer packages, the shared core, and plugins fit together.
 - [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration): Host the visual builder, persist structures, and customize the header.
 - [Custom CSS](https://ngxviewbuilder.io/developers/custom-css): Per-view and host-injected CSS on top of the theme system.
 - [Custom elements](https://ngxviewbuilder.io/developers/custom-elements): Build your own element (model, component, properties) and register it.
@@ -46,7 +46,6 @@
 - [Structure JSON](https://ngxviewbuilder.io/developers/structure-json): The IStructure document, covering settings, pages, elements, data sources, and localization.
 - [Theming & design tokens](https://ngxviewbuilder.io/developers/theming): Light/dark modes, token overrides, and full custom themes.
 - [UI translations](https://ngxviewbuilder.io/developers/ui-translations): Translate the builder interface itself (tabs, buttons, property labels).
-- [Upgrading to 0.4.0](https://ngxviewbuilder.io/developers/upgrading-0-4-0): Every class and custom property is now prefixed with nvb-. What breaks and how to fix it.
 - [Headless validation](https://ngxviewbuilder.io/developers/validator): Validate structure + data without rendering a visible view.
 
 ## Creator documentation

@@ -32,7 +32,7 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 ## Light / dark mode
 
 ```html
-<ngx-view-builder-builder [theme]="'dark'" ... />
+<ngx-view-builder-designer [theme]="'dark'" ... />
 <ngx-view-builder-runtime  [theme]="theme()" ... />
 ```
 

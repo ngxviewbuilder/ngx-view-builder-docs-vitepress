@@ -53,9 +53,11 @@ lastUpdated: 2026-08-05
 
 ## What the license actually covers
 
-The paid license does not unlock hidden features. The free build and the licensed build are the same package. What you pay for is the right to use the builder, the visual editor your team designs views in, without a watermark, and to keep the versions released during your license term.
+The paid license does not unlock hidden features. The free build and the licensed build of the builder are the same package. What you pay for is the right to use the builder, the visual editor your team designs views in, without a watermark, and to keep the versions released during your license term.
 
-The runtime is a separate matter. It renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
+The runtime is a separate matter, and since 0.5.0 it is also literally a separate package. `ngx-view-builder-runtime` renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
+
+That means the line on this page matches the line in your `package.json`. An application that only renders views installs one free package and never installs the licensed one, so there is nothing to audit and no key to manage. The editor lives in `ngx-view-builder-designer`, which is the package this price applies to.
 
 ## What changes at 1.0.0
 

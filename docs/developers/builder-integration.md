@@ -5,17 +5,24 @@ description: Host the visual builder, persist structures, and customize the head
 
 # Embedding the builder
 
+::: tip Renamed in 0.5.1
+The component is `<ngx-view-builder-designer>` / `NgxViewBuilderDesigner`, matching the
+package it ships in. The former `<ngx-view-builder-builder>` selector and
+`NgxViewBuilderBuilder` class name still work as aliases, so existing templates keep
+rendering, but new code should use the names below.
+:::
+
 ## Minimal setup
 
 ```ts
 import { Component } from '@angular/core';
-import { BuilderModel, IStructure, NgxViewBuilderBuilder } from 'ngx-view-builder';
+import { BuilderModel, IStructure, NgxViewBuilderDesigner } from 'ngx-view-builder-designer';
 
 @Component({
   selector: 'app-builder-page',
-  imports: [NgxViewBuilderBuilder],
+  imports: [NgxViewBuilderDesigner],
   template: `
-    <ngx-view-builder-builder
+    <ngx-view-builder-designer
       [model]="builderModel"
       (structureChanged)="onStructureChanged($event)"
       (saveRequested)="onSave()"

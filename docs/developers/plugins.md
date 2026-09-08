@@ -29,6 +29,6 @@ A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the c
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the core `ngx-view-builder` version. Mixed versions are unsupported.
+Keep every `ngx-view-builder-plugin-*` version aligned with the `ngx-view-builder-designer` version, which in turn pins its `ngx-view-builder-runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](./plugin-development).

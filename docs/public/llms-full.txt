@@ -6899,37 +6899,50 @@ Source: https://ngxviewbuilder.io/developers/
 
 # Introduction for developers
 
-NGX View Builder is an Angular library with two halves:
+NGX View Builder is an Angular library with two halves, and each half is its own npm
+package:
 
-- **Builder**: the visual editor your creators use to design views.
-- **Runtime**: the engine that renders a saved view definition (JSON) to end users.
+- **`ngx-view-builder-runtime`**: the engine that renders a saved view definition
+  (JSON) to end users. Free forever, no license key.
+- **`ngx-view-builder-designer`**: the visual editor your creators use to design those
+  views. Commercially licensed, and it depends on the runtime.
 
-You embed one or both as standalone components, persist the JSON wherever you like, and control everything else (data, theming, custom elements, plugins) through providers and a typed API service.
+Install one or both depending on what your app does. Most applications render views and
+never open the editor, so they only need the runtime. See
+[Installation](https://ngxviewbuilder.io/developers/installation) for the split, and
+[Architecture](https://ngxviewbuilder.io/developers/architecture#two-packages) for why the line falls where it does.
+
+You embed the components you need as standalone components, persist the JSON wherever
+you like, and control everything else (data, theming, custom elements, plugins) through
+providers and a typed API service.
 
 ## The five components
 
-| Component | Selector | Purpose |
-| --- | --- | --- |
-| Builder | `<ngx-view-builder-builder>` | Full editing shell: canvas, sidebars, tabs, history |
-| Runtime | `<ngx-view-builder-runtime>` | Renders a view definition with live logic and data |
-| Unified | `<ngx-view-builder>` | Runtime-oriented host that can also take a `BuilderModel` |
-| Renderer | `<ngx-view-builder-renderer>` | Low-level renderer used by the unified wrapper |
-| Validator | `<ngx-view-builder-validator>` | Headless validation for server-side scenarios |
+| Component | Selector | Package | Purpose |
+| --- | --- | --- | --- |
+| Designer | `<ngx-view-builder-designer>` | designer | Full editing shell: canvas, sidebars, tabs, history |
+| Runtime | `<ngx-view-builder-runtime>` | runtime | Renders a view definition with live logic and data |
+| Unified | `<ngx-view-builder>` | runtime | Runtime-oriented host that can also take a `BuilderModel` |
+| Renderer | `<ngx-view-builder-renderer>` | runtime | Low-level renderer used by the unified wrapper |
+| Validator | `<ngx-view-builder-validator>` | runtime | Headless validation for server-side scenarios |
 
 ## The flow
 
 ```
-Creator designs in <ngx-view-builder-builder>
+Creator designs in <ngx-view-builder-designer>       ← designer package
         │  (structureChanged) → IStructure JSON
         ▼
 Your backend / storage
         │  [pageJson]
         ▼
-<ngx-view-builder-runtime> renders to end users
+<ngx-view-builder-runtime> renders to end users      ← runtime package
         │  values, events, validation
         ▼
 Your app (via outputs and NgxViewBuilderApiService)
 ```
+
+The JSON in the middle is the whole contract between the two packages, which is why an
+app on either side of it can be deployed and licensed independently of the other.
 
 ## What you can extend
 
@@ -6945,7 +6958,7 @@ Your app (via outputs and NgxViewBuilderApiService)
 
 ## Reading order
 
-1. [Installation](https://ngxviewbuilder.io/developers/installation): package, providers, initialization.
+1. [Installation](https://ngxviewbuilder.io/developers/installation): which packages to install, providers, initialization.
 2. [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration) and [Rendering views](https://ngxviewbuilder.io/developers/runtime-integration).
 3. [API service overview](https://ngxviewbuilder.io/developers/api-service): the programmatic surface.
 4. [Extensions overview](https://ngxviewbuilder.io/developers/extensions): one config object for everything custom.
@@ -6981,11 +6994,11 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 ## When it exists
 
-The bridge connects only while `<ngx-view-builder-builder>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder';
+import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder-runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -7333,7 +7346,7 @@ Source: https://ngxviewbuilder.io/developers/api-service
 
 ```ts
 import { inject } from '@angular/core';
-import { NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 private api = inject(NgxViewBuilderApiService);
 ```
@@ -7591,22 +7604,77 @@ Source: https://ngxviewbuilder.io/developers/architecture
 
 # Architecture
 
-## Package layout
+## Two packages
+
+The library is published as two npm packages that split it along the line between
+designing a view and running one.
 
 ```
-ngx-view-builder
-├─ ngx-view-builder-builder/    builder shell (tabs, sidebars, history)
-├─ ngx-view-builder-runtime/    runtime shell (rendering + runtime services)
-├─ ngx-view-builder/            unified host component
-├─ ngx-view-builder-renderer/   low-level renderer
-├─ ngx-view-builder-validator/  headless validation component
+ngx-view-builder-runtime            free, no license key
+├─ ngx-view-builder-runtime/        runtime shell (rendering + runtime services)
+├─ ngx-view-builder/                unified host component
+├─ ngx-view-builder-renderer/       low-level renderer
+├─ ngx-view-builder-validator/      headless validation component
 └─ core/
-   ├─ builder/    builder-only: drag & drop, property editing, registries, datasets
-   ├─ runtime/    runtime-only: rendering helpers, lazy element loading
-   └─ shared/     both sides: models, elements, services, providers, expressions
+   ├─ runtime/    rendering helpers, lazy element loading
+   └─ shared/     models, the 55 elements, services, providers, expressions
+
+ngx-view-builder-designer           commercial license
+├─ ngx-view-builder-designer/       designer shell (tabs, sidebars, history)
+└─ builder/                         drag & drop, property editing, registries,
+                                    datasets, license service
 ```
 
-Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register builder tabs and feature packs through the extensions API. The core never auto-loads them.
+Roughly 72% of the code sits in the runtime, including every element and the whole
+service layer: expressions, data sources, validation, i18n, rules and process. The
+designer is the remaining 28%, and it is all editor UI.
+
+Dependencies point one way only. The designer imports the runtime; the runtime knows
+nothing about the designer and never loads it. That was already true inside the old
+single package, which is what made the split a packaging change rather than a rewrite.
+
+Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register
+builder tabs and feature packs through the extensions API. They sit on top of the
+designer, since a tab needs an editor to appear in. The core never auto-loads them.
+
+### Why the packages are split
+
+Both halves used to ship as one `ngx-view-builder` package. That put two costs on
+applications that only render views, which is most of them:
+
+- **Code they never run.** The editor was installed and resolved even when no user
+  could ever open it.
+- **A license they do not need.** The runtime is free forever and needs no key, but a
+  single package meant a single `LICENSE.md`, and it read as commercial software.
+  Procurement reviews the package, not your intentions.
+
+Splitting them also moved `license.service.ts` where it belongs. It used to live in
+`core/shared`, which is the half that is free forever, so the free runtime carried the
+code that enforced payment for the other half. It now lives in the designer.
+
+The two packages are versioned in lockstep and the designer's peer dependency pins the
+exact runtime version, so they cannot drift apart.
+
+### One runtime instance, not two
+
+The designer re-exports the runtime's public surface so a host that embeds the editor
+has a single import site. This is a re-export, never a bundled copy: the runtime stays
+an external package that both resolve to.
+
+That distinction matters more than it looks. Services like `EventService` and
+`NgxViewBuilderApiService` are root-provided singletons. If the runtime were duplicated
+into the designer's bundle, Angular would see two distinct classes and create two
+instances, and the editor would quietly stop hearing the runtime's events. The
+published builds are checked for this: the designer's bundle imports the runtime rather
+than inlining it.
+
+### Public and internal surface
+
+The runtime exports two tiers. The documented surface is what host applications build
+against and follows semver. Below it, a section marked `Internal API` exports the
+components, registries and services the designer needs to do its job. Those are
+reachable, but they change without a major version, and code that imports them is
+choosing to track the designer's release cycle.
 
 ## Key concepts
 
@@ -7638,9 +7706,18 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 4. Pages render rows → columns → element components (optionally lazily).
 5. User input → data service → dependent expressions → validation → events.
 
-## Builder vs. runtime boundary
+## Designer vs. runtime boundary
 
-Builder-side code (property sidebars, drag & drop, datasets) is never needed to *render* a view. If your end-user app only displays views, you ship the runtime component and pay no builder cost at runtime (lazy element rendering and preloading are tunable).
+Designer-side code (property sidebars, drag & drop, datasets) is never needed to
+*render* a view. If your end-user app only displays views, it installs
+`ngx-view-builder-runtime` alone and pays no editor cost at all: not in the bundle, not
+in the dependency tree, and not in licensing. Lazy element rendering and preloading are
+tunable on top of that.
+
+The boundary is worth keeping in mind when you split your own application, too. A
+common shape is one internal admin app that installs both packages and hosts the
+editor, and one or more customer-facing apps that install the runtime only and render
+the JSON the first one produced.
 
 ---
 
@@ -7650,17 +7727,24 @@ Source: https://ngxviewbuilder.io/developers/builder-integration
 
 # Embedding the builder
 
+::: tip Renamed in 0.5.1
+The component is `<ngx-view-builder-designer>` / `NgxViewBuilderDesigner`, matching the
+package it ships in. The former `<ngx-view-builder-builder>` selector and
+`NgxViewBuilderBuilder` class name still work as aliases, so existing templates keep
+rendering, but new code should use the names below.
+:::
+
 ## Minimal setup
 
 ```ts
 import { Component } from '@angular/core';
-import { BuilderModel, IStructure, NgxViewBuilderBuilder } from 'ngx-view-builder';
+import { BuilderModel, IStructure, NgxViewBuilderDesigner } from 'ngx-view-builder-designer';
 
 @Component({
   selector: 'app-builder-page',
-  imports: [NgxViewBuilderBuilder],
+  imports: [NgxViewBuilderDesigner],
   template: `
-    <ngx-view-builder-builder
+    <ngx-view-builder-designer
       [model]="builderModel"
       (structureChanged)="onStructureChanged($event)"
       (saveRequested)="onSave()"
@@ -7790,7 +7874,7 @@ Declarative equivalents exist on `runtimeSettings` (`customCss`, `customCssUrls`
 
 ## Targeting elements
 
-- Every class the library renders starts with `nvb-`, so `nvb-field`, `nvb-panel`, `nvb-dropdown`. Anything without that prefix in a view belongs to you or to a template. Views written before 0.4.0 used unprefixed names and need updating.
+- Every class the library renders starts with `nvb-`, so `nvb-field`, `nvb-panel`, `nvb-dropdown`. Anything without that prefix in a view belongs to you or to a template.
 - Custom CSS is injected without a cascade layer, so it beats the library's own rules without needing `!important`.
 - Elements render with stable identity hooks, so prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
 - Template HTML ([template library](https://ngxviewbuilder.io/creators/templates)) carries its own scoped CSS, so for card layouts prefer a template's CSS over global custom CSS.
@@ -7828,7 +7912,7 @@ The library's own demo (`projects/test-app/src/app/demo/`) contains this exact e
 ## 1. Model
 
 ```ts
-import { ElementBaseModel } from 'ngx-view-builder';
+import { ElementBaseModel } from 'ngx-view-builder-runtime';
 
 export class NoteElementModel extends ElementBaseModel {
   text = '';
@@ -7851,7 +7935,7 @@ Fields you declare here are persisted in the structure JSON and editable through
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { NgxViewBuilderApiService, TemplateEngineService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService, TemplateEngineService } from 'ngx-view-builder-runtime';
 import { NoteElementModel } from './note-element.model';
 
 @Component({
@@ -7901,7 +7985,7 @@ For value-producing elements, write through the data service path (`api.setValue
 ## 3. Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
 import { NoteElementComponent } from './note-element.component';
 import { NoteElementModel } from './note-element.model';
 
@@ -7971,7 +8055,7 @@ Nothing extra is needed for values and events: the library gives the cell model 
 If your component renders its own text template, resolve it against the row explicitly:
 
 ```ts
-import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder';
+import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder-runtime';
 
 const context = buildElementRowRuntimeContext(this.model(), (path) =>
   this.dataService.getValue(path),
@@ -8006,7 +8090,7 @@ Creators write expressions like `isEmpty({email})`. You can add your own functio
 ## Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from 'ngx-view-builder-runtime';
 
 const functions: IJexlFunctionRegistration[] = [
   {
@@ -8169,7 +8253,7 @@ A registered type appears in the builder's **Type** list next to the built-ins, 
 import {
   provideNgxViewBuilderExtensions,
   INgxViewBuilderValidatorTypeRegistration,
-} from "ngx-view-builder";
+} from "ngx-view-builder-runtime";
 
 const validatorTypes: INgxViewBuilderValidatorTypeRegistration[] = [
   {
@@ -8719,7 +8803,7 @@ All customisation funnels through a single config type, `INgxViewBuilderExtensio
 **At bootstrap (recommended):**
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
 
 providers: [
   provideNgxViewBuilderExtensions({
@@ -8849,22 +8933,56 @@ Source: https://ngxviewbuilder.io/developers/installation
 
 ## Requirements
 
-- Angular 22+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies)
+- Angular 22+ (`@angular/common`, `@angular/core`, `@angular/cdk` as peer dependencies;
+  the designer additionally needs `@angular/forms`)
 - Node.js 22.22+ (or 24.15+ / 26+)
 
 The library works with zoneless change detection and standalone components.
 
-## Install
+## The two packages
+
+NGX View Builder ships as two npm packages, and which ones you install depends on
+what your application does.
+
+| Package | You need it when | License |
+| --- | --- | --- |
+| `ngx-view-builder-runtime` | Your app renders saved views | Free forever, no key |
+| `ngx-view-builder-designer` | Your app also hosts the visual editor | Commercial |
+
+The runtime stands on its own. The designer does not: it declares the runtime as a
+peer dependency pinned to the exact same version, because both halves are built from
+one source tree and released together.
+
+**Rendering views only**, which is the common case for the applications your end users
+open:
 
 ```bash
-npm install ngx-view-builder
+npm install ngx-view-builder-runtime
 ```
 
-The optional Templates plugin is a separate package, version-locked to the core:
+**Hosting the editor as well.** Installing the designer pulls in the runtime, so name
+both and npm keeps the versions honest:
+
+```bash
+npm install ngx-view-builder-runtime ngx-view-builder-designer
+```
+
+The optional Templates plugin is a third package, version-locked to the designer:
 
 ```bash
 npm install ngx-view-builder-plugin-templates
 ```
+
+### Why it is split
+
+Up to and including 0.4.1 both halves lived in one `ngx-view-builder` package. An application that
+only rendered views still installed the whole visual editor, roughly 28% of the code
+it would never execute, under a commercial license it did not need. Splitting the
+package means a runtime-only application now installs neither the editor code nor the
+license terms that come with it.
+
+If you are upgrading from `ngx-view-builder`, see [Migrating from the single
+package](https://ngxviewbuilder.io/developers/installation#migrating-from-the-single-package) at the bottom of this page.
 
 ## Minimal app config
 
@@ -8885,10 +9003,10 @@ export const appConfig: ApplicationConfig = {
 
 ## Stylesheet
 
-Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. Import it once:
+Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. It ships with the runtime and covers both packages, so the path is the same whether or not you installed the designer. Import it once:
 
 ```css
-@import 'ngx-view-builder/styles/index.css';
+@import 'ngx-view-builder-runtime/styles/index.css';
 ```
 
 Leaving it out does not blank the UI, which is what makes it easy to miss. The components still render and still have their own layout, they simply lose every token: inputs come out around 26px instead of 40px, labels fall back to plain black, and surfaces turn transparent.
@@ -8914,14 +9032,14 @@ Our layers now sit after the host's base and reset, and the host's utilities sti
 
 ### Name collisions
 
-Every class and every custom property the library ships is prefixed with `nvb-`, so `nvb-field`, `nvb-dropdown`, `--nvb-color-neutral-300`. Nothing in the package answers to a generic name any more, and a host is free to keep its own `.field` or `--color-neutral-300` meaning whatever it likes. Before 0.4.0 those names were shared, which broke both directions at once.
+Every class and every custom property the library ships is prefixed with `nvb-`, so `nvb-field`, `nvb-dropdown`, `--nvb-color-neutral-300`. Nothing in the package answers to a generic name, which leaves you free to keep your own `.field` or `--color-neutral-300` meaning whatever they mean in your application.
 
 ## Initialization
 
 Runtime services can be pre-warmed either with a provider:
 
 ```ts
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder';
+import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
 
 providers: [
   provideNgxViewBuilderRuntime({ preloadRuntimeServices: true }),
@@ -8931,7 +9049,7 @@ providers: [
 …or imperatively in a component:
 
 ```ts
-import { ForgeInitializerService } from 'ngx-view-builder';
+import { ForgeInitializerService } from 'ngx-view-builder-runtime';
 
 constructor() {
   inject(ForgeInitializerService).load({ preloadRuntimeServices: true });
@@ -8960,9 +9078,50 @@ providers: [
 
 Each registered plugin adds its tab to the builder automatically. See [Using plugins](https://ngxviewbuilder.io/developers/plugins).
 
-## Import rule
+Plugins extend the editor, so they depend on `ngx-view-builder-designer` rather than on
+the runtime. A runtime-only application has nothing to register them into.
 
-Import only from package roots (`ngx-view-builder`, `ngx-view-builder-plugin-*`). Deep imports into `src/lib/...` are internal and break between releases.
+## Which package to import from
+
+Both packages export from their root, and the designer re-exports the entire runtime
+surface. That gives you a simple rule:
+
+- **Runtime-only app**: import everything from `ngx-view-builder-runtime`.
+- **App that hosts the editor**: import everything from `ngx-view-builder-designer`.
+  Structures, models and the API service all come through it, so you keep one import
+  site instead of two. Nothing is duplicated in your bundle, because the runtime
+  remains a separate package that both resolve to.
+
+Import only from package roots. Deep imports into `src/lib/...` are internal and break
+between releases.
+
+The runtime also exports a block of symbols marked `Internal API` in its `public-api.ts`.
+Those exist so the designer can reach into the runtime; they carry no stability
+guarantee and change without a major version. Build against the documented surface.
+
+## Migrating from the single package
+
+Views themselves are unaffected. Your stored JSON, structures and data need no
+migration; this is a packaging change, not a schema change.
+
+1. Uninstall `ngx-view-builder` and install the packages you actually need, as above.
+2. Rewrite imports. In an app that only renders views, `from 'ngx-view-builder'`
+   becomes `from 'ngx-view-builder-runtime'`. In an app that hosts the editor, use
+   `from 'ngx-view-builder-designer'` in the files that touch the editor, and the
+   runtime package elsewhere.
+3. Update the stylesheet path to `ngx-view-builder-runtime/styles/index.css`. The
+   tokens and element rules live in the runtime, so it stays the same file whichever
+   packages you installed.
+4. If you use the Templates plugin, its peer dependency now points at the designer.
+5. Optionally rename the editor component. Since 0.5.1 it is
+   `<ngx-view-builder-designer>` / `NgxViewBuilderDesigner`, so that it matches its
+   package. The old `<ngx-view-builder-builder>` selector and `NgxViewBuilderBuilder`
+   class name are kept as aliases, so this step can wait.
+
+One thing worth checking after the move: `licenseKey` belongs to the designer. It was
+previously accepted by a package that also contained the free runtime, which made it
+easy to set in the wrong place. A runtime-only application never needs a key and never
+shows license UI.
 
 ---
 
@@ -8976,6 +9135,20 @@ Source: https://ngxviewbuilder.io/developers/licensing
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
+Since 0.5.0 that split is enforced by packaging rather than by promise. `ngx-view-builder-runtime`
+and `ngx-view-builder-designer` are separate npm packages with separate license files:
+
+| Package | `LICENSE.md` |
+| --- | --- |
+| `ngx-view-builder-runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
+| `ngx-view-builder-designer` | The commercial agreement described on this page. |
+| `ngx-view-builder-plugin-templates` | Follows the designer. |
+
+An application that only renders views therefore installs no commercially licensed code
+at all, which is the answer to the question procurement usually asks first. Writing the
+view JSON by hand, or generating it with an AI agent, is explicitly allowed by the
+runtime license: what you cannot do is ship your own editor UI on top of it.
+
 ## Is this open source?
 
 **No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). Installing it from npm gives you the right to use it under the terms below. It does not grant a license to fork, redistribute, or build a competing product from it.
@@ -8986,7 +9159,10 @@ If you've used commercial component libraries before, the model will feel famili
 
 ## Supplying the key
 
-Pass the license key through `runtimeSettings`:
+The key is read by the designer. There is nowhere to put one in a runtime-only
+application, and nothing there would check it.
+
+Pass it through `runtimeSettings`:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
@@ -9021,11 +9197,11 @@ Every published build embeds its release date. A license covers **all versions r
 | Version not covered (released after license expiry) | The canvas watermark + a banner + a reminder modal (at most once per 24 h) |
 | Invalid / tampered / unparseable / revoked | The canvas watermark + an invalid-license banner + modal (at most once per 24 h) |
 
-**The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only.
+**The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
 ## License terms
 
-NGX View Builder is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside every published npm package (also shown on the npm package page). In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies the package installs (CodeMirror, Jexl, Prettier and Lodash under MIT; tslib under 0BSD) keep their own licenses.
+The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies the package installs (CodeMirror, Jexl, Prettier and Lodash under MIT; tslib under 0BSD) keep their own licenses.
 
 ## Notes
 
@@ -9048,7 +9224,7 @@ A plugin is just a package (or app module) that calls `provideNgxViewBuilderExte
 
 ```ts
 import { EnvironmentProviders } from '@angular/core';
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder';
+import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-designer';
 import { MyStudio } from './my-studio/my-studio';
 
 export const MY_FEATURE_PACK_ID = 'acme-audit';
@@ -9110,7 +9286,9 @@ Useful building blocks:
 ## Packaging checklist
 
 - [ ] Ship as an Angular library with a single `provideX()` entry point.
-- [ ] Peer-depend on `ngx-view-builder` (never bundle it).
+- [ ] Peer-depend on `ngx-view-builder-designer` (never bundle it). A plugin adds a
+      builder tab, so the designer is the package it extends; the runtime surface
+      reaches you through the designer's re-exports.
 - [ ] Version-lock releases to the core version you built against.
 - [ ] Keep tab `id` stable, since hosts may persist the active tab.
 - [ ] Style with the design tokens so themes work ([Theming](https://ngxviewbuilder.io/developers/theming)).
@@ -9299,10 +9477,10 @@ async ngOnInit(): Promise<void> {
 
 Two equivalent ways to hear about edits pick whichever fits how your app is wired:
 
-**A. Component outputs**, if you embed `<ngx-view-builder-builder>` directly:
+**A. Component outputs**, if you embed `<ngx-view-builder-designer>` directly:
 
 ```html
-<ngx-view-builder-builder
+<ngx-view-builder-designer
   [model]="builderModel"
   (templateSaved)="onTemplateSaved($event)"
   (templateDeleted)="onTemplateDeleted($event)"
@@ -9409,7 +9587,7 @@ A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the c
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the core `ngx-view-builder` version. Mixed versions are unsupported.
+Keep every `ngx-view-builder-plugin-*` version aligned with the `ngx-view-builder-designer` version, which in turn pins its `ngx-view-builder-runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development).
 
@@ -9425,7 +9603,7 @@ Source: https://ngxviewbuilder.io/developers/runtime-integration
 
 ```ts
 import { Component, ViewChild, signal } from '@angular/core';
-import { IStructure, NgxViewBuilderRuntime } from 'ngx-view-builder';
+import { IStructure, NgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
 
 @Component({
   selector: 'app-client-form',
@@ -9475,7 +9653,7 @@ Three complementary channels:
 3. **API service**: the full event set:
 
 ```ts
-import { NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 private api = inject(NgxViewBuilderApiService);
 
@@ -9707,7 +9885,7 @@ Deploying the library before the views that depend on it avoids the situation en
 Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
 
 ```ts
-import { IStructureMigration } from 'ngx-view-builder';
+import { IStructureMigration } from 'ngx-view-builder-runtime';
 
 const renameNoteText: IStructureMigration = {
   from: 1,
@@ -9770,7 +9948,7 @@ The smallest useful case. One input, one signal, nothing else.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder';
+import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
 
 @Component({
   selector: 'app-search-bar',
@@ -10192,7 +10370,7 @@ import the stylesheet:
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder';
+import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [provideNgxViewBuilderRuntime()],
@@ -10200,7 +10378,7 @@ bootstrapApplication(AppComponent, {
 ```
 
 ```css
-@import 'ngx-view-builder/styles/index.css';
+@import 'ngx-view-builder-runtime/styles/index.css';
 ```
 
 Icons need no setup. The plus and minus of a number stepper, the chevron of an accordion,
@@ -10219,7 +10397,7 @@ placed among yours or unlayered host CSS quietly wins over all of it.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder';
+import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
 
 @Component({
   selector: 'app-quick-form',
@@ -10697,7 +10875,7 @@ Values are `oklch(...)` colors on an 050-950 scale (050 lightest). Components mi
 
 Every name carries the `nvb-` prefix, and the declarations sit on `.nvb-root` and on the runtime's shadow host, never on `:root`. Both parts matter for a host application.
 
-The prefix keeps our palette out of yours. A design system that stores its colors as HSL channel triplets for Tailwind writes `--color-neutral-300: 214 32% 91%`, and before 0.4.0 we declared that same name as an oklch color. Ours won inside the view, so any host rule that still applied there computed `hsl(oklch(...))`, which is not a color at all, and the declaration fell back to `currentColor`. Inputs came out with thick black borders and nothing in the browser pointed at the cause.
+The prefix keeps our palette out of yours. A design system that stores its colors as HSL channel triplets for Tailwind writes `--color-neutral-300: 214 32% 91%`, and a library declaring that same name as an oklch color would win inside the view. Any host rule that still applied there would then compute `hsl(oklch(...))`, which is not a color at all, so the declaration would fall back to `currentColor` and inputs would come out with thick black borders. Prefixed names cannot collide, so both palettes stay intact.
 
 Not putting them on `:root` keeps the reverse true: importing our stylesheet cannot change how the rest of your application looks.
 
@@ -10706,7 +10884,7 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 ## Light / dark mode
 
 ```html
-<ngx-view-builder-builder [theme]="'dark'" ... />
+<ngx-view-builder-designer [theme]="'dark'" ... />
 <ngx-view-builder-runtime  [theme]="theme()" ... />
 ```
 
@@ -10776,7 +10954,7 @@ Two translation systems exist. Don't mix them up:
 ## Providing dictionaries
 
 ```ts
-import { provideNgxViewBuilderUiTranslations } from 'ngx-view-builder';
+import { provideNgxViewBuilderUiTranslations } from 'ngx-view-builder-runtime';
 import { LT_UI_DICTIONARY } from './i18n/lt';
 
 providers: [
@@ -10789,7 +10967,7 @@ providers: [
 The library exports its own complete English dictionary, every translatable key with its default text, so you don't have to hunt them down one by one:
 
 ```ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder';
+import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
 
 console.log(Object.keys(EN_UI_DICTIONARY).length); // every translatable key
 ```
@@ -10798,7 +10976,7 @@ Copy it, translate the values, keep the keys:
 
 ```ts
 // i18n/de.ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder';
+import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
 
 export const DE_UI_DICTIONARY: Record<string, string> = {
   ...EN_UI_DICTIONARY,
@@ -10851,83 +11029,6 @@ One-off resolution: `api.resolveHostLanguage(...)` / `api.applyHostLanguage(...)
 2. Translate the values; keep the keys.
 3. Register via the provider; set `language` or wire `startLanguageSync`.
 4. Untranslated keys fall back to built-in English texts.
-
----
-
-## Upgrading to 0.4.0
-
-Source: https://ngxviewbuilder.io/developers/upgrading-0-4-0
-
-# Upgrading to 0.4.0
-
-One idea runs through this release: nothing the library puts into your stylesheet answers to a generic name any more. 1145 classes and 144 custom properties gained an `nvb-` prefix.
-
-The rename is mechanical, but it is not cosmetic. Sharing names with a host application broke real applications in ways that were hard to trace back, and the two bugs fixed alongside it were both symptoms of the same idea being applied too loosely.
-
-## What changed
-
-| Before | After |
-| --- | --- |
-| `.field`, `.field__label` | `.nvb-field`, `.nvb-field__label` |
-| `.box`, `.panel`, `.row`, `.column` | `.nvb-box`, `.nvb-panel`, `.nvb-row`, `.nvb-column` |
-| `.dropdown`, `.input-wrapper`, `.select-container` | `.nvb-dropdown`, `.nvb-input-wrapper`, `.nvb-select-container` |
-| `.preview-form-body`, `.page__header` | `.nvb-preview-form-body`, `.nvb-page__header` |
-| `--color-primary-500`, `--color-neutral-300` | `--nvb-color-primary-500`, `--nvb-color-neutral-300` |
-| `--radius-md`, `--space-3`, `--text-body1` | `--nvb-radius-md`, `--nvb-space-3`, `--nvb-text-body1` |
-
-Names that were never ours are untouched, so `cdk-*`, `ng-*`, `cm-*` and `material-symbols-outlined` stay exactly as they were.
-
-## Why the custom properties mattered most
-
-The class rename fixes an ordinary collision: a host rule such as `.field { border: 2px solid }` used to land on our fields, because our `.field` set no border of its own and nothing was there to compete.
-
-The token rename fixes something less obvious. A design system that feeds Tailwind stores its palette as HSL channel triplets:
-
-```css
-:root {
-  --color-neutral-300: 214 32% 91%;
-}
-```
-
-We declared the same name as an oklch color on `.nvb-root`, and inside a view ours won. Any host rule that still applied there, a global `input` style for instance, then resolved to `hsl(oklch(86.94% 0.0199 253.37) / 1)`. That is not a color, so the whole declaration fell back to `currentColor`, and inputs appeared with thick black borders that matched the text. Nothing in the browser pointed at the palette.
-
-Both palettes now coexist, because they no longer share a single name.
-
-## Fixing your integration
-
-Search your own code for the old names. Most projects have only a handful of hits, usually in one place.
-
-```bash
-grep -rnE "\.(field|box|panel|row|column|dropdown|page|view|preview-[a-z-]+)\b" src
-grep -rn -- "--color-\|--radius-\|--space-\|--text-" src
-```
-
-Four places tend to have them:
-
-**Host stylesheets and directives** that reach into a rendered view. Add the prefix.
-
-**Saved views**, in `settings.customCss`. These live in your database rather than your repository, so they are the easiest to forget. There is no automatic migration, because rewriting CSS a creator wrote is not something a migration should do quietly.
-
-**Theme variables** passed through `api.setCssVariables()`, `setCustomTheme()` or `runtimeSettings`. Keys have to match the new names or the override does nothing.
-
-**Custom element and template CSS** that reads tokens, such as `var(--color-neutral-300)`.
-
-If you have to support both versions for a while, list both spellings side by side. A selector list costs nothing and lets the change land before the package bump:
-
-```css
-.nvb-page__header,
-.page__header {
-  display: none;
-}
-```
-
-## Two fixes worth knowing about
-
-**Floating panels no longer open in the wrong place.** Menus use `position: fixed` and were positioned from viewport coordinates, which the browser resolves against the nearest ancestor that establishes a containing block. Host applications create one routinely with `transform`, `filter` or `will-change`, and the menu then landed off by the whole scroll offset. On a long form that is hundreds of pixels, far enough to look as though clicking did nothing at all. Select, multi select, autocomplete, phone country, datepicker, date range, time picker and label tooltips now resolve their real containing block first.
-
-**Views stay readable on a dark page.** `.nvb-root` now paints its own surface and declares its color scheme rather than borrowing whatever the host uses. Previously the near black labels disappeared into a dark background while the inputs kept their own white fill and looked correct, which read as the labels being missing. Set `--nvb-surface: transparent` where a view already sits on a surface you control.
-
-See [Theming](https://ngxviewbuilder.io/developers/theming) for the token families and [Layer order](https://ngxviewbuilder.io/developers/installation#layer-order) if your application uses cascade layers.
 
 ---
 
@@ -14236,7 +14337,7 @@ Source: https://ngxviewbuilder.io/
 **Developers** get a serious integration surface instead of a black box:
 
 ```ts
-import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 @Component({
   imports: [NgxViewBuilderRuntime],
@@ -14347,9 +14448,11 @@ Source: https://ngxviewbuilder.io/pricing
 
 ## What the license actually covers
 
-The paid license does not unlock hidden features. The free build and the licensed build are the same package. What you pay for is the right to use the builder, the visual editor your team designs views in, without a watermark, and to keep the versions released during your license term.
+The paid license does not unlock hidden features. The free build and the licensed build of the builder are the same package. What you pay for is the right to use the builder, the visual editor your team designs views in, without a watermark, and to keep the versions released during your license term.
 
-The runtime is a separate matter. It renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
+The runtime is a separate matter, and since 0.5.0 it is also literally a separate package. `ngx-view-builder-runtime` renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
+
+That means the line on this page matches the line in your `package.json`. An application that only renders views installs one free package and never installs the licensed one, so there is nothing to audit and no key to manage. The editor lives in `ngx-view-builder-designer`, which is the package this price applies to.
 
 ## What changes at 1.0.0
 

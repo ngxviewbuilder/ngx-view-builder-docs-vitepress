@@ -9,7 +9,7 @@ description: Render saved view definitions to end users and collect their data.
 
 ```ts
 import { Component, ViewChild, signal } from '@angular/core';
-import { IStructure, NgxViewBuilderRuntime } from 'ngx-view-builder';
+import { IStructure, NgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
 
 @Component({
   selector: 'app-client-form',
@@ -59,7 +59,7 @@ Three complementary channels:
 3. **API service**: the full event set:
 
 ```ts
-import { NgxViewBuilderApiService } from 'ngx-view-builder';
+import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
 
 private api = inject(NgxViewBuilderApiService);
 

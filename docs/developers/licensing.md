@@ -9,6 +9,20 @@ description: Supplying and validating the license key.
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
+Since 0.5.0 that split is enforced by packaging rather than by promise. `ngx-view-builder-runtime`
+and `ngx-view-builder-designer` are separate npm packages with separate license files:
+
+| Package | `LICENSE.md` |
+| --- | --- |
+| `ngx-view-builder-runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
+| `ngx-view-builder-designer` | The commercial agreement described on this page. |
+| `ngx-view-builder-plugin-templates` | Follows the designer. |
+
+An application that only renders views therefore installs no commercially licensed code
+at all, which is the answer to the question procurement usually asks first. Writing the
+view JSON by hand, or generating it with an AI agent, is explicitly allowed by the
+runtime license: what you cannot do is ship your own editor UI on top of it.
+
 ## Is this open source?
 
 **No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). Installing it from npm gives you the right to use it under the terms below. It does not grant a license to fork, redistribute, or build a competing product from it.
@@ -19,7 +33,10 @@ If you've used commercial component libraries before, the model will feel famili
 
 ## Supplying the key
 
-Pass the license key through `runtimeSettings`:
+The key is read by the designer. There is nowhere to put one in a runtime-only
+application, and nothing there would check it.
+
+Pass it through `runtimeSettings`:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
@@ -54,11 +71,11 @@ Every published build embeds its release date. A license covers **all versions r
 | Version not covered (released after license expiry) | The canvas watermark + a banner + a reminder modal (at most once per 24 h) |
 | Invalid / tampered / unparseable / revoked | The canvas watermark + an invalid-license banner + modal (at most once per 24 h) |
 
-**The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only.
+**The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
 ## License terms
 
-NGX View Builder is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside every published npm package (also shown on the npm package page). In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies the package installs (CodeMirror, Jexl, Prettier and Lodash under MIT; tslib under 0BSD) keep their own licenses.
+The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies the package installs (CodeMirror, Jexl, Prettier and Lodash under MIT; tslib under 0BSD) keep their own licenses.
 
 ## Notes
 
