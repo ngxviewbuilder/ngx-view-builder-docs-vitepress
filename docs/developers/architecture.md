@@ -48,6 +48,8 @@ applications that only render views, which is most of them:
 - **A license they do not need.** The runtime is free forever and needs no key, but a
   single package meant a single `LICENSE.md`, and it read as commercial software.
   Procurement reviews the package, not your intentions.
+- **Dependencies they never resolve.** The code editor brings CodeMirror and Prettier,
+  roughly 15 MB of packages. They belong to the designer and are installed only with it.
 
 Splitting them also moved `license.service.ts` where it belongs. It used to live in
 `core/shared`, which is the half that is free forever, so the free runtime carried the
