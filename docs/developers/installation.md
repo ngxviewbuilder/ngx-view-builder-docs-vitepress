@@ -173,6 +173,57 @@ The runtime also exports a block of symbols marked `Internal API` in its `public
 Those exist so the designer can reach into the runtime; they carry no stability
 guarantee and change without a major version. Build against the documented surface.
 
+## Migrating from 0.5.x
+
+In 0.6.0 all three packages moved under the `@ngxviewbuilder` npm scope. A scope
+reserves the namespace: nobody else can publish anything under `@ngxviewbuilder/`,
+which closes off look-alike names sitting next to the real ones.
+
+| Was | Is |
+| --- | --- |
+| `ngx-view-builder-runtime` | `@ngxviewbuilder/runtime` |
+| `ngx-view-builder-designer` | `@ngxviewbuilder/designer` |
+| `ngx-view-builder-plugin-templates` | `@ngxviewbuilder/plugin-templates` |
+
+```bash
+npm rm ngx-view-builder-runtime ngx-view-builder-designer ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/runtime @ngxviewbuilder/designer
+```
+
+Add `@ngxviewbuilder/plugin-templates` only if you used the Templates plugin.
+
+Then a find-and-replace over import sources and the stylesheet path:
+
+```diff
+-import { NgxViewBuilderRuntime, IStructure } from 'ngx-view-builder-runtime';
++import { NgxViewBuilderRuntime, IStructure } from '@ngxviewbuilder/runtime';
+```
+
+```diff
+-@import 'ngx-view-builder-runtime/styles/index.css';
++@import '@ngxviewbuilder/runtime/styles/index.css';
+```
+
+Component selectors, class names, inputs, outputs, providers and your stored JSON
+are identical to 0.5.1. `<ngx-view-builder-runtime>` and
+`<ngx-view-builder-designer>` did not change, only the package names did.
+
+### One breaking change
+
+`NativeCodeEditor` is no longer exported from the runtime. It moved to
+`@ngxviewbuilder/designer`, along with the CodeMirror and Prettier dependencies it
+brings. Nothing in the runtime ever used it, so an application that only renders
+views now installs around 15 MB less. If you imported it, take it from the designer
+package instead.
+
+### The old names
+
+The unscoped packages are deprecated. Their final 0.6.0 release ships no code and
+throws on import with the new name, so an install that was never pinned fails loudly
+rather than quietly staying on a dead version. Existing installs are unaffected:
+`^0.5.1` does not resolve forward into 0.6.0, and the designer pins the runtime at an
+exact version.
+
 ## Migrating from the single package
 
 Views themselves are unaffected. Your stored JSON, structures and data need no
