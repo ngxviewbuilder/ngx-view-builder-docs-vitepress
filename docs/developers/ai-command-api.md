@@ -32,7 +32,7 @@ The bridge connects only while `<ngx-view-builder-designer>` is mounted, and onl
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from '@ngxviewbuilder/runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [

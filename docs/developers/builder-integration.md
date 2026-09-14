@@ -16,7 +16,7 @@ rendering, but new code should use the names below.
 
 ```ts
 import { Component } from '@angular/core';
-import { BuilderModel, IStructure, NgxViewBuilderDesigner } from 'ngx-view-builder-designer';
+import { BuilderModel, IStructure, NgxViewBuilderDesigner } from '@ngxviewbuilder/designer';
 
 @Component({
   selector: 'app-builder-page',

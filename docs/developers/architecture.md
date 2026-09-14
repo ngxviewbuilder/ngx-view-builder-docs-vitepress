@@ -11,7 +11,7 @@ The library is published as two npm packages that split it along the line betwee
 designing a view and running one.
 
 ```
-ngx-view-builder-runtime            free, no license key
+@ngxviewbuilder/runtime             free, no license key
 ├─ ngx-view-builder-runtime/        runtime shell (rendering + runtime services)
 ├─ ngx-view-builder/                unified host component
 ├─ ngx-view-builder-renderer/       low-level renderer
@@ -20,7 +20,7 @@ ngx-view-builder-runtime            free, no license key
    ├─ runtime/    rendering helpers, lazy element loading
    └─ shared/     models, the 55 elements, services, providers, expressions
 
-ngx-view-builder-designer           commercial license
+@ngxviewbuilder/designer            commercial license
 ├─ ngx-view-builder-designer/       designer shell (tabs, sidebars, history)
 └─ builder/                         drag & drop, property editing, registries,
                                     datasets, license service
@@ -34,7 +34,7 @@ Dependencies point one way only. The designer imports the runtime; the runtime k
 nothing about the designer and never loads it. That was already true inside the old
 single package, which is what made the split a packaging change rather than a rewrite.
 
-Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register
+Optional plugins are sibling npm packages (`@ngxviewbuilder/plugin-*`) that register
 builder tabs and feature packs through the extensions API. They sit on top of the
 designer, since a tab needs an editor to appear in. The core never auto-loads them.
 
@@ -111,7 +111,7 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 
 Designer-side code (property sidebars, drag & drop, datasets) is never needed to
 *render* a view. If your end-user app only displays views, it installs
-`ngx-view-builder-runtime` alone and pays no editor cost at all: not in the bundle, not
+`@ngxviewbuilder/runtime` alone and pays no editor cost at all: not in the bundle, not
 in the dependency tree, and not in licensing. Lazy element rendering and preloading are
 tunable on top of that.
 

@@ -9,14 +9,14 @@ description: Supplying and validating the license key.
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
-Since 0.5.0 that split is enforced by packaging rather than by promise. `ngx-view-builder-runtime`
-and `ngx-view-builder-designer` are separate npm packages with separate license files:
+Since 0.5.0 that split is enforced by packaging rather than by promise. `@ngxviewbuilder/runtime`
+and `@ngxviewbuilder/designer` are separate npm packages with separate license files:
 
 | Package | `LICENSE.md` |
 | --- | --- |
-| `ngx-view-builder-runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
-| `ngx-view-builder-designer` | The commercial agreement described on this page. |
-| `ngx-view-builder-plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
+| `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
+| `@ngxviewbuilder/plugin-templates` | Follows the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the

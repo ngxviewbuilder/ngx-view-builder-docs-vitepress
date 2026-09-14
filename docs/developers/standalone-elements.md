@@ -21,7 +21,7 @@ import the stylesheet:
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [provideNgxViewBuilderRuntime()],
@@ -29,7 +29,7 @@ bootstrapApplication(AppComponent, {
 ```
 
 ```css
-@import 'ngx-view-builder-runtime/styles/index.css';
+@import '@ngxviewbuilder/runtime/styles/index.css';
 ```
 
 Icons need no setup. The plus and minus of a number stepper, the chevron of an accordion,
@@ -48,7 +48,7 @@ placed among yours or unlayered host CSS quietly wins over all of it.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
+import { NvbElement, NvbScope } from '@ngxviewbuilder/runtime';
 
 @Component({
   selector: 'app-quick-form',

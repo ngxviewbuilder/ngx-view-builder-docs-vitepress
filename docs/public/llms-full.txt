@@ -6902,9 +6902,9 @@ Source: https://ngxviewbuilder.io/developers/
 NGX View Builder is an Angular library with two halves, and each half is its own npm
 package:
 
-- **`ngx-view-builder-runtime`**: the engine that renders a saved view definition
+- **`@ngxviewbuilder/runtime`**: the engine that renders a saved view definition
   (JSON) to end users. Free forever, no license key.
-- **`ngx-view-builder-designer`**: the visual editor your creators use to design those
+- **`@ngxviewbuilder/designer`**: the visual editor your creators use to design those
   views. Commercially licensed, and it depends on the runtime.
 
 Install one or both depending on what your app does. Most applications render views and
@@ -6998,7 +6998,7 @@ The bridge connects only while `<ngx-view-builder-designer>` is mounted, and onl
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from '@ngxviewbuilder/runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -7346,7 +7346,7 @@ Source: https://ngxviewbuilder.io/developers/api-service
 
 ```ts
 import { inject } from '@angular/core';
-import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
+import { NgxViewBuilderApiService } from '@ngxviewbuilder/runtime';
 
 private api = inject(NgxViewBuilderApiService);
 ```
@@ -7610,7 +7610,7 @@ The library is published as two npm packages that split it along the line betwee
 designing a view and running one.
 
 ```
-ngx-view-builder-runtime            free, no license key
+@ngxviewbuilder/runtime             free, no license key
 ├─ ngx-view-builder-runtime/        runtime shell (rendering + runtime services)
 ├─ ngx-view-builder/                unified host component
 ├─ ngx-view-builder-renderer/       low-level renderer
@@ -7619,7 +7619,7 @@ ngx-view-builder-runtime            free, no license key
    ├─ runtime/    rendering helpers, lazy element loading
    └─ shared/     models, the 55 elements, services, providers, expressions
 
-ngx-view-builder-designer           commercial license
+@ngxviewbuilder/designer            commercial license
 ├─ ngx-view-builder-designer/       designer shell (tabs, sidebars, history)
 └─ builder/                         drag & drop, property editing, registries,
                                     datasets, license service
@@ -7633,7 +7633,7 @@ Dependencies point one way only. The designer imports the runtime; the runtime k
 nothing about the designer and never loads it. That was already true inside the old
 single package, which is what made the split a packaging change rather than a rewrite.
 
-Optional plugins are sibling npm packages (`ngx-view-builder-plugin-*`) that register
+Optional plugins are sibling npm packages (`@ngxviewbuilder/plugin-*`) that register
 builder tabs and feature packs through the extensions API. They sit on top of the
 designer, since a tab needs an editor to appear in. The core never auto-loads them.
 
@@ -7710,7 +7710,7 @@ Logic strings (`visibleIf`, `expression`, …) are evaluated with [JEXL](https:/
 
 Designer-side code (property sidebars, drag & drop, datasets) is never needed to
 *render* a view. If your end-user app only displays views, it installs
-`ngx-view-builder-runtime` alone and pays no editor cost at all: not in the bundle, not
+`@ngxviewbuilder/runtime` alone and pays no editor cost at all: not in the bundle, not
 in the dependency tree, and not in licensing. Lazy element rendering and preloading are
 tunable on top of that.
 
@@ -7738,7 +7738,7 @@ rendering, but new code should use the names below.
 
 ```ts
 import { Component } from '@angular/core';
-import { BuilderModel, IStructure, NgxViewBuilderDesigner } from 'ngx-view-builder-designer';
+import { BuilderModel, IStructure, NgxViewBuilderDesigner } from '@ngxviewbuilder/designer';
 
 @Component({
   selector: 'app-builder-page',
@@ -7912,7 +7912,7 @@ The library's own demo (`projects/test-app/src/app/demo/`) contains this exact e
 ## 1. Model
 
 ```ts
-import { ElementBaseModel } from 'ngx-view-builder-runtime';
+import { ElementBaseModel } from '@ngxviewbuilder/runtime';
 
 export class NoteElementModel extends ElementBaseModel {
   text = '';
@@ -7935,7 +7935,7 @@ Fields you declare here are persisted in the structure JSON and editable through
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { NgxViewBuilderApiService, TemplateEngineService } from 'ngx-view-builder-runtime';
+import { NgxViewBuilderApiService, TemplateEngineService } from '@ngxviewbuilder/runtime';
 import { NoteElementModel } from './note-element.model';
 
 @Component({
@@ -7985,7 +7985,7 @@ For value-producing elements, write through the data service path (`api.setValue
 ## 3. Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderExtensions } from '@ngxviewbuilder/runtime';
 import { NoteElementComponent } from './note-element.component';
 import { NoteElementModel } from './note-element.model';
 
@@ -8055,7 +8055,7 @@ Nothing extra is needed for values and events: the library gives the cell model 
 If your component renders its own text template, resolve it against the row explicitly:
 
 ```ts
-import { buildElementRowRuntimeContext, resolveElementRowScope } from 'ngx-view-builder-runtime';
+import { buildElementRowRuntimeContext, resolveElementRowScope } from '@ngxviewbuilder/runtime';
 
 const context = buildElementRowRuntimeContext(this.model(), (path) =>
   this.dataService.getValue(path),
@@ -8090,7 +8090,7 @@ Creators write expressions like `isEmpty({email})`. You can add your own functio
 ## Registration
 
 ```ts
-import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderExtensions, IJexlFunctionRegistration } from '@ngxviewbuilder/runtime';
 
 const functions: IJexlFunctionRegistration[] = [
   {
@@ -8253,7 +8253,7 @@ A registered type appears in the builder's **Type** list next to the built-ins, 
 import {
   provideNgxViewBuilderExtensions,
   INgxViewBuilderValidatorTypeRegistration,
-} from "ngx-view-builder-runtime";
+} from "@ngxviewbuilder/runtime";
 
 const validatorTypes: INgxViewBuilderValidatorTypeRegistration[] = [
   {
@@ -8803,7 +8803,7 @@ All customisation funnels through a single config type, `INgxViewBuilderExtensio
 **At bootstrap (recommended):**
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderExtensions } from '@ngxviewbuilder/runtime';
 
 providers: [
   provideNgxViewBuilderExtensions({
@@ -8946,8 +8946,8 @@ what your application does.
 
 | Package | You need it when | License |
 | --- | --- | --- |
-| `ngx-view-builder-runtime` | Your app renders saved views | Free forever, no key |
-| `ngx-view-builder-designer` | Your app also hosts the visual editor | Commercial |
+| `@ngxviewbuilder/runtime` | Your app renders saved views | Free forever, no key |
+| `@ngxviewbuilder/designer` | Your app also hosts the visual editor | Commercial |
 
 The runtime stands on its own. The designer does not: it declares the runtime as a
 peer dependency pinned to the exact same version, because both halves are built from
@@ -8957,20 +8957,20 @@ one source tree and released together.
 open:
 
 ```bash
-npm install ngx-view-builder-runtime
+npm install @ngxviewbuilder/runtime
 ```
 
 **Hosting the editor as well.** Installing the designer pulls in the runtime, so name
 both and npm keeps the versions honest:
 
 ```bash
-npm install ngx-view-builder-runtime ngx-view-builder-designer
+npm install @ngxviewbuilder/runtime @ngxviewbuilder/designer
 ```
 
 The optional Templates plugin is a third package, version-locked to the designer:
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ### Why it is split
@@ -9006,7 +9006,7 @@ export const appConfig: ApplicationConfig = {
 Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. It ships with the runtime and covers both packages, so the path is the same whether or not you installed the designer. Import it once:
 
 ```css
-@import 'ngx-view-builder-runtime/styles/index.css';
+@import '@ngxviewbuilder/runtime/styles/index.css';
 ```
 
 Leaving it out does not blank the UI, which is what makes it easy to miss. The components still render and still have their own layout, they simply lose every token: inputs come out around 26px instead of 40px, labels fall back to plain black, and surfaces turn transparent.
@@ -9039,7 +9039,7 @@ Every class and every custom property the library ships is prefixed with `nvb-`,
 Runtime services can be pre-warmed either with a provider:
 
 ```ts
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
 
 providers: [
   provideNgxViewBuilderRuntime({ preloadRuntimeServices: true }),
@@ -9049,7 +9049,7 @@ providers: [
 …or imperatively in a component:
 
 ```ts
-import { ForgeInitializerService } from 'ngx-view-builder-runtime';
+import { ForgeInitializerService } from '@ngxviewbuilder/runtime';
 
 constructor() {
   inject(ForgeInitializerService).load({ preloadRuntimeServices: true });
@@ -9069,7 +9069,7 @@ Options:
 Installing a plugin package does nothing by itself. Register its provider:
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [
   provideNgxViewBuilderTemplates(),
@@ -9078,7 +9078,7 @@ providers: [
 
 Each registered plugin adds its tab to the builder automatically. See [Using plugins](https://ngxviewbuilder.io/developers/plugins).
 
-Plugins extend the editor, so they depend on `ngx-view-builder-designer` rather than on
+Plugins extend the editor, so they depend on `@ngxviewbuilder/designer` rather than on
 the runtime. A runtime-only application has nothing to register them into.
 
 ## Which package to import from
@@ -9086,8 +9086,8 @@ the runtime. A runtime-only application has nothing to register them into.
 Both packages export from their root, and the designer re-exports the entire runtime
 surface. That gives you a simple rule:
 
-- **Runtime-only app**: import everything from `ngx-view-builder-runtime`.
-- **App that hosts the editor**: import everything from `ngx-view-builder-designer`.
+- **Runtime-only app**: import everything from `@ngxviewbuilder/runtime`.
+- **App that hosts the editor**: import everything from `@ngxviewbuilder/designer`.
   Structures, models and the API service all come through it, so you keep one import
   site instead of two. Nothing is duplicated in your bundle, because the runtime
   remains a separate package that both resolve to.
@@ -9106,10 +9106,10 @@ migration; this is a packaging change, not a schema change.
 
 1. Uninstall `ngx-view-builder` and install the packages you actually need, as above.
 2. Rewrite imports. In an app that only renders views, `from 'ngx-view-builder'`
-   becomes `from 'ngx-view-builder-runtime'`. In an app that hosts the editor, use
-   `from 'ngx-view-builder-designer'` in the files that touch the editor, and the
+   becomes `from '@ngxviewbuilder/runtime'`. In an app that hosts the editor, use
+   `from '@ngxviewbuilder/designer'` in the files that touch the editor, and the
    runtime package elsewhere.
-3. Update the stylesheet path to `ngx-view-builder-runtime/styles/index.css`. The
+3. Update the stylesheet path to `@ngxviewbuilder/runtime/styles/index.css`. The
    tokens and element rules live in the runtime, so it stays the same file whichever
    packages you installed.
 4. If you use the Templates plugin, its peer dependency now points at the designer.
@@ -9135,14 +9135,14 @@ Source: https://ngxviewbuilder.io/developers/licensing
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
-Since 0.5.0 that split is enforced by packaging rather than by promise. `ngx-view-builder-runtime`
-and `ngx-view-builder-designer` are separate npm packages with separate license files:
+Since 0.5.0 that split is enforced by packaging rather than by promise. `@ngxviewbuilder/runtime`
+and `@ngxviewbuilder/designer` are separate npm packages with separate license files:
 
 | Package | `LICENSE.md` |
 | --- | --- |
-| `ngx-view-builder-runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
-| `ngx-view-builder-designer` | The commercial agreement described on this page. |
-| `ngx-view-builder-plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
+| `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
+| `@ngxviewbuilder/plugin-templates` | Follows the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -9224,7 +9224,7 @@ A plugin is just a package (or app module) that calls `provideNgxViewBuilderExte
 
 ```ts
 import { EnvironmentProviders } from '@angular/core';
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-designer';
+import { provideNgxViewBuilderExtensions } from '@ngxviewbuilder/designer';
 import { MyStudio } from './my-studio/my-studio';
 
 export const MY_FEATURE_PACK_ID = 'acme-audit';
@@ -9250,7 +9250,7 @@ export function provideAcmeAuditStudio(): EnvironmentProviders {
 }
 ```
 
-That's the whole registration. The official Templates plugin (`ngx-view-builder-plugin-templates`) is exactly this thin.
+That's the whole registration. The official Templates plugin (`@ngxviewbuilder/plugin-templates`) is exactly this thin.
 
 ## The tab component
 
@@ -9286,7 +9286,7 @@ Useful building blocks:
 ## Packaging checklist
 
 - [ ] Ship as an Angular library with a single `provideX()` entry point.
-- [ ] Peer-depend on `ngx-view-builder-designer` (never bundle it). A plugin adds a
+- [ ] Peer-depend on `@ngxviewbuilder/designer` (never bundle it). A plugin adds a
       builder tab, so the designer is the package it extends; the runtime surface
       reaches you through the designer's re-exports.
 - [ ] Version-lock releases to the core version you built against.
@@ -9301,16 +9301,16 @@ Source: https://ngxviewbuilder.io/developers/plugin-templates
 
 # Templates plugin reference
 
-`ngx-view-builder-plugin-templates` adds the **Templates** tab: a library of reusable HTML/CSS snippets that List grid card templates, Select option templates, row templates, and header templates reference by name. The [creator guide](https://ngxviewbuilder.io/creators/templates) covers the tab from a form-builder's point of view; this page is the developer reference the exact template syntax, how the plugin decides where templates are read from, and (the part hosts always ask about) how to wire template Save/Delete to your own backend and database.
+`@ngxviewbuilder/plugin-templates` adds the **Templates** tab: a library of reusable HTML/CSS snippets that List grid card templates, Select option templates, row templates, and header templates reference by name. The [creator guide](https://ngxviewbuilder.io/creators/templates) covers the tab from a form-builder's point of view; this page is the developer reference the exact template syntax, how the plugin decides where templates are read from, and (the part hosts always ask about) how to wire template Save/Delete to your own backend and database.
 
 ## Install & register
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [ provideNgxViewBuilderTemplates() ],
 ```
@@ -9566,11 +9566,11 @@ Source: https://ngxviewbuilder.io/developers/plugins
 Plugins are separate npm packages that add builder tabs and capabilities. The core never bundles or auto-loads them: install what you need, register its provider, done.
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [ provideNgxViewBuilderTemplates() ],
 ```
@@ -9579,7 +9579,7 @@ providers: [ provideNgxViewBuilderTemplates() ],
 
 | Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
 | ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
+| `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
 
 ## How gating works
 
@@ -9587,7 +9587,7 @@ A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the c
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the `ngx-view-builder-designer` version, which in turn pins its `ngx-view-builder-runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
+Keep every `ngx-view-builder-plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development).
 
@@ -9603,7 +9603,7 @@ Source: https://ngxviewbuilder.io/developers/runtime-integration
 
 ```ts
 import { Component, ViewChild, signal } from '@angular/core';
-import { IStructure, NgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
+import { IStructure, NgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
 
 @Component({
   selector: 'app-client-form',
@@ -9653,7 +9653,7 @@ Three complementary channels:
 3. **API service**: the full event set:
 
 ```ts
-import { NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
+import { NgxViewBuilderApiService } from '@ngxviewbuilder/runtime';
 
 private api = inject(NgxViewBuilderApiService);
 
@@ -9885,7 +9885,7 @@ Deploying the library before the views that depend on it avoids the situation en
 Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
 
 ```ts
-import { IStructureMigration } from 'ngx-view-builder-runtime';
+import { IStructureMigration } from '@ngxviewbuilder/runtime';
 
 const renameNoteText: IStructureMigration = {
   from: 1,
@@ -9948,7 +9948,7 @@ The smallest useful case. One input, one signal, nothing else.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
+import { NvbElement, NvbScope } from '@ngxviewbuilder/runtime';
 
 @Component({
   selector: 'app-search-bar',
@@ -10370,7 +10370,7 @@ import the stylesheet:
 
 ```ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
 
 bootstrapApplication(AppComponent, {
   providers: [provideNgxViewBuilderRuntime()],
@@ -10378,7 +10378,7 @@ bootstrapApplication(AppComponent, {
 ```
 
 ```css
-@import 'ngx-view-builder-runtime/styles/index.css';
+@import '@ngxviewbuilder/runtime/styles/index.css';
 ```
 
 Icons need no setup. The plus and minus of a number stepper, the chevron of an accordion,
@@ -10397,7 +10397,7 @@ placed among yours or unlayered host CSS quietly wins over all of it.
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { NvbElement, NvbScope } from 'ngx-view-builder-runtime';
+import { NvbElement, NvbScope } from '@ngxviewbuilder/runtime';
 
 @Component({
   selector: 'app-quick-form',
@@ -10954,7 +10954,7 @@ Two translation systems exist. Don't mix them up:
 ## Providing dictionaries
 
 ```ts
-import { provideNgxViewBuilderUiTranslations } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderUiTranslations } from '@ngxviewbuilder/runtime';
 import { LT_UI_DICTIONARY } from './i18n/lt';
 
 providers: [
@@ -10967,7 +10967,7 @@ providers: [
 The library exports its own complete English dictionary, every translatable key with its default text, so you don't have to hunt them down one by one:
 
 ```ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
+import { EN_UI_DICTIONARY } from '@ngxviewbuilder/runtime';
 
 console.log(Object.keys(EN_UI_DICTIONARY).length); // every translatable key
 ```
@@ -10976,7 +10976,7 @@ Copy it, translate the values, keep the keys:
 
 ```ts
 // i18n/de.ts
-import { EN_UI_DICTIONARY } from 'ngx-view-builder-runtime';
+import { EN_UI_DICTIONARY } from '@ngxviewbuilder/runtime';
 
 export const DE_UI_DICTIONARY: Record<string, string> = {
   ...EN_UI_DICTIONARY,
@@ -14337,7 +14337,7 @@ Source: https://ngxviewbuilder.io/
 **Developers** get a serious integration surface instead of a black box:
 
 ```ts
-import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from 'ngx-view-builder-runtime';
+import { NgxViewBuilderRuntime, NgxViewBuilderApiService } from '@ngxviewbuilder/runtime';
 
 @Component({
   imports: [NgxViewBuilderRuntime],
@@ -14450,9 +14450,9 @@ Source: https://ngxviewbuilder.io/pricing
 
 The paid license does not unlock hidden features. The free build and the licensed build of the builder are the same package. What you pay for is the right to use the builder, the visual editor your team designs views in, without a watermark, and to keep the versions released during your license term.
 
-The runtime is a separate matter, and since 0.5.0 it is also literally a separate package. `ngx-view-builder-runtime` renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
+The runtime is a separate matter, and since 0.5.0 it is also literally a separate package. `@ngxviewbuilder/runtime` renders your views to your end users, it never checks a license, and it never expires, in any version, before or after 1.0.0. Shipping it to production and to your customers costs nothing. That is not a beta promotion, it is the model.
 
-That means the line on this page matches the line in your `package.json`. An application that only renders views installs one free package and never installs the licensed one, so there is nothing to audit and no key to manage. The editor lives in `ngx-view-builder-designer`, which is the package this price applies to.
+That means the line on this page matches the line in your `package.json`. An application that only renders views installs one free package and never installs the licensed one, so there is nothing to audit and no key to manage. The editor lives in `@ngxviewbuilder/designer`, which is the package this price applies to.
 
 ## What changes at 1.0.0
 

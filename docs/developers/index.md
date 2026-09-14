@@ -8,9 +8,9 @@ description: Embed the Angular form and view builder, render saved views with a 
 NGX View Builder is an Angular library with two halves, and each half is its own npm
 package:
 
-- **`ngx-view-builder-runtime`**: the engine that renders a saved view definition
+- **`@ngxviewbuilder/runtime`**: the engine that renders a saved view definition
   (JSON) to end users. Free forever, no license key.
-- **`ngx-view-builder-designer`**: the visual editor your creators use to design those
+- **`@ngxviewbuilder/designer`**: the visual editor your creators use to design those
   views. Commercially licensed, and it depends on the runtime.
 
 Install one or both depending on what your app does. Most applications render views and

@@ -20,8 +20,8 @@ what your application does.
 
 | Package | You need it when | License |
 | --- | --- | --- |
-| `ngx-view-builder-runtime` | Your app renders saved views | Free forever, no key |
-| `ngx-view-builder-designer` | Your app also hosts the visual editor | Commercial |
+| `@ngxviewbuilder/runtime` | Your app renders saved views | Free forever, no key |
+| `@ngxviewbuilder/designer` | Your app also hosts the visual editor | Commercial |
 
 The runtime stands on its own. The designer does not: it declares the runtime as a
 peer dependency pinned to the exact same version, because both halves are built from
@@ -31,20 +31,20 @@ one source tree and released together.
 open:
 
 ```bash
-npm install ngx-view-builder-runtime
+npm install @ngxviewbuilder/runtime
 ```
 
 **Hosting the editor as well.** Installing the designer pulls in the runtime, so name
 both and npm keeps the versions honest:
 
 ```bash
-npm install ngx-view-builder-runtime ngx-view-builder-designer
+npm install @ngxviewbuilder/runtime @ngxviewbuilder/designer
 ```
 
 The optional Templates plugin is a third package, version-locked to the designer:
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ### Why it is split
@@ -80,7 +80,7 @@ export const appConfig: ApplicationConfig = {
 Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. It ships with the runtime and covers both packages, so the path is the same whether or not you installed the designer. Import it once:
 
 ```css
-@import 'ngx-view-builder-runtime/styles/index.css';
+@import '@ngxviewbuilder/runtime/styles/index.css';
 ```
 
 Leaving it out does not blank the UI, which is what makes it easy to miss. The components still render and still have their own layout, they simply lose every token: inputs come out around 26px instead of 40px, labels fall back to plain black, and surfaces turn transparent.
@@ -113,7 +113,7 @@ Every class and every custom property the library ships is prefixed with `nvb-`,
 Runtime services can be pre-warmed either with a provider:
 
 ```ts
-import { provideNgxViewBuilderRuntime } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
 
 providers: [
   provideNgxViewBuilderRuntime({ preloadRuntimeServices: true }),
@@ -123,7 +123,7 @@ providers: [
 …or imperatively in a component:
 
 ```ts
-import { ForgeInitializerService } from 'ngx-view-builder-runtime';
+import { ForgeInitializerService } from '@ngxviewbuilder/runtime';
 
 constructor() {
   inject(ForgeInitializerService).load({ preloadRuntimeServices: true });
@@ -143,7 +143,7 @@ Options:
 Installing a plugin package does nothing by itself. Register its provider:
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [
   provideNgxViewBuilderTemplates(),
@@ -152,7 +152,7 @@ providers: [
 
 Each registered plugin adds its tab to the builder automatically. See [Using plugins](./plugins).
 
-Plugins extend the editor, so they depend on `ngx-view-builder-designer` rather than on
+Plugins extend the editor, so they depend on `@ngxviewbuilder/designer` rather than on
 the runtime. A runtime-only application has nothing to register them into.
 
 ## Which package to import from
@@ -160,8 +160,8 @@ the runtime. A runtime-only application has nothing to register them into.
 Both packages export from their root, and the designer re-exports the entire runtime
 surface. That gives you a simple rule:
 
-- **Runtime-only app**: import everything from `ngx-view-builder-runtime`.
-- **App that hosts the editor**: import everything from `ngx-view-builder-designer`.
+- **Runtime-only app**: import everything from `@ngxviewbuilder/runtime`.
+- **App that hosts the editor**: import everything from `@ngxviewbuilder/designer`.
   Structures, models and the API service all come through it, so you keep one import
   site instead of two. Nothing is duplicated in your bundle, because the runtime
   remains a separate package that both resolve to.
@@ -180,10 +180,10 @@ migration; this is a packaging change, not a schema change.
 
 1. Uninstall `ngx-view-builder` and install the packages you actually need, as above.
 2. Rewrite imports. In an app that only renders views, `from 'ngx-view-builder'`
-   becomes `from 'ngx-view-builder-runtime'`. In an app that hosts the editor, use
-   `from 'ngx-view-builder-designer'` in the files that touch the editor, and the
+   becomes `from '@ngxviewbuilder/runtime'`. In an app that hosts the editor, use
+   `from '@ngxviewbuilder/designer'` in the files that touch the editor, and the
    runtime package elsewhere.
-3. Update the stylesheet path to `ngx-view-builder-runtime/styles/index.css`. The
+3. Update the stylesheet path to `@ngxviewbuilder/runtime/styles/index.css`. The
    tokens and element rules live in the runtime, so it stays the same file whichever
    packages you installed.
 4. If you use the Templates plugin, its peer dependency now points at the designer.
