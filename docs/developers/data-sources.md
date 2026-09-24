@@ -52,7 +52,7 @@ With Lazy load on, set the source's **Method** to the literal string **`TABLE-PO
 - **`pagingParams`**: `pageSize` and `skipRows` (offset, not page number) drive the page window; `orderClause` is a ready-to-use string like `"lastName DESC"` (column key + `ASC`/`DESC`, taken from whichever column is actively sorted, or the **Order clause** property otherwise). `cnt` and `totalCountUsed` are always sent as `null`/`false`, because the frontend never fills them in; your endpoint owns computing the total.
 - **`params`**: an array of `[paramName, value]` **tuples** (not `{name, value}` objects), one per row configured in the element's **Request params** property (up to 5). Values may resolve `{path}`/`{{expression}}` tokens from the form before sending.
 - **`extendedParams`**: one entry per active search/filter, each `{ paramName, paramValue: { condition, value, upperLower? } }`:
-  - The **quick search** box (if enabled) always contributes one entry; `paramName` is the **Quick search param name** property (default `quickSearch`).
+  - The **quick search** box (if enabled) contributes one entry once the user applies a search with the magnifier button or Enter; `paramName` is the **Quick search param name** property (default `quickSearch`). Typing alone sends nothing, unless the table has *Search while typing* (`quickSearchOnType`) on.
   - **Detailed search** contributes one entry per column that has an active filter; `paramName` is that column's `key`. `value` is already typed for you: a real `boolean`/`number` for boolean/number columns, an array of strings for multi-select filters, otherwise a string.
 
 **Search/filter `condition` values** (same vocabulary for quick search and every per-column filter):
@@ -87,6 +87,26 @@ So `{ "data": [...], "totalCount": 187 }` or `{ "results": [...], "paging": { "t
 
 - **Row/selection/header actions** and **inline edit save** go through the same generic [action → data source](../creators/events-actions) mechanism as any button; there is no table-specific request shape for them. What reaches your endpoint is whatever URL/body you configured on that action's data source, populated from the action's own runtime context: a row action sees `row`, `selectedRows`, `selectedKeys`; a bulk selection action sees `rows`/`items` for every selected record; inline edit save sees `row` (the full edited row) **and** `changedValues`, a flat `{ "status": "active" }`-style object containing only the columns that actually changed, handy for a PATCH-style endpoint.
 - **CSV/Excel/PDF export happens entirely in the browser.** There is no server-side export endpoint to implement; "export all" re-issues the same table request with a much larger `pagingParams.pageSize` (the **Export all page size** property, default 10000) to fetch every matching row, then builds the file client-side.
+
+## Autocomplete search requests
+
+An `autocomplete` with a **Search datasource** (`searchDataSourceName`) calls that source while the user types. It is an ordinary REST source; the only thing specific to it is what the runtime puts at your disposal when it fills the URL and body:
+
+| Placeholder | Value |
+| --- | --- |
+| `{query}` | The text the user typed, trimmed. Also available as `{term}`, `{search}` and `{filterValue}`, and under the element's *Query context key* if one is set. |
+| `{limit}` | The element's **Server result limit**, or **Max suggestions** when the limit is empty. Also `{take}`, `{rowLimit}`, `{recordCount}`. |
+| `{value}` | The field's current value. |
+
+Any other `{path}` resolves against the form data as usual, so a search can be narrowed by another field, e.g. `/api/cities?q={query}&country={country}`.
+
+```text
+GET /api/cities?q=vil&limit=100
+```
+
+**The response** can be any JSON that contains an array of records: the array itself, or an object with the array at a path you set in *Items path*. When *Items path* is empty the runtime tries `items`, `data.items`, `data.rows`, `data.records`, `data.results`, `data.content`, `records`, `rows`, `results`, `content`, `result` and `data`, in that order. The records need no particular shape. The creator picks which field is the label and which the value, and can store the whole record.
+
+**When the call is made.** Not on every keystroke. The runtime waits for the *Min search length*, then for the *Debounce* (1000 ms by default) after the last keystroke, and drops the answer to any request a newer one has replaced. It skips the call altogether when the new text only extends a query whose answer came back with fewer records than the result limit, because such an answer already held every match; the list is narrowed in the browser instead. So return **at most `limit` records** and never pad the answer: a full page is how the runtime knows there may be more.
 
 ## File upload requests
 

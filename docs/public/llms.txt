@@ -57,7 +57,7 @@
 - [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the DataSources editor and the element binding panel, for REST, route, and local sources.
 - [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element and how it triggers actions.
 - [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices): Select, Multi-select, Autocomplete, Checkbox, Radio, Select button, Toggles, and List box, with full property tables.
-- [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
+- [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
 - [Content & media](https://ngxviewbuilder.io/creators/elements/content): Rich text, Custom HTML, Image, Video, Iframe, Icon, Avatar, Page title, Breadcrumbs, and Chart, with full property tables.
 - [Date & time inputs](https://ngxviewbuilder.io/creators/elements/date-time): Datepicker, Date range, and Time picker, with full property tables.
 - [Feedback & status](https://ngxviewbuilder.io/creators/elements/feedback): Badge, Message card, Toast, Stats card, Progress bar, and Stepper/Timeline, with full property tables.
@@ -68,7 +68,7 @@
 - [Events & actions](https://ngxviewbuilder.io/creators/events-actions): Every field of the action editor (triggers, action types, confirmation, response handling, toasts) with JSON examples.
 - [Expressions basics](https://ngxviewbuilder.io/creators/expressions): How to reference fields and write conditions in NGX View Builder.
 - [Your first form](https://ngxviewbuilder.io/creators/first-form): Build a working client registration form in ten minutes.
-- [Form settings](https://ngxviewbuilder.io/creators/form-settings): Every field of the Settings tab, from status and language to width, header, navigation, buttons, and dialog mode.
+- [Form settings](https://ngxviewbuilder.io/creators/form-settings): Every field of the Settings tab, from status and language to width, header, navigation, buttons, dialog mode, and AI access.
 - [Expression functions](https://ngxviewbuilder.io/creators/functions): All built-in expression functions with examples.
 - [JSON editor](https://ngxviewbuilder.io/creators/json-editor): Edit the raw view definition when the visual editor is slower.
 - [Layout & containers](https://ngxviewbuilder.io/creators/layout): Rows, columns, responsive widths, and how containers organise a view.

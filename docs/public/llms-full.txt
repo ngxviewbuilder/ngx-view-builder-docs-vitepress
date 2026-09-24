@@ -16,30 +16,39 @@ Everything else in this section teaches you to **write** structure JSON. This pa
 
 ## Detect the mode first
 
-The live mode arrives as an MCP server. If your client has the `nvb_*` tools, call `nvb_status`.
+The live mode arrives as an MCP server. If your client has the `nvb_*` tools, you are in it.
+
+Every connection starts **unpaired**. Before anything else:
+
+1. Ask the user for their builder session key. It is shown in the builder settings under AI access (MCP) and looks like `NVB-XXXX-XXXX-XXXX`. Never guess one.
+2. Call `nvb_pair` with the key exactly as the user gave it. Case, spaces and missing dashes do not matter.
+
+After that, `nvb_status` tells you where you stand:
 
 | Result | What it means | What to do |
 | --- | --- | --- |
-| `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
-| `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
-| `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
-| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder settings, under AI access (MCP). |
+| `paired: true`, `builderConnected: true` | A builder tab is open and yours to drive | Drive it with commands. Do not hand back raw JSON for a person to paste. |
+| `paired: true`, `builderConnected: false` | The tab was closed, or is reloading | Ask the user to open or reload the builder, then retry. A reload keeps the pairing. |
+| `paired: false` | Nothing is paired yet, or the user pressed New key | Ask for the key (again) and call `nvb_pair`. |
+| An error saying no tab has that key | The key is wrong, or belongs to a tab that is gone | Ask the user to copy it again from the builder. A new tab has a new key. |
 | No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
-The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
+`callsRemaining` in the same answer is how many builder calls are left in the current window. Batch your changes; do not spend calls one element at a time.
+
+The API is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
 
 ## Bootstrap sequence
 
-Run these before writing anything. They cost one round trip and remove almost every source of error.
+Run these before writing anything. They cost a few round trips and remove almost every source of error.
 
 ```text
-nvb_status                    1. is the door open
-nvb_get_instructions          2. the contract as text, plus the command catalog
+nvb_pair                      1. with the key the user gave you
+nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
 nvb_get_tree                  4. what already exists, and the row indexes you need
 ```
 
-`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. It returns `help()` in the same call, so `help.guidelines` carries the rules on their own and `help.capabilities` tells you which optional features are present.
+`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -62,7 +71,7 @@ Hard rules:
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
 5. **There is no save.** You can build and edit freely, but a person commits the view. Do not claim you saved anything, and do not try to reach a save through a trigger or an element event: automation actions have no submit or save type, and an element `submit` still needs a human click.
-6. **Re-check `available()` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null. That is expected, not a fault.
+6. **Re-check with `nvb_status` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null (in the page itself, `available()` answers the same question). That is expected, not a fault.
 
 ### Result shape
 
@@ -595,12 +604,13 @@ Note that `parentName` exists on `IBaseElement` but is **not** how you build the
 
 ## Which element types accept children
 
-Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElement`):
+Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerElement`):
 
 | Type | Children go in | Notes |
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
+| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -699,7 +709,7 @@ Run all of these mentally before returning JSON.
 4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
-7. `rows` on a column appears only when the referenced element is one of the ten container types.
+7. `rows` on a column appears only when the referenced element is one of the eleven container types.
 8. `tabRows` keys match the container's declared tab/item/panel/step values.
 9. Widths, if present at all, are on elements, not columns.
 10. `name` values are unique across the whole structure.
@@ -1206,7 +1216,7 @@ The canonical full list is in [Common mistakes, entry 14](https://ngxviewbuilder
 - A single `row` is a horizontal band; its `columns` sit side by side. Vertical order is the order of `rows`.
 - **A column with no width takes an equal share of the row.** For a two-column layout, one `row` with two `columns` and no widths is sufficient. Never write `"width": "50%"` to get halves.
 - Widths (`width`, `tabletWidth`, `mobileWidth`, `fitContent`) are **element** properties, set in the `elements` map, and only when the split must be uneven.
-- Exactly ten types accept children: `page`, `panel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
+- Exactly eleven types accept children: `page`, `panel`, `objectPanel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
 - Container inner layouts must remain in the NGX View Builder model, not via custom HTML.
 - `parentName` is not how parentage is declared. The layout tree is.
 
@@ -1221,6 +1231,8 @@ Worked examples and the exact interfaces: [Layout model](https://ngxviewbuilder.
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.
 - `listBox`, `selectButton` store a single value, or an array when multi-select/`multiple` is enabled.
@@ -1297,6 +1309,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`
+- "fields saved as one object", "nested object", "address object" -> `objectPanel`
 - "single choice from a list" -> `select` or `radio`
 - "search in a large list" -> `autocomplete`
 - "multiple choices" -> `multiSelect` or `checkbox`
@@ -1355,6 +1368,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | User intent | Choose | Note |
 | --- | --- | --- |
 | Simple block with inner fields | `panel` | Most common container |
+| Group of fields saved as one object | `objectPanel` | Values land at `<name>.<field>`; not repeatable |
 | Content divided into tabs | `tabs` or `tabsPro` | Do not use if multiple pages are sufficient |
 | Collapsible sections | `accordion` | Good for longer forms |
 | Step flow or progress | `progressFlow` | Not for a plain panel layout |
@@ -1402,6 +1416,7 @@ They belong to the internal model, property editing, or builder infrastructure.
 | --- | --- |
 | `dynamic table`, `editable rows`, `add row`, `delete row` | `dynamicTable` |
 | `repeating block`, `repeatable section`, `repeatable group` | `dynamicPanel` |
+| `object`, `nested object`, `group as one value`, `multiple text` | `objectPanel` |
 | `data table`, `server-side table`, `paging`, `sorting`, `filtering` | `table` |
 | `search in list`, `searchable select`, `autocomplete` | `autocomplete` |
 | `multiple checkboxes`, `select multiple` | `checkbox` or `multiSelect` |
@@ -1411,6 +1426,7 @@ They belong to the internal model, property editing, or builder infrastructure.
 
 - `dynamicTable` vs `table`: does the user edit rows inline, or work with a datasource data grid?
 - `dynamicPanel` vs `dynamicTable`: does the data look more like a form/block or like a row-based table?
+- `panel` vs `objectPanel`: should the fields stay separate top-level values, or arrive as one object under the group's name?
 - `select` vs `autocomplete`: are there few options, or many that require search?
 - `singleCheckbox` vs `toggleSwitch`: does checkbox semantics matter, or is a switch style preferred?
 
@@ -1781,8 +1797,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `autocomplete`
 
 - Use for a large list of options with search.
-- Value shape depends on the option mapping.
-- Often requires a datasource or options mapping.
+- For a short list, give it `options` or a `dataSource` with `useFor: "option"`; it filters them as the user types.
+- For a list that lives on a server, set `searchDataSourceName` to a source whose URL uses `{query}`, plus `searchLabelKey` and, usually, `searchValueKey`.
+- Value shape: the option value, or the value key of the picked record. With a search source and no `searchValueKey`, the whole record object.
 
 ### `fileUpload`
 
@@ -1948,6 +1965,13 @@ Canonical example:
 
 - The most common container for grouping fields.
 - Suitable for sections with an inner layout.
+
+### `objectPanel`
+
+- Use when several fields should be saved as one object: an address, a contact person, company details.
+- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
+- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`
 
@@ -2393,6 +2417,39 @@ Value shapes:
 - `select` / `radio` / `autocomplete`: single value
 - `multiSelect` / `checkbox`: array
 
+### `autocomplete` (search data source)
+
+For lists too large to load upfront, the element calls its own search source while the user types. This is separate from `dataSource`, which stays for static option lists.
+
+| Property | Type | Notes |
+|---|---|---|
+| `searchDataSourceName` | `string` | Name of a top-level data source. Its URL or body uses `{query}` for the typed text and `{limit}` for the result limit |
+| `searchItemsPath` | `string` | Path to the array in the response, e.g. `data.items`. Optional: `items`, `data`, `results`, `rows`, `content` (also under `data.`) are tried when empty |
+| `searchLabelKey` | `string` | Field shown in the dropdown, dot paths allowed (`country.name`). Empty tries `label`, `name`, `title`, `text` |
+| `searchValueKey` | `string` | Field stored as the value. **Empty stores the whole record** as an object |
+| `searchResultLimit` | `number` | Most records the source returns. An answer shorter than this is complete, so a longer query that extends the answered one is filtered locally instead of calling again. Empty calls on every change |
+| `debounceMs` | `number` | Wait after the last keystroke. Default `1000`, max `10000` |
+| `minSearchLength` | `number` | Characters before the first call. Default `3` |
+| `queryContextKey` | `string` | Extra name for the typed text besides `query` |
+| `maxSuggestions` | `number` | Most suggestions shown. Default `20` |
+| `forceSelection` | `boolean` | Clear text that matches no suggestion on blur. Turn it on when storing whole records |
+| `lazyLoad` | `boolean` | Legacy: search through `dataSource` instead. Ignored when `searchDataSourceName` is set |
+
+```json
+{
+  "name": "city",
+  "type": "autocomplete",
+  "label": "City",
+  "searchDataSourceName": "citySearch",
+  "searchLabelKey": "name",
+  "searchResultLimit": 100,
+  "minSearchLength": 2,
+  "forceSelection": true
+}
+```
+
+with a source such as `{ "name": "citySearch", "type": "rest", "params": { "method": "GET", "url": "/api/cities?q={query}&limit={limit}" } }`. Value shape here: the whole record, e.g. `{ "id": 21, "name": "Riga", "country": { "code": "LV" } }`; with `"searchValueKey": "id"` it would be `21`.
+
 ### `singleCheckbox` / `toggleSwitch` / `toggleButton`
 
 Value shape: `boolean`
@@ -2491,6 +2548,24 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 | `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
 
 **A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](https://ngxviewbuilder.io/ai/layout-model#nesting-the-mistake-that-breaks-everything).
+
+### `objectPanel`
+
+Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+
+```json
+"pages": [{ "name": "page1", "rows": [{ "columns": [{
+  "elementRef": "address",
+  "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
+}] }] }],
+"elements": {
+  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
+  "city": { "name": "city", "type": "text", "label": "City" },
+  "street": { "name": "street", "type": "text", "label": "Street" }
+}
+```
+
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
 
 ### `dynamicPanel`
 
@@ -2595,6 +2670,8 @@ A column of `type: "element"` renders a real element in every row:
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
 | `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
+| `showQuickSearch` | `boolean` | The quick search box in the header |
+| `quickSearchOnType` | `boolean` | Default `false`: the quick search applies on the search button or Enter only. `true` searches while typing, after `searchDebounceMs` |
 | `rowActions` | `ITableRowActionConfig[]` | Row action buttons. These go through the generic action/data-source pipeline, not this contract |
 
 **Do not use `ITableDataSourceConfig`.** It exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
@@ -2891,7 +2968,7 @@ URL and body templates use **single** braces: `{el1}`, `{row.id}`, `{__variables
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
@@ -3162,7 +3239,7 @@ Type strings are **exact lowercase camelCase**. The canonical list:
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
@@ -6979,8 +7056,8 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 | Method | MCP tool | What it does |
 | --- | --- | --- |
-| `available()` | part of `nvb_status` | false whenever the builder is not on screen |
-| `help()` | `nvb_get_instructions` | the full command catalog, with schemas |
+| `available()` | | false whenever the builder is not on screen |
+| `help()` | `nvb_help` | the full command catalog, with schemas |
 | `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
 | `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
 | `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
@@ -6992,39 +7069,58 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
 
-## When it exists
+Three more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`. They are about who may talk to which tab, which is the next section.
 
-The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+## Connecting the builder
+
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in by giving it an address. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
 ```ts
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from '@ngxviewbuilder/runtime';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideNgxViewBuilderRuntime(),
-    provideNgxViewBuilderMcp({ url: 'wss://mcp.ngx-view-builder.io/bridge' }),
-  ],
-});
+readonly builderSettings: INgxViewBuilderBuilderSettings = {
+  licenseKey: 'NVB-...',
+  mcp: {
+    url: 'wss://mcp.example.com/bridge',
+    client: { app: 'Back office', page: 'Order form' },
+  },
+};
 ```
 
 | Option | Description |
 | --- | --- |
-| `enabled` | Default `true`. Set `false` to keep the provider registered but leave the API closed. |
-| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. |
-| `autoConnect` | Default `true`. Set `false` to connect by hand through `NgxViewBuilderMcpBridgeService`. |
-| `client` | App and page labels, shown in `nvb_status` so a user with several tabs open can tell which one an agent is attached to. |
-| `sessionKey` | A key your own backend issued, string or resolver. Supply it and the pair code disappears: your backend already knows the key, so it can hand the same one to whatever AI client it wires up. |
-| `auth` | Token your MCP server's authorization service understands. Forwarded untouched, never interpreted. |
-| `metadata` | Anything your authorization service should see: tenant, user, plan hint. Echoed back in `nvb_status`. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and nothing connects. |
+| `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
+| `sessionKey` | A key your own backend issued. See [Keys from your backend](https://ngxviewbuilder.io/developers/ai-command-api#keys-from-your-backend). |
 
-Without a `sessionKey`, the builder shows a pair code in its settings, under AI access (MCP), and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
+`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired` and `lastError`. `regenerateKey()` does what the **New key** button does.
 
-The MCP server itself holds no user table. It asks whatever authorization service you configure and does what it is told, which is what lets you run it next to your own product and drive it from your own backend. See its README for the auth webhook contract.
+## Pairing
+
+The MCP server does not let an AI client near a builder until a person says so. The handshake is short:
+
+1. When the builder connects, it generates a session key such as `NVB-K990-RPNH-N2T7` and shows it in its settings under AI access (MCP), next to the server URL.
+2. The person adds the server URL, `https://<your server>/mcp`, to their AI client once. The URL carries no key, so the same connector serves every builder tab.
+3. The AI client connects. Until it is paired, every tool answers with an error telling the model to ask the user for the session key, and the server's MCP instructions say the same, so the model asks before it tries anything else.
+4. The person pastes the key into the chat and the model calls `nvb_pair` with it. The builder shows a notice with the client's name, and from then on every tool call on that connection goes to that tab.
+
+A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
+
+**New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
+
+`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
+
+### Keys from your backend
+
+If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with `https://<your server>/mcp?key=<the key>` (or an `x-nvb-session-key` header). Such a connection starts out paired and nobody types anything. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
+
+### The bridge keeps itself up
+
+If the socket drops, the builder reconnects on its own, backing off from one second to thirty. The key does not change, so neither does the pairing: once the server is back, the AI continues where it stopped. The status in the settings reads *MCP server unreachable, retrying…* in the meantime.
 
 ## The two guarantees
 
-**It runs only while the builder is on screen.** Three things must all hold: the host registered the provider, the builder component is mounted, and a person paired a code. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
+**It runs only while the builder is on screen.** Three things must all hold: the host configured `mcp`, the builder component is mounted, and a person paired a key. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
 
 **It cannot save.** There is no save, publish or submit command, and none of the mutation commands reach the host's save path. `saveTemplate` and `saveSidebarGroup` write reusable builder library items, not the view.
 
@@ -7036,9 +7132,30 @@ The worst a runaway agent can do is leave unsaved edits in an open tab, which a 
 A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an agent can cause a data source call or a navigation without a click. That is a side effect, not a commit, but it is worth knowing when reviewing what an agent wrote.
 :::
 
+## Running the MCP server
+
+The server is the `ngx-view-builder-mcp` package. It is a router and nothing more: it holds the builder sockets, pairs AI connections to them, and forwards each call. What a command means is decided in the builder, so a new element type or command in the library needs no new server release.
+
+```bash
+npx ngx-view-builder-mcp
+```
+
+It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the builder socket at `/bridge`.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `NVB_MCP_PORT` | `3200` | Port. |
+| `NVB_MCP_ALLOWED_ORIGINS` | empty | Comma separated origins allowed to open `/bridge`. Empty means any, which is fine on your own machine and nowhere else. |
+| `NVB_MCP_MAX_CALLS_PER_SESSION` | `60` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
+| `NVB_MCP_SESSION_LIMIT_WINDOW_MS` | `3600000` | Length of that window. |
+| `NVB_MCP_CHARACTER_LIMIT` | `60000` | Longest tool answer before it is cut, with a note telling the model to ask for a narrower slice. |
+| `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
+
+Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
+
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the builder settings, copy the pair code from AI access (MCP), point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -7048,7 +7165,7 @@ Nothing there can be saved to anything of yours: the demo keeps its view in your
 
 It exists because of a failure that has nothing to do with the schema. An agent told to "build this form through the AI API" often answers by describing the JSON it would send, or hands it over for someone to paste, because nothing in its context said the API is live and reachable right now. The instructions say that in the first line.
 
-Call `nvb_get_instructions` first in a session. It returns both the prompt ready text and the machine readable `help()` object in one round trip.
+Call `nvb_get_instructions` first in a session, right after pairing. `nvb_pair` says so in its answer.
 
 `help()` is the machine readable version of the same thing: the command catalog with parameters and a worked example per command, the tab codes, behaviour notes, and three fields worth reading on their own.
 
@@ -7062,7 +7179,7 @@ Call `nvb_get_instructions` first in a session. It returns both the prompt ready
 `describeElementTypes()` is the other one to call before writing anything. It returns every registered type, whether it can hold children, and the real property keys for each. Without it a model guesses property names and every command comes back with an error.
 
 ```json
-// nvb_get_instructions -> result.help
+// nvb_help
 { "commands": [ /* 47 entries */ ], "capabilities": ["templates"] }
 
 // nvb_describe_element_types { "type": "select" }
@@ -7168,7 +7285,18 @@ Every placement command shares the same target fields:
 | `row` | Put the element into this existing row instead of creating one. |
 | `column` | Position inside `row`. Appends when left out. |
 
-Containers that hold children directly are `panel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
+Containers that hold children directly are `panel`, `objectPanel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
+
+`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. The commands are the same; only the data paths you read back from `getData()` and write in expressions differ.
+
+```js
+await api.execute([
+  { op: 'addElement', type: 'objectPanel', name: 'address', properties: { label: 'Address' } },
+  { op: 'addElement', type: 'text', name: 'city', parent: 'address', properties: { label: 'City' } },
+  { op: 'addElement', type: 'text', name: 'street', parent: 'address', row: 0 },
+]);
+// getData() -> { address: { city: ..., street: ... } }
+```
 
 Do not set a percentage `width` on fields you want side by side. Columns in a row already share the space, and a fixed width fights that. Use `mobileWidth: '100%'` when you want a pair to stack on narrow screens.
 
@@ -7804,9 +7932,12 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
+  mcp: { url: 'wss://mcp.example.com/bridge' },  // let an AI client drive the builder
   licenseKey: 'NVB-...',
 };
 ```
+
+`mcp` is optional. With it, the builder connects to an MCP server while it is on screen and shows a session key under Settings → AI access (MCP), which a person gives to their AI client to let it edit the view. See [AI command API](https://ngxviewbuilder.io/developers/ai-command-api#connecting-the-builder).
 
 ## Outputs
 
@@ -8418,7 +8549,7 @@ With Lazy load on, set the source's **Method** to the literal string **`TABLE-PO
 - **`pagingParams`**: `pageSize` and `skipRows` (offset, not page number) drive the page window; `orderClause` is a ready-to-use string like `"lastName DESC"` (column key + `ASC`/`DESC`, taken from whichever column is actively sorted, or the **Order clause** property otherwise). `cnt` and `totalCountUsed` are always sent as `null`/`false`, because the frontend never fills them in; your endpoint owns computing the total.
 - **`params`**: an array of `[paramName, value]` **tuples** (not `{name, value}` objects), one per row configured in the element's **Request params** property (up to 5). Values may resolve `{path}`/`{{expression}}` tokens from the form before sending.
 - **`extendedParams`**: one entry per active search/filter, each `{ paramName, paramValue: { condition, value, upperLower? } }`:
-  - The **quick search** box (if enabled) always contributes one entry; `paramName` is the **Quick search param name** property (default `quickSearch`).
+  - The **quick search** box (if enabled) contributes one entry once the user applies a search with the magnifier button or Enter; `paramName` is the **Quick search param name** property (default `quickSearch`). Typing alone sends nothing, unless the table has *Search while typing* (`quickSearchOnType`) on.
   - **Detailed search** contributes one entry per column that has an active filter; `paramName` is that column's `key`. `value` is already typed for you: a real `boolean`/`number` for boolean/number columns, an array of strings for multi-select filters, otherwise a string.
 
 **Search/filter `condition` values** (same vocabulary for quick search and every per-column filter):
@@ -8453,6 +8584,26 @@ So `{ "data": [...], "totalCount": 187 }` or `{ "results": [...], "paging": { "t
 
 - **Row/selection/header actions** and **inline edit save** go through the same generic [action → data source](https://ngxviewbuilder.io/creators/events-actions) mechanism as any button; there is no table-specific request shape for them. What reaches your endpoint is whatever URL/body you configured on that action's data source, populated from the action's own runtime context: a row action sees `row`, `selectedRows`, `selectedKeys`; a bulk selection action sees `rows`/`items` for every selected record; inline edit save sees `row` (the full edited row) **and** `changedValues`, a flat `{ "status": "active" }`-style object containing only the columns that actually changed, handy for a PATCH-style endpoint.
 - **CSV/Excel/PDF export happens entirely in the browser.** There is no server-side export endpoint to implement; "export all" re-issues the same table request with a much larger `pagingParams.pageSize` (the **Export all page size** property, default 10000) to fetch every matching row, then builds the file client-side.
+
+## Autocomplete search requests
+
+An `autocomplete` with a **Search datasource** (`searchDataSourceName`) calls that source while the user types. It is an ordinary REST source; the only thing specific to it is what the runtime puts at your disposal when it fills the URL and body:
+
+| Placeholder | Value |
+| --- | --- |
+| `{query}` | The text the user typed, trimmed. Also available as `{term}`, `{search}` and `{filterValue}`, and under the element's *Query context key* if one is set. |
+| `{limit}` | The element's **Server result limit**, or **Max suggestions** when the limit is empty. Also `{take}`, `{rowLimit}`, `{recordCount}`. |
+| `{value}` | The field's current value. |
+
+Any other `{path}` resolves against the form data as usual, so a search can be narrowed by another field, e.g. `/api/cities?q={query}&country={country}`.
+
+```text
+GET /api/cities?q=vil&limit=100
+```
+
+**The response** can be any JSON that contains an array of records: the array itself, or an object with the array at a path you set in *Items path*. When *Items path* is empty the runtime tries `items`, `data.items`, `data.rows`, `data.records`, `data.results`, `data.content`, `records`, `rows`, `results`, `content`, `result` and `data`, in that order. The records need no particular shape. The creator picks which field is the label and which the value, and can store the whole record.
+
+**When the call is made.** Not on every keystroke. The runtime waits for the *Min search length*, then for the *Debounce* (1000 ms by default) after the last keystroke, and drops the answer to any request a newer one has replaced. It skips the call altogether when the new text only extends a query whose answer came back with fewer records than the result limit, because such an answer already held every match; the list is narrowed in the browser instead. So return **at most `limit` records** and never pad the answer: a full page is how the runtime knows there may be more.
 
 ## File upload requests
 
@@ -10774,6 +10925,17 @@ A flat map keyed by element name. Every entry has at least `name`, `label`, `typ
 
 Common keys across types: `width`/`tabletWidth`/`mobileWidth`, `hidden`, `disabled`, `readOnly`, `required`, logic strings (`visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `expression`, `defaultValue`), `validators`, `events`, `logicExecutionMode`, `validationExecutionMode`, `inheritParentState`. Element `type` values match `ElementTypesEnum` (`text`, `select`, `dynamicPanel`, `table`, …).
 
+### Where a value lands in the data
+
+An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. The elements map stays flat either way; the runtime works the paths out from the layout.
+
+```json
+// layout: address (objectPanel) > city, street
+{ "address": { "city": "Vilnius", "street": "Gedimino pr. 1" } }
+```
+
+The same paths are used when you pass data in, when you read it back from `valueChanged` (`dataPath` is `address.city`), and in expressions (`{address.city}`).
+
 ## `settings`: view-wide configuration
 
 Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
@@ -11507,7 +11669,7 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |
 | **Reload source when mapped question value changes** (*React to change*) | Auto-reload when a mapped param's value changes. |
 | **Listen fields** | Comma-separated extra paths to watch (e.g. `el1` or `panel.userId`). If empty, the system auto-detects from URL placeholders and the param mapping. |
-| **Lazy load** | Fetch on demand: tables load per page/sort, autocomplete loads as the user types. |
+| **Lazy load** | Fetch on demand: tables load per page/sort. Autocomplete has its own *Search datasource* for this, see [Autocomplete](https://ngxviewbuilder.io/creators/elements/choices#autocomplete-autocomplete). |
 
 ## Example: country → city dropdowns
 
@@ -11607,7 +11769,7 @@ All choice elements share the same two ways of getting their options:
 1. **Static options**, in the **Options** section: add label/value pairs by hand.
 2. **Data source**, in the **Primary source** section: load options from an API and map which response fields become the value and label. See [Data sources](https://ngxviewbuilder.io/creators/data-sources).
 
-The stored value is always the option **value** (not the label).
+The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
 
 ## Options: shared fields
 
@@ -11647,13 +11809,51 @@ Like Select, but stores an **array** of values. Use `contains({tags}, "vip")` in
 
 Type-ahead search. Best for long lists (clients, cities, products).
 
+It works in two ways. With a short list, give it static options or a normal data source and it filters them as the user types. With a list too big to load upfront, point it at a **search data source** and it asks the server instead.
+
 | Property | What it does |
 | --- | --- |
-| **Lazy load** | Fetch options as the user types instead of upfront. |
-| **Min search length** | Characters required before a lazy search fires. |
-| **Debounce (ms)** | Time between the last keystroke and the request. |
-| **Max suggestions** | How many suggestions to show. |
-| **Force selection** | Only values picked from the list are allowed; free-typed text is cleared. |
+| **Max suggestions** | How many suggestions the dropdown shows at most. |
+| **Force selection** | Only values picked from the list are allowed. Text that matches nothing is cleared when the field loses focus. |
+
+### Searching on the server
+
+These live in the **Search source** section of the properties sidebar.
+
+| Property | What it does |
+| --- | --- |
+| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the DataSources tab. |
+| **Items path** | Where the array sits in the response, e.g. `data.items`. Leave it empty if the response is the array itself, or wraps it in a common key such as `items`, `data`, `results`, `rows` or `content`. |
+| **Label key** | Which field of each record the user sees, e.g. `name`. Nested fields work too: `address.city`. Left empty, the element tries `label`, `name`, `title` and `text` in that order. |
+| **Value key** | Which field gets stored, e.g. `id`. Leave it empty to store the **whole record** the user picked. |
+| **Server result limit** | How many records the server returns at most, e.g. `100`. See below. |
+| **Min search length** | How many characters the user has to type before the first request. |
+| **Debounce (ms)** | How long the element waits after the last keystroke before it calls the server. The default is 1000 ms, so typing a whole word costs one request, not one per letter. |
+| **Query context key** | An extra name for the typed text, if your source expects something other than `query`. |
+
+In the data source, use `{query}` wherever the typed text should go:
+
+```text
+GET /api/cities?q={query}&limit={limit}
+```
+
+`{limit}` is the *Server result limit* (or *Max suggestions* when the limit is empty).
+
+The records can look like anything. There is no need to reshape them into `label`/`value` pairs on the server: say which field is which with *Label key* and *Value key*, and the element does the rest.
+
+**How the result limit saves requests.** Say the limit is 100. The user types `vil` and the server answers with 80 records. Fewer than 100 means the server had nothing more to give, so those 80 are every city that contains `vil`. When the user carries on typing `viln`, the element narrows the 80 it already has instead of asking again. If the answer had come back with 100 records, there could be more on the server, so the next letter sends a new request. Deleting letters back past the original `vil` always asks the server again. Leave the limit empty to call the server on every change (after the debounce).
+
+**Storing the whole record.** With *Value key* empty, the form value is the full object, for example:
+
+```json
+"city": { "id": 21, "name": "Riga", "country": { "code": "LV", "name": "Latvia" } }
+```
+
+Expressions can then reach inside it, e.g. `{city.country.code}`. A reloaded form shows the right label straight away, because the label is part of the stored object. With a *Value key* set, only the key is stored (`"city": 21`), which is smaller but shows the bare id if the form is reopened later and the record is not in the latest search results. Turn on **Force selection** when storing whole records, so free typing never replaces the object with a plain string.
+
+::: tip The older Lazy load switch
+Before the search data source existed, *Lazy load* reused the element's main data source for searching. It still works for existing forms and is hidden once a search data source is chosen. For new forms use the search data source.
+:::
 
 ## Radio (`radio`)
 
@@ -11719,7 +11919,7 @@ Source: https://ngxviewbuilder.io/creators/elements/containers
 
 # Containers
 
-Containers hold other elements. Most produce no data themselves; the exceptions are **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
+Containers hold other elements. Most produce no data themselves; the exceptions are **Object panel** (one object built from its fields), **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
 
 ## Panel (`panel`)
 
@@ -11742,6 +11942,40 @@ A titled box that groups related fields.
 | **Grid columns / Grid rows / Grid auto rows** | Grid composition, e.g. `repeat(2, minmax(0, 1fr))`, `minmax(120px, auto)`. |
 
 A panel's `visibleIf` hides the whole group at once, which is usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
+
+## Object panel (`objectPanel`)
+
+Looks and behaves like a Panel, with one difference: the fields inside it do not save their answers at the top of the form data. They save them inside one object named after the panel. It is the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes.
+
+Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
+
+```json
+"address": {
+  "city": "Vilnius",
+  "street": "Gedimino pr. 1",
+  "zip": "01103"
+}
+```
+
+Anything that stores a value works inside it: text and number inputs, selects, autocompletes, date pickers, file uploads, dynamic panels, and custom elements your developers registered. Layout containers in between do not change anything, so a Panel or Tabs inside the Object panel still put their fields into `address`. Another Object panel inside it adds one more level:
+
+```json
+"address": {
+  "city": "Vilnius",
+  "geo": { "lat": 54.68, "lng": 25.28 }
+}
+```
+
+A few things to keep in mind:
+
+- **Refer to the fields by their full path.** In expressions and conditions write `{address.city}`, not `{city}`. The same goes for data source parameters and actions that read a value.
+- **Loading data works the same way.** Pass `{ "address": { "city": "Kaunas" } }` as the form data and the City field inside the panel shows `Kaunas`.
+- **Validation is per field.** A required field inside the panel is checked like any other field; the panel itself has no validators.
+- **Keep out of data JSON** on the Object panel leaves the whole object out of the submitted result.
+- The properties are the same as for [Panel](https://ngxviewbuilder.io/creators/elements/containers#panel-panel): title, colors, borders, padding, visibility and so on.
+- Inside a Dynamic panel an Object panel works as a plain Panel for now: the fields land directly in each entry, without the extra level.
+
+Use it when a group of answers belongs together and the backend expects it as one object: an address, a contact person, company details. If the user should be able to add several such groups, use a [Dynamic panel](https://ngxviewbuilder.io/creators/elements/containers#dynamic-panel-dynamicpanel) instead, which stores an array.
 
 ## Tabs (`tabs`) and Tabs Pro (`tabsPro`)
 
@@ -12178,6 +12412,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 | Search-as-you-type choice | Autocomplete | [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices) |
 | A clickable action | Button | [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons) |
 | Group fields visually | Panel, Tabs, Accordion | [Containers](https://ngxviewbuilder.io/creators/elements/containers) |
+| Several fields saved as one object (an address, a contact) | Object panel | [Containers](https://ngxviewbuilder.io/creators/elements/containers) |
 | Repeatable entries (0 to n) | Dynamic panel, Dynamic table | [Containers](https://ngxviewbuilder.io/creators/elements/containers) / [Tables](https://ngxviewbuilder.io/creators/elements/tables) |
 | A modal window | Dialog | [Containers](https://ngxviewbuilder.io/creators/elements/containers) |
 | Read-only data rows | Table | [Tables & lists](https://ngxviewbuilder.io/creators/elements/tables) |
@@ -12192,7 +12427,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 
 ## Value-producing vs. presentational
 
-**Value-producing elements** (inputs, choices, editable tables) write into the form data under their `name`. **Presentational elements** (text, image, divider, badge…) only display; they add nothing to the submitted data.
+**Value-producing elements** (inputs, choices, editable tables) write into the form data under their `name`. Inside an [Object panel](https://ngxviewbuilder.io/creators/elements/containers#object-panel-objectpanel) they write under the panel's name instead, e.g. `address.city`. **Presentational elements** (text, image, divider, badge…) only display; they add nothing to the submitted data.
 
 ## Every element shares
 
@@ -12390,11 +12625,12 @@ With **Lazy load** on, set the data source's **Method** to `TABLE-POST`. This se
 | Property | What it does |
 | --- | --- |
 | **Show quick search** | One short field for quick filtering. |
+| **Search while typing** | Off by default: the search runs when the user presses the magnifier button or Enter. Turn it on to search as the user types. |
 | **Quick search placeholder** | Say what can be searched here. |
 | **Quick search param name** | Request parameter for the value, e.g. `q` or `searchTerm`. |
 | **Quick search condition** | Match mode: contains `%-%`, not contains `!%-%`, starts with `%-`, ends with `-%`, equals `=`, not equals `!=`. |
 | **Quick search case mode** | Case-insensitive latin, case sensitive, uppercase, or lowercase comparison. |
-| **Quick search debounce (ms)** | Time between the last keystroke and the request. |
+| **Quick search debounce (ms)** | With *Search while typing* on, the time between the last keystroke and the request. |
 | **Show detailed search** | The expanded block with per-column filters, operators, and values. |
 | **Detailed search case mode** | Case handling for detailed search. |
 
@@ -13218,7 +13454,7 @@ Source: https://ngxviewbuilder.io/creators/form-settings
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has four groups: **General**, **Form header**, **Navigation and actions**, and **Rendering and dialog**.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has four groups: **General**, **Form header**, **Navigation and actions**, and **Rendering and dialog**. A fifth one, **AI access (MCP)**, shows up when your developers connected the builder to an MCP server.
 
 ## General
 
@@ -13277,6 +13513,34 @@ See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 | **Dialog footer alignment** | `Left`, `Center`, or `Right`. |
 
 Dialog mode is useful when a developer embeds the view as a popup (e.g. "New client" from a table toolbar). The host is notified through `onDialogClosed` when it closes.
+
+## AI access (MCP)
+
+This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. It is only there if your developers set it up (see [MCP bridge](https://ngxviewbuilder.io/developers/ai-command-api#connecting-the-builder)).
+
+| Field | What it is |
+| --- | --- |
+| **Status** | Whether the builder reached the MCP server, and which AI clients are connected right now. |
+| **Server URL** | The address you add to your AI client once. |
+| **Session key** | A key like `NVB-K990-RPNH-N2T7` that belongs to this browser tab. **Copy** puts it on the clipboard. |
+| **New key** | Disconnects every AI client and gives the tab a fresh key. |
+
+### Connecting Claude
+
+1. Copy the **Server URL** and add it to Claude as a connector. In Claude this is *Settings → Connectors → Add custom connector*. You only do this once; the same URL serves every builder tab.
+2. Ask Claude to do something in the builder, for example *"add a contact section with name, email and phone"*.
+3. Claude asks for your session key. Copy it from this group and paste it into the chat.
+4. A message appears in the builder saying the AI client is connected, and the status shows its name. From here on Claude works directly on the view you have open.
+
+Typing mistakes in the key are forgiven: lower case, spaces or missing dashes all work.
+
+### Good to know
+
+- **Claude cannot save.** It edits the view in your tab. Nothing is stored until you press Save yourself, and every batch of its changes is a single undo step, so Ctrl+Z takes back a whole change at once.
+- **Reloading the page keeps the connection.** The key stays the same for as long as the tab is open, so you do not have to pair again after a refresh.
+- **A new tab gets a new key.** If you open the builder in another tab and want Claude to work there, give it that tab's key.
+- **To cut access, press New key.** Every connected client loses access immediately. Closing the tab does the same.
+- Treat the key like a password for as long as the tab is open: whoever has it can edit that view.
 
 ---
 

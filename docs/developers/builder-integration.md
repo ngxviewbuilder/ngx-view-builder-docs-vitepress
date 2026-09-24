@@ -80,9 +80,12 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   defaultDataSources: [...],               // sources every view gets
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
+  mcp: { url: 'wss://mcp.example.com/bridge' },  // let an AI client drive the builder
   licenseKey: 'NVB-...',
 };
 ```
+
+`mcp` is optional. With it, the builder connects to an MCP server while it is on screen and shows a session key under Settings → AI access (MCP), which a person gives to their AI client to let it edit the view. See [AI command API](./ai-command-api#connecting-the-builder).
 
 ## Outputs
 

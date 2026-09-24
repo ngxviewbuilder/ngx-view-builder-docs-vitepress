@@ -64,8 +64,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `autocomplete`
 
 - Use for a large list of options with search.
-- Value shape depends on the option mapping.
-- Often requires a datasource or options mapping.
+- For a short list, give it `options` or a `dataSource` with `useFor: "option"`; it filters them as the user types.
+- For a list that lives on a server, set `searchDataSourceName` to a source whose URL uses `{query}`, plus `searchLabelKey` and, usually, `searchValueKey`.
+- Value shape: the option value, or the value key of the picked record. With a search source and no `searchValueKey`, the whole record object.
 
 ### `fileUpload`
 
@@ -231,6 +232,13 @@ Canonical example:
 
 - The most common container for grouping fields.
 - Suitable for sections with an inner layout.
+
+### `objectPanel`
+
+- Use when several fields should be saved as one object: an address, a contact person, company details.
+- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
+- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`
 

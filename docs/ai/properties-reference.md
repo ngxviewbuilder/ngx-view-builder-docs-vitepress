@@ -237,6 +237,39 @@ Value shapes:
 - `select` / `radio` / `autocomplete`: single value
 - `multiSelect` / `checkbox`: array
 
+### `autocomplete` (search data source)
+
+For lists too large to load upfront, the element calls its own search source while the user types. This is separate from `dataSource`, which stays for static option lists.
+
+| Property | Type | Notes |
+|---|---|---|
+| `searchDataSourceName` | `string` | Name of a top-level data source. Its URL or body uses `{query}` for the typed text and `{limit}` for the result limit |
+| `searchItemsPath` | `string` | Path to the array in the response, e.g. `data.items`. Optional: `items`, `data`, `results`, `rows`, `content` (also under `data.`) are tried when empty |
+| `searchLabelKey` | `string` | Field shown in the dropdown, dot paths allowed (`country.name`). Empty tries `label`, `name`, `title`, `text` |
+| `searchValueKey` | `string` | Field stored as the value. **Empty stores the whole record** as an object |
+| `searchResultLimit` | `number` | Most records the source returns. An answer shorter than this is complete, so a longer query that extends the answered one is filtered locally instead of calling again. Empty calls on every change |
+| `debounceMs` | `number` | Wait after the last keystroke. Default `1000`, max `10000` |
+| `minSearchLength` | `number` | Characters before the first call. Default `3` |
+| `queryContextKey` | `string` | Extra name for the typed text besides `query` |
+| `maxSuggestions` | `number` | Most suggestions shown. Default `20` |
+| `forceSelection` | `boolean` | Clear text that matches no suggestion on blur. Turn it on when storing whole records |
+| `lazyLoad` | `boolean` | Legacy: search through `dataSource` instead. Ignored when `searchDataSourceName` is set |
+
+```json
+{
+  "name": "city",
+  "type": "autocomplete",
+  "label": "City",
+  "searchDataSourceName": "citySearch",
+  "searchLabelKey": "name",
+  "searchResultLimit": 100,
+  "minSearchLength": 2,
+  "forceSelection": true
+}
+```
+
+with a source such as `{ "name": "citySearch", "type": "rest", "params": { "method": "GET", "url": "/api/cities?q={query}&limit={limit}" } }`. Value shape here: the whole record, e.g. `{ "id": 21, "name": "Riga", "country": { "code": "LV" } }`; with `"searchValueKey": "id"` it would be `21`.
+
 ### `singleCheckbox` / `toggleSwitch` / `toggleButton`
 
 Value shape: `boolean`
@@ -335,6 +368,24 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 | `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
 
 **A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](./layout-model#nesting-the-mistake-that-breaks-everything).
+
+### `objectPanel`
+
+Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+
+```json
+"pages": [{ "name": "page1", "rows": [{ "columns": [{
+  "elementRef": "address",
+  "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
+}] }] }],
+"elements": {
+  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
+  "city": { "name": "city", "type": "text", "label": "City" },
+  "street": { "name": "street", "type": "text", "label": "Street" }
+}
+```
+
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
 
 ### `dynamicPanel`
 
@@ -439,6 +490,8 @@ A column of `type: "element"` renders a real element in every row:
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
 | `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
+| `showQuickSearch` | `boolean` | The quick search box in the header |
+| `quickSearchOnType` | `boolean` | Default `false`: the quick search applies on the search button or Enter only. `true` searches while typing, after `searchDebounceMs` |
 | `rowActions` | `ITableRowActionConfig[]` | Row action buttons. These go through the generic action/data-source pipeline, not this contract |
 
 **Do not use `ITableDataSourceConfig`.** It exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
@@ -735,7 +788,7 @@ URL and body templates use **single** braces: `{el1}`, `{row.id}`, `{__variables
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar

@@ -1,11 +1,11 @@
 ---
 title: Containers
-description: Panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
+description: Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
 ---
 
 # Containers
 
-Containers hold other elements. Most produce no data themselves; the exceptions are **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
+Containers hold other elements. Most produce no data themselves; the exceptions are **Object panel** (one object built from its fields), **Dynamic panel** (an array of entries) and **Tabs** (whose active tab can be read in expressions).
 
 ## Panel (`panel`)
 
@@ -28,6 +28,40 @@ A titled box that groups related fields.
 | **Grid columns / Grid rows / Grid auto rows** | Grid composition, e.g. `repeat(2, minmax(0, 1fr))`, `minmax(120px, auto)`. |
 
 A panel's `visibleIf` hides the whole group at once, which is usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
+
+## Object panel (`objectPanel`)
+
+Looks and behaves like a Panel, with one difference: the fields inside it do not save their answers at the top of the form data. They save them inside one object named after the panel. It is the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes.
+
+Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
+
+```json
+"address": {
+  "city": "Vilnius",
+  "street": "Gedimino pr. 1",
+  "zip": "01103"
+}
+```
+
+Anything that stores a value works inside it: text and number inputs, selects, autocompletes, date pickers, file uploads, dynamic panels, and custom elements your developers registered. Layout containers in between do not change anything, so a Panel or Tabs inside the Object panel still put their fields into `address`. Another Object panel inside it adds one more level:
+
+```json
+"address": {
+  "city": "Vilnius",
+  "geo": { "lat": 54.68, "lng": 25.28 }
+}
+```
+
+A few things to keep in mind:
+
+- **Refer to the fields by their full path.** In expressions and conditions write `{address.city}`, not `{city}`. The same goes for data source parameters and actions that read a value.
+- **Loading data works the same way.** Pass `{ "address": { "city": "Kaunas" } }` as the form data and the City field inside the panel shows `Kaunas`.
+- **Validation is per field.** A required field inside the panel is checked like any other field; the panel itself has no validators.
+- **Keep out of data JSON** on the Object panel leaves the whole object out of the submitted result.
+- The properties are the same as for [Panel](#panel-panel): title, colors, borders, padding, visibility and so on.
+- Inside a Dynamic panel an Object panel works as a plain Panel for now: the fields land directly in each entry, without the extra level.
+
+Use it when a group of answers belongs together and the backend expects it as one object: an address, a contact person, company details. If the user should be able to add several such groups, use a [Dynamic panel](#dynamic-panel-dynamicpanel) instead, which stores an array.
 
 ## Tabs (`tabs`) and Tabs Pro (`tabsPro`)
 

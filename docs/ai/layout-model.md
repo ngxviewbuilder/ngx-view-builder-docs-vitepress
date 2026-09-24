@@ -178,12 +178,13 @@ Note that `parentName` exists on `IBaseElement` but is **not** how you build the
 
 ## Which element types accept children
 
-Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElement`):
+Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerElement`):
 
 | Type | Children go in | Notes |
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
+| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -282,7 +283,7 @@ Run all of these mentally before returning JSON.
 4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
-7. `rows` on a column appears only when the referenced element is one of the ten container types.
+7. `rows` on a column appears only when the referenced element is one of the eleven container types.
 8. `tabRows` keys match the container's declared tab/item/panel/step values.
 9. Widths, if present at all, are on elements, not columns.
 10. `name` values are unique across the whole structure.

@@ -44,11 +44,12 @@ With **Lazy load** on, set the data source's **Method** to `TABLE-POST`. This se
 | Property | What it does |
 | --- | --- |
 | **Show quick search** | One short field for quick filtering. |
+| **Search while typing** | Off by default: the search runs when the user presses the magnifier button or Enter. Turn it on to search as the user types. |
 | **Quick search placeholder** | Say what can be searched here. |
 | **Quick search param name** | Request parameter for the value, e.g. `q` or `searchTerm`. |
 | **Quick search condition** | Match mode: contains `%-%`, not contains `!%-%`, starts with `%-`, ends with `-%`, equals `=`, not equals `!=`. |
 | **Quick search case mode** | Case-insensitive latin, case sensitive, uppercase, or lowercase comparison. |
-| **Quick search debounce (ms)** | Time between the last keystroke and the request. |
+| **Quick search debounce (ms)** | With *Search while typing* on, the time between the last keystroke and the request. |
 | **Show detailed search** | The expanded block with per-column filters, operators, and values. |
 | **Detailed search case mode** | Case handling for detailed search. |
 

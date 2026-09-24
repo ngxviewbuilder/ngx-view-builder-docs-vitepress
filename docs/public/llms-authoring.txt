@@ -20,30 +20,39 @@ Everything else in this section teaches you to **write** structure JSON. This pa
 
 ## Detect the mode first
 
-The live mode arrives as an MCP server. If your client has the `nvb_*` tools, call `nvb_status`.
+The live mode arrives as an MCP server. If your client has the `nvb_*` tools, you are in it.
+
+Every connection starts **unpaired**. Before anything else:
+
+1. Ask the user for their builder session key. It is shown in the builder settings under AI access (MCP) and looks like `NVB-XXXX-XXXX-XXXX`. Never guess one.
+2. Call `nvb_pair` with the key exactly as the user gave it. Case, spaces and missing dashes do not matter.
+
+After that, `nvb_status` tells you where you stand:
 
 | Result | What it means | What to do |
 | --- | --- | --- |
-| `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
-| `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
-| `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
-| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder settings, under AI access (MCP). |
+| `paired: true`, `builderConnected: true` | A builder tab is open and yours to drive | Drive it with commands. Do not hand back raw JSON for a person to paste. |
+| `paired: true`, `builderConnected: false` | The tab was closed, or is reloading | Ask the user to open or reload the builder, then retry. A reload keeps the pairing. |
+| `paired: false` | Nothing is paired yet, or the user pressed New key | Ask for the key (again) and call `nvb_pair`. |
+| An error saying no tab has that key | The key is wrong, or belongs to a tab that is gone | Ask the user to copy it again from the builder. A new tab has a new key. |
 | No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
-The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
+`callsRemaining` in the same answer is how many builder calls are left in the current window. Batch your changes; do not spend calls one element at a time.
+
+The API is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
 
 ## Bootstrap sequence
 
-Run these before writing anything. They cost one round trip and remove almost every source of error.
+Run these before writing anything. They cost a few round trips and remove almost every source of error.
 
 ```text
-nvb_status                    1. is the door open
-nvb_get_instructions          2. the contract as text, plus the command catalog
+nvb_pair                      1. with the key the user gave you
+nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
 nvb_get_tree                  4. what already exists, and the row indexes you need
 ```
 
-`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. It returns `help()` in the same call, so `help.guidelines` carries the rules on their own and `help.capabilities` tells you which optional features are present.
+`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -66,7 +75,7 @@ Hard rules:
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
 5. **There is no save.** You can build and edit freely, but a person commits the view. Do not claim you saved anything, and do not try to reach a save through a trigger or an element event: automation actions have no submit or save type, and an element `submit` still needs a human click.
-6. **Re-check `available()` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null. That is expected, not a fault.
+6. **Re-check with `nvb_status` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null (in the page itself, `available()` answers the same question). That is expected, not a fault.
 
 ### Result shape
 
@@ -599,12 +608,13 @@ Note that `parentName` exists on `IBaseElement` but is **not** how you build the
 
 ## Which element types accept children
 
-Exactly these ten types are containers (`runtime-preview.ts`, `isContainerElement`):
+Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerElement`):
 
 | Type | Children go in | Notes |
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
+| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -703,7 +713,7 @@ Run all of these mentally before returning JSON.
 4. No object in `elements` has a `rows`, `columns` or `children` key. The two exceptions are `table.columnsConfig` and `dynamicTable.columns`.
 5. No column object has any key other than `elementRef`, `rows`, `tabRows`, `fragmentRef`, `fragmentBindings`, `fragmentMode`.
 6. No row object has any key other than `columns`.
-7. `rows` on a column appears only when the referenced element is one of the ten container types.
+7. `rows` on a column appears only when the referenced element is one of the eleven container types.
 8. `tabRows` keys match the container's declared tab/item/panel/step values.
 9. Widths, if present at all, are on elements, not columns.
 10. `name` values are unique across the whole structure.
@@ -1210,7 +1220,7 @@ The canonical full list is in [Common mistakes, entry 14](https://ngxviewbuilder
 - A single `row` is a horizontal band; its `columns` sit side by side. Vertical order is the order of `rows`.
 - **A column with no width takes an equal share of the row.** For a two-column layout, one `row` with two `columns` and no widths is sufficient. Never write `"width": "50%"` to get halves.
 - Widths (`width`, `tabletWidth`, `mobileWidth`, `fitContent`) are **element** properties, set in the `elements` map, and only when the split must be uneven.
-- Exactly ten types accept children: `page`, `panel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
+- Exactly eleven types accept children: `page`, `panel`, `objectPanel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
 - Container inner layouts must remain in the NGX View Builder model, not via custom HTML.
 - `parentName` is not how parentage is declared. The layout tree is.
 
@@ -1225,6 +1235,8 @@ Worked examples and the exact interfaces: [Layout model](https://ngxviewbuilder.
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.
 - `listBox`, `selectButton` store a single value, or an array when multi-select/`multiple` is enabled.
@@ -1301,6 +1313,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`
+- "fields saved as one object", "nested object", "address object" -> `objectPanel`
 - "single choice from a list" -> `select` or `radio`
 - "search in a large list" -> `autocomplete`
 - "multiple choices" -> `multiSelect` or `checkbox`
@@ -1359,6 +1372,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | User intent | Choose | Note |
 | --- | --- | --- |
 | Simple block with inner fields | `panel` | Most common container |
+| Group of fields saved as one object | `objectPanel` | Values land at `<name>.<field>`; not repeatable |
 | Content divided into tabs | `tabs` or `tabsPro` | Do not use if multiple pages are sufficient |
 | Collapsible sections | `accordion` | Good for longer forms |
 | Step flow or progress | `progressFlow` | Not for a plain panel layout |
@@ -1406,6 +1420,7 @@ They belong to the internal model, property editing, or builder infrastructure.
 | --- | --- |
 | `dynamic table`, `editable rows`, `add row`, `delete row` | `dynamicTable` |
 | `repeating block`, `repeatable section`, `repeatable group` | `dynamicPanel` |
+| `object`, `nested object`, `group as one value`, `multiple text` | `objectPanel` |
 | `data table`, `server-side table`, `paging`, `sorting`, `filtering` | `table` |
 | `search in list`, `searchable select`, `autocomplete` | `autocomplete` |
 | `multiple checkboxes`, `select multiple` | `checkbox` or `multiSelect` |
@@ -1415,6 +1430,7 @@ They belong to the internal model, property editing, or builder infrastructure.
 
 - `dynamicTable` vs `table`: does the user edit rows inline, or work with a datasource data grid?
 - `dynamicPanel` vs `dynamicTable`: does the data look more like a form/block or like a row-based table?
+- `panel` vs `objectPanel`: should the fields stay separate top-level values, or arrive as one object under the group's name?
 - `select` vs `autocomplete`: are there few options, or many that require search?
 - `singleCheckbox` vs `toggleSwitch`: does checkbox semantics matter, or is a switch style preferred?
 
@@ -1785,8 +1801,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `autocomplete`
 
 - Use for a large list of options with search.
-- Value shape depends on the option mapping.
-- Often requires a datasource or options mapping.
+- For a short list, give it `options` or a `dataSource` with `useFor: "option"`; it filters them as the user types.
+- For a list that lives on a server, set `searchDataSourceName` to a source whose URL uses `{query}`, plus `searchLabelKey` and, usually, `searchValueKey`.
+- Value shape: the option value, or the value key of the picked record. With a search source and no `searchValueKey`, the whole record object.
 
 ### `fileUpload`
 
@@ -1952,6 +1969,13 @@ Canonical example:
 
 - The most common container for grouping fields.
 - Suitable for sections with an inner layout.
+
+### `objectPanel`
+
+- Use when several fields should be saved as one object: an address, a contact person, company details.
+- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
+- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`
 
@@ -2397,6 +2421,39 @@ Value shapes:
 - `select` / `radio` / `autocomplete`: single value
 - `multiSelect` / `checkbox`: array
 
+### `autocomplete` (search data source)
+
+For lists too large to load upfront, the element calls its own search source while the user types. This is separate from `dataSource`, which stays for static option lists.
+
+| Property | Type | Notes |
+|---|---|---|
+| `searchDataSourceName` | `string` | Name of a top-level data source. Its URL or body uses `{query}` for the typed text and `{limit}` for the result limit |
+| `searchItemsPath` | `string` | Path to the array in the response, e.g. `data.items`. Optional: `items`, `data`, `results`, `rows`, `content` (also under `data.`) are tried when empty |
+| `searchLabelKey` | `string` | Field shown in the dropdown, dot paths allowed (`country.name`). Empty tries `label`, `name`, `title`, `text` |
+| `searchValueKey` | `string` | Field stored as the value. **Empty stores the whole record** as an object |
+| `searchResultLimit` | `number` | Most records the source returns. An answer shorter than this is complete, so a longer query that extends the answered one is filtered locally instead of calling again. Empty calls on every change |
+| `debounceMs` | `number` | Wait after the last keystroke. Default `1000`, max `10000` |
+| `minSearchLength` | `number` | Characters before the first call. Default `3` |
+| `queryContextKey` | `string` | Extra name for the typed text besides `query` |
+| `maxSuggestions` | `number` | Most suggestions shown. Default `20` |
+| `forceSelection` | `boolean` | Clear text that matches no suggestion on blur. Turn it on when storing whole records |
+| `lazyLoad` | `boolean` | Legacy: search through `dataSource` instead. Ignored when `searchDataSourceName` is set |
+
+```json
+{
+  "name": "city",
+  "type": "autocomplete",
+  "label": "City",
+  "searchDataSourceName": "citySearch",
+  "searchLabelKey": "name",
+  "searchResultLimit": 100,
+  "minSearchLength": 2,
+  "forceSelection": true
+}
+```
+
+with a source such as `{ "name": "citySearch", "type": "rest", "params": { "method": "GET", "url": "/api/cities?q={query}&limit={limit}" } }`. Value shape here: the whole record, e.g. `{ "id": 21, "name": "Riga", "country": { "code": "LV" } }`; with `"searchValueKey": "id"` it would be `21`.
+
 ### `singleCheckbox` / `toggleSwitch` / `toggleButton`
 
 Value shape: `boolean`
@@ -2495,6 +2552,24 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 | `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
 
 **A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](https://ngxviewbuilder.io/ai/layout-model#nesting-the-mistake-that-breaks-everything).
+
+### `objectPanel`
+
+Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+
+```json
+"pages": [{ "name": "page1", "rows": [{ "columns": [{
+  "elementRef": "address",
+  "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
+}] }] }],
+"elements": {
+  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
+  "city": { "name": "city", "type": "text", "label": "City" },
+  "street": { "name": "street", "type": "text", "label": "Street" }
+}
+```
+
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
 
 ### `dynamicPanel`
 
@@ -2599,6 +2674,8 @@ A column of `type: "element"` renders a real element in every row:
 | `lazyLoad` | `boolean` | `true` = server-side paging/sort/search per request; `false` = load everything once |
 | `tableItemsPath` / `tableTotalPath` | `string` | Response paths for rows / total count, both optional. Common shapes (`items`/`data`/`results`/`rows`, `total`/`totalCount`/`totalRecords`/`count`/`cnt`) are auto-detected |
 | `pageSize` | `number` | Default page size |
+| `showQuickSearch` | `boolean` | The quick search box in the header |
+| `quickSearchOnType` | `boolean` | Default `false`: the quick search applies on the search button or Enter only. `true` searches while typing, after `searchDebounceMs` |
 | `rowActions` | `ITableRowActionConfig[]` | Row action buttons. These go through the generic action/data-source pipeline, not this contract |
 
 **Do not use `ITableDataSourceConfig`.** It exists in the type definitions but is dead code, never wired to anything; the real per-table binding is the flat `tableDataSourceName`/`tableItemsPath`/`tableTotalPath` trio above.
@@ -2895,7 +2972,7 @@ URL and body templates use **single** braces: `{el1}`, `{row.id}`, `{__variables
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
@@ -3166,7 +3243,7 @@ Type strings are **exact lowercase camelCase**. The canonical list:
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar

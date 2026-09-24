@@ -259,7 +259,7 @@ Type strings are **exact lowercase camelCase**. The canonical list:
 text | textarea | number | slider | phoneInput | fileUpload | button | numberStepper | signaturePad
 select | multiSelect | radio | checkbox | singleCheckbox | toggleSwitch | toggleButton | autocomplete | selectButton | listBox
 datepicker | dateRange | timePicker
-panel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
+panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
 divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
