@@ -114,6 +114,12 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
 | `NVB_MCP_KEY_TTL_MS` | `86400000` | How long a pairing key is valid. |
 | `NVB_LICENSE_CHECK_URL` | empty | Where to ask whether a license key is active. Empty turns the license check off, so a self hosted server pairs any builder. |
+| `NVB_LICENSE_CHECK_TOKEN` | empty | Shared secret sent with that request as `x-internal-token`. |
+| `NVB_LICENSE_CACHE_TTL_MS` | `600000` | How long one answer about a key is reused before asking again. |
+| `NVB_MCP_RECHECK_INTERVAL_MS` | `3600000` | How often the licenses of connected tabs are checked again. A tab whose license stopped qualifying is disconnected. |
+| `NVB_MCP_LICENSE_EXEMPT_ORIGINS` | empty | Comma separated origins that pair without a license, such as a public demo. |
+
+The last four only matter when `NVB_LICENSE_CHECK_URL` is set.
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 

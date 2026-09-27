@@ -86,6 +86,8 @@ An element's value is stored under its name, so `firstName` above ends up as `da
 
 The same paths are used when you pass data in, when you read it back from `valueChanged` (`dataPath` is `address.city`), and in expressions (`{address.city}`).
 
+An `objectPanel` inside another `objectPanel` or a `dynamicPanel` keeps its own `template`, one level down, and its data nests the same way: `{ "order": { "address": { "city": "..." } } }`. Views saved with 0.10.0 could have those inner children defined in the outer panel's `template` instead. The runtime notices that when it loads a structure and moves them into the inner panel, so the data comes out nested again. It works on its own copy and leaves the object you passed in untouched, so save the view once from the builder if you want the stored JSON fixed too.
+
 ## `settings`: view-wide configuration
 
 Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:

@@ -1520,6 +1520,8 @@ This is especially important when:
 - Do not add `toNumber(...)` by reflex. Number elements already hold numbers, so `{price} * {quantity}` works as written. Reach for it only when the value genuinely arrives as text: a `text` element, a data source field, a select whose values are strings, or a number element with `valueStorageType: "string"`.
 - Use `isEmpty(...)` and `notEmpty(...)` for empty checks.
 - Use `contains`, `containsAny`, `containsAll`, and `len` for arrays.
+- For plain arithmetic across a few fields use `sum(a, b, ...)`, `min(a, b, ...)` and `max(a, b, ...)`. They take any number of values, skip empty ones and flatten arrays; `sum` of nothing is `0`, `min` and `max` of nothing are `null`. Use `sumArray` and friends for a field inside each entry of a dynamic panel.
+- Round with `roundNumber(value, digits)`, cut text with `substring(text, start, end?)` (0 based, `end` excluded), and get full years from a date with `age({birthDate})`. For an empty input `roundNumber` and `age` return `null` and `substring` returns `""`.
 
 ## Correct examples
 
@@ -1563,6 +1565,14 @@ This is especially important when:
   "type": "number",
   "expression": "{price} * {quantity}",
   "logicExecutionMode": "onChange"
+}
+```
+
+```json
+{
+  "name": "totalWithVat",
+  "type": "number",
+  "expression": "roundNumber(sum({net}, {shipping}) * 1.21, 2)"
 }
 ```
 
@@ -2574,7 +2584,7 @@ Same properties as `dynamicPanel`, without the row controls (`addRowButtonText`,
 }
 ```
 
-Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`).
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`). Its own children go in its own `template`, not in the outer panel's: the outer template holds the inner panel, the inner template holds the inner fields.
 
 ### `dynamicPanel`
 
@@ -7166,6 +7176,12 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
 | `NVB_MCP_KEY_TTL_MS` | `86400000` | How long a pairing key is valid. |
 | `NVB_LICENSE_CHECK_URL` | empty | Where to ask whether a license key is active. Empty turns the license check off, so a self hosted server pairs any builder. |
+| `NVB_LICENSE_CHECK_TOKEN` | empty | Shared secret sent with that request as `x-internal-token`. |
+| `NVB_LICENSE_CACHE_TTL_MS` | `600000` | How long one answer about a key is reused before asking again. |
+| `NVB_MCP_RECHECK_INTERVAL_MS` | `3600000` | How often the licenses of connected tabs are checked again. A tab whose license stopped qualifying is disconnected. |
+| `NVB_MCP_LICENSE_EXEMPT_ORIGINS` | empty | Comma separated origins that pair without a license, such as a public demo. |
+
+The last four only matter when `NVB_LICENSE_CHECK_URL` is set.
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 
@@ -9345,6 +9361,10 @@ Every published build embeds its release date. A license covers **all versions r
 
 **The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
+## AI access
+
+Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](https://ngxviewbuilder.io/developers/ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour.
+
 ## License terms
 
 The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies keep their own licenses: the designer installs CodeMirror, Prettier and Lodash under MIT, the runtime installs Jexl and Lodash under MIT, and both install tslib under 0BSD.
@@ -10972,6 +10992,8 @@ An element's value is stored under its name, so `firstName` above ends up as `da
 
 The same paths are used when you pass data in, when you read it back from `valueChanged` (`dataPath` is `address.city`), and in expressions (`{address.city}`).
 
+An `objectPanel` inside another `objectPanel` or a `dynamicPanel` keeps its own `template`, one level down, and its data nests the same way: `{ "order": { "address": { "city": "..." } } }`. Views saved with 0.10.0 could have those inner children defined in the outer panel's `template` instead. The runtime notices that when it loads a structure and moves them into the inner panel, so the data comes out nested again. It works on its own copy and leaves the object you passed in untouched, so save the view once from the builder if you want the stored JSON fixed too.
+
 ## `settings`: view-wide configuration
 
 Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
@@ -11074,7 +11096,9 @@ api.setCssVariables({
 });
 ```
 
-or declaratively: `[cssVariables]="{ '--nvb-color-primary-500': '...' }"`.
+or declaratively: `[cssVariables]="{ '--nvb-color-primary-500': '...' }"`, or `runtimeSettings.cssVariables` at bootstrap.
+
+These refine the theme, they do not replace it. Only the variables you pass change, and everything else keeps coming from the active light or dark theme. So one brand color in dark mode leaves the rest of the dark palette alone, and when the mode switches the same overrides are applied again on top of the new theme. If you want a different set per mode, that is what `setCustomTheme` below is for.
 
 **Full custom theme**, with per-mode token sets:
 
@@ -11202,6 +11226,8 @@ One-off resolution: `api.resolveHostLanguage(...)` / `api.applyHostLanguage(...)
 2. Translate the values; keep the keys.
 3. Register via the provider; set `language` or wire `startLanguageSync`.
 4. Untranslated keys fall back to built-in English texts.
+
+The same goes for a language you never registered a dictionary for. Switch a view to `de` without a `de` dictionary and the builder chrome stays in English, rather than showing raw keys like `tab.preview`.
 
 ---
 
@@ -11414,6 +11440,10 @@ containsAny({roles}, ["admin", "manager"])
 {price} * {quantity}
 len({selectedItems}) > 0
 inRange({age}, 18, 65)
+roundNumber({price} * 1.21, 2)
+sum({grant}, {loan}, {ownFunds})
+min({requested}, 5000)
+substring({personCode}, 0, 1)
 ```
 
 ## If / else (ternary)
@@ -11460,6 +11490,7 @@ pushValue({variable1}, {row})
 addDays(today(), 14)                         two weeks from now
 dateDiffDays({startDate}, {endDate}) >= 1    end after start
 isWeekend({deliveryDate})                    weekend check
+age({birthDate}) >= 18                       adult
 ```
 
 ## Row & panel context
@@ -13613,6 +13644,9 @@ All functions available in expressions, grouped by purpose. Your project may add
 | `len(value)` | length of text or array | `len({items}) >= 3` |
 | `startsWithAny(text, prefix)` | true if text starts with prefix | `startsWithAny({iban}, "LT")` |
 | `endsWithAny(text, suffix)` | true if text ends with suffix | `endsWithAny({code}, "99")` |
+| `substring(text, start, end?)` | part of the text from `start` up to, but not including, `end` (counting from 0) | `substring({personCode}, 0, 1)` |
+
+Leave `end` out and `substring` returns everything from `start` to the end of the text. A number is treated as text, so `substring({personCode}, 1, 7)` works on a Number field too. An empty field gives an empty text.
 
 ## Collections
 
@@ -13630,6 +13664,14 @@ All functions available in expressions, grouped by purpose. Your project may add
 | --- | --- | --- |
 | `toNumber(value)` | value as number (invalid → 0) | `toNumber({codeFromApi}) > 10` |
 | `inRange(value, min, max)` | true if min ≤ value ≤ max | `inRange({age}, 18, 65)` |
+| `roundNumber(value, digits?)` | the number rounded to `digits` decimals, 0 when left out | `roundNumber({price} * 1.21, 2)` |
+| `min(a, b, ...)` | the smallest of the numbers given | `min({requested}, {limit}, 5000)` |
+| `max(a, b, ...)` | the largest of the numbers given | `max({deposit}, 0)` |
+| `sum(a, b, ...)` | the numbers added up | `sum({grant}, {loan}, {ownFunds})` |
+
+`min`, `max` and `sum` take as many values as you like. Empty fields are skipped, so `sum` of three fields where one is still empty adds up the other two, and a form that is only half filled does not break the total. When every value is empty, `sum` gives `0` and `min` and `max` give nothing. An array passed in is opened up, so `max({scores})` works on a multi-select or a list of numbers. To total a column of a dynamic panel, use `sumArray` below, which knows how to pick the field out of each entry.
+
+`roundNumber` also gives nothing for an empty field, instead of a misleading `0`.
 
 ::: tip When toNumber is actually needed
 A Number field already stores a number, so `{price} * {quantity}` is correct as written and
@@ -13708,6 +13750,9 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | `addDays(value, days)` | date + n days | `addDays(today(), 14)` |
 | `dateDiffDays(from, to)` | day difference | `dateDiffDays({start}, {end}) >= 1` |
 | `startOfWeek(value)` / `endOfWeek(value)` | week boundaries | report period defaults |
+| `age(birthDate)` | full years from that date until today | `age({birthDate}) >= 18` |
+
+`age` counts a year only once the birthday has passed, so someone born on 30 June 2008 is still 17 on 29 June 2026. It gives nothing while the date is empty, which keeps a condition like `age({birthDate}) >= 18` false until the date is filled in.
 
 ## Data & element control
 

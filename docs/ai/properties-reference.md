@@ -389,7 +389,7 @@ Same properties as `dynamicPanel`, without the row controls (`addRowButtonText`,
 }
 ```
 
-Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`).
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`). Its own children go in its own `template`, not in the outer panel's: the outer template holds the inner panel, the inner template holds the inner fields.
 
 ### `dynamicPanel`
 

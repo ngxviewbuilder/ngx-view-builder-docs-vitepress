@@ -90,3 +90,5 @@ One-off resolution: `api.resolveHostLanguage(...)` / `api.applyHostLanguage(...)
 2. Translate the values; keep the keys.
 3. Register via the provider; set `language` or wire `startLanguageSync`.
 4. Untranslated keys fall back to built-in English texts.
+
+The same goes for a language you never registered a dictionary for. Switch a view to `de` without a `de` dictionary and the builder chrome stays in English, rather than showing raw keys like `tab.preview`.

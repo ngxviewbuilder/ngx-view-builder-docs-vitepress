@@ -83,6 +83,8 @@ This is especially important when:
 - Do not add `toNumber(...)` by reflex. Number elements already hold numbers, so `{price} * {quantity}` works as written. Reach for it only when the value genuinely arrives as text: a `text` element, a data source field, a select whose values are strings, or a number element with `valueStorageType: "string"`.
 - Use `isEmpty(...)` and `notEmpty(...)` for empty checks.
 - Use `contains`, `containsAny`, `containsAll`, and `len` for arrays.
+- For plain arithmetic across a few fields use `sum(a, b, ...)`, `min(a, b, ...)` and `max(a, b, ...)`. They take any number of values, skip empty ones and flatten arrays; `sum` of nothing is `0`, `min` and `max` of nothing are `null`. Use `sumArray` and friends for a field inside each entry of a dynamic panel.
+- Round with `roundNumber(value, digits)`, cut text with `substring(text, start, end?)` (0 based, `end` excluded), and get full years from a date with `age({birthDate})`. For an empty input `roundNumber` and `age` return `null` and `substring` returns `""`.
 
 ## Correct examples
 
@@ -126,6 +128,14 @@ This is especially important when:
   "type": "number",
   "expression": "{price} * {quantity}",
   "logicExecutionMode": "onChange"
+}
+```
+
+```json
+{
+  "name": "totalWithVat",
+  "type": "number",
+  "expression": "roundNumber(sum({net}, {shipping}) * 1.21, 2)"
 }
 ```
 
