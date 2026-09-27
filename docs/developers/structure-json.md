@@ -61,7 +61,23 @@ Common keys across types: `width`/`tabletWidth`/`mobileWidth`, `hidden`, `disabl
 
 ### Where a value lands in the data
 
-An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. The elements map stays flat either way; the runtime works the paths out from the layout.
+An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that, and both keep their children's definitions in their own `template` instead of the root `elements` map. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. Because the children belong to the panel, their names only need to be unique inside it.
+
+```json
+"pages": [{ "name": "page1", "rows": [{ "columns": [{
+  "elementRef": "address",
+  "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
+}] }] }],
+"elements": {
+  "address": {
+    "name": "address", "type": "objectPanel", "label": "Address",
+    "template": {
+      "city": { "name": "city", "type": "text", "label": "City" },
+      "street": { "name": "street", "type": "text", "label": "Street" }
+    }
+  }
+}
+```
 
 ```json
 // layout: address (objectPanel) > city, street

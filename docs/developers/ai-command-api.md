@@ -18,9 +18,10 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
 | `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
 | `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
-| `getTree()` | `nvb_get_tree` | compact outline of pages and elements |
+| `getTree()` | `nvb_get_tree` | compact outline of pages and elements, each with its `path` |
+| `getSelection()` | `nvb_get_selection` | the element the person has selected, or `null` |
 | `getStructure()` | `nvb_get_structure` | the whole view JSON |
-| `getElement(name)` | `nvb_get_element` | one element body |
+| `getElement(name)` | `nvb_get_element` | one element body (a name or a path) |
 | `getElementProperty(name, key)` | `nvb_get_element_property` | one property value |
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
@@ -30,7 +31,9 @@ Three more tools belong to the MCP server itself and never reach the builder: `n
 
 ## Connecting the builder
 
-The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in by giving it an address. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only for a license key that is genuine and not expired: AI access comes with an active designer license. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+
+There are two ways to open it. With nothing but `licenseKey` in the settings, the person presses **Connect** under Settings → AI access (MCP) and the builder dials our hosted server, `wss://mcp.ngxviewbuilder.io/bridge`. The hosted server asks the license console about the key before it pairs anything, and again every hour. A host that runs its own server gives the builder its address instead, and the builder connects on its own:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
@@ -44,11 +47,11 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
 
 | Option | Description |
 | --- | --- |
-| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and nothing connects. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and the builder waits for the **Connect** button. |
 | `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
 | `sessionKey` | A key your own backend issued. See [Keys from your backend](#keys-from-your-backend). |
 
-`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired` and `lastError`. `regenerateKey()` does what the **New key** button does.
+`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired`, `aiBusy`, `licenseProblem` and `lastError`. The builder's own header already shows an **AI connected** badge while a client is paired. `regenerateKey()` does what the **New key** button does.
 
 ## Pairing
 
@@ -58,6 +61,8 @@ The MCP server does not let an AI client near a builder until a person says so. 
 2. The person adds the server URL, `https://<your server>/mcp`, to their AI client once. The URL carries no key, so the same connector serves every builder tab.
 3. The AI client connects. Until it is paired, every tool answers with an error telling the model to ask the user for the session key, and the server's MCP instructions say the same, so the model asks before it tries anything else.
 4. The person pastes the key into the chat and the model calls `nvb_pair` with it. The builder shows a notice with the client's name, and from then on every tool call on that connection goes to that tab.
+
+A key is valid for 24 hours. When it runs out the builder generates a new one, and the server refuses the old one.
 
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
@@ -103,16 +108,18 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | --- | --- | --- |
 | `NVB_MCP_PORT` | `3200` | Port. |
 | `NVB_MCP_ALLOWED_ORIGINS` | empty | Comma separated origins allowed to open `/bridge`. Empty means any, which is fine on your own machine and nowhere else. |
-| `NVB_MCP_MAX_CALLS_PER_SESSION` | `60` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
+| `NVB_MCP_MAX_CALLS_PER_SESSION` | `600` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
 | `NVB_MCP_SESSION_LIMIT_WINDOW_MS` | `3600000` | Length of that window. |
 | `NVB_MCP_CHARACTER_LIMIT` | `60000` | Longest tool answer before it is cut, with a note telling the model to ask for a narrower slice. |
 | `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
+| `NVB_MCP_KEY_TTL_MS` | `86400000` | How long a pairing key is valid. |
+| `NVB_LICENSE_CHECK_URL` | empty | Where to ask whether a license key is active. Empty turns the license check off, so a self hosted server pairs any builder. |
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder), and the demo needs no license of your own. Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -244,7 +251,11 @@ Every placement command shares the same target fields:
 
 Containers that hold children directly are `panel`, `objectPanel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
 
-`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. The commands are the same; only the data paths you read back from `getData()` and write in expressions differ.
+`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. An `addElement` or `insertJson` whose `parent` is an `objectPanel` or `dynamicPanel` defines the new elements in that panel's `template`, so a name only has to be free inside the panel: a `billing` and a `shipping` panel can each get a `city`. The data paths you read back from `getData()` and write in expressions are `billing.city` and `shipping.city`.
+
+Because two panels can hold the same name, commands also accept a **path** wherever they take an element name: `billing.city` is the `city` inside `billing`, and nesting goes deeper the same way (`order.address.city`). `getTree()` gives every node its `path`, so read it there rather than building one by hand. `getElement`, `updateElement`, `deleteElement`, `moveElement`, `renameElement` and `duplicateElement` all take one. A plain name still works when it is unique. Moving an element into or out of a panel moves its definition with it and fails with a clear error if the target already has an element of that name.
+
+`getSelection()` answers with the element the person clicked in the designer (`{ name, path, type }`), so an agent can act on "this field" without asking which one is meant.
 
 ```js
 await api.execute([

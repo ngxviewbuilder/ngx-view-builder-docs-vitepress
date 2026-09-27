@@ -236,8 +236,9 @@ Canonical example:
 ### `objectPanel`
 
 - Use when several fields should be saved as one object: an address, a contact person, company details.
-- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
-- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- Children are laid out in `column.rows` like a `panel`'s, but defined in the panel's `template` map, like a `dynamicPanel`'s. Their names only have to be unique inside that panel.
+- Their values land at `<objectPanel>.<name>`. Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`, or `{panel.fieldName}` from inside the same panel.
+- No add or remove controls: it is always exactly one object.
 - If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`

@@ -49,8 +49,10 @@ Run these before writing anything. They cost a few round trips and remove almost
 nvb_pair                      1. with the key the user gave you
 nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
-nvb_get_tree                  4. what already exists, and the row indexes you need
+nvb_get_tree                  4. what already exists, the row indexes and element paths you need
 ```
+
+When the user says "this field" or "the selected one", call `nvb_get_selection`: it returns the element they clicked in the designer (`{ name, path, type }`), or `null` when nothing is selected.
 
 `nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
@@ -117,7 +119,9 @@ await api.execute([
 ]);
 ```
 
-Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`. See [Layout model](https://ngxviewbuilder.io/ai/layout-model) for how the same tree looks as raw JSON.
+Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`.
+
+Elements inside a `dynamicPanel` or `objectPanel` only need a name that is unique within that panel, so two panels can each have a `city`. Address them by **path**, `billing.city`, which `getTree()` gives on every node. Every command that takes an element name also takes a path; a bare name that matches more than one element is an error that lists the paths to choose from. See [Layout model](https://ngxviewbuilder.io/ai/layout-model) for how the same tree looks as raw JSON.
 
 **Do not set a percentage `width` on fields you want side by side.** Columns already share the row, and a fixed width fights it. Use `mobileWidth: '100%'` to make a pair stack on phones.
 
@@ -614,7 +618,7 @@ Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerEle
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
-| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
+| `objectPanel` | `column.rows` | A `dynamicPanel` with exactly one entry: children are defined in its `template`, every descendant stores its value at `<objectPanel>.<name>`, the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -1235,7 +1239,7 @@ Worked examples and the exact interfaces: [Layout model](https://ngxviewbuilder.
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
-- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Define those children in the panel's `template` map, not in the root `elements`; their names only have to be unique inside that panel. Reference the values as `{address.city}` from outside, and as `{panel.city}` from a sibling inside the same panel.
 - `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.
@@ -1973,8 +1977,9 @@ Canonical example:
 ### `objectPanel`
 
 - Use when several fields should be saved as one object: an address, a contact person, company details.
-- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
-- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- Children are laid out in `column.rows` like a `panel`'s, but defined in the panel's `template` map, like a `dynamicPanel`'s. Their names only have to be unique inside that panel.
+- Their values land at `<objectPanel>.<name>`. Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`, or `{panel.fieldName}` from inside the same panel.
+- No add or remove controls: it is always exactly one object.
 - If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`
@@ -2555,7 +2560,7 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 
 ### `objectPanel`
 
-Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+Same properties as `dynamicPanel`, without the row controls (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion` and the confirm texts). It is a dynamic panel with exactly one entry: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. Its children are defined in its `template`, so their names only have to be unique inside the panel.
 
 ```json
 "pages": [{ "name": "page1", "rows": [{ "columns": [{
@@ -2563,13 +2568,17 @@ Same properties as `panel`. The difference is the data: every element laid out u
   "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
 }] }] }],
 "elements": {
-  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
-  "city": { "name": "city", "type": "text", "label": "City" },
-  "street": { "name": "street", "type": "text", "label": "Street" }
+  "address": {
+    "name": "address", "type": "objectPanel", "label": "Address",
+    "template": {
+      "city": { "name": "city", "type": "text", "label": "City" },
+      "street": { "name": "street", "type": "text", "label": "Street" }
+    }
+  }
 }
 ```
 
-Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`).
 
 ### `dynamicPanel`
 

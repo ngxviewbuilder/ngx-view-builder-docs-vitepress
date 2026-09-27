@@ -45,8 +45,10 @@ Run these before writing anything. They cost a few round trips and remove almost
 nvb_pair                      1. with the key the user gave you
 nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
-nvb_get_tree                  4. what already exists, and the row indexes you need
+nvb_get_tree                  4. what already exists, the row indexes and element paths you need
 ```
+
+When the user says "this field" or "the selected one", call `nvb_get_selection`: it returns the element they clicked in the designer (`{ name, path, type }`), or `null` when nothing is selected.
 
 `nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
@@ -113,7 +115,9 @@ await api.execute([
 ]);
 ```
 
-Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`. See [Layout model](https://ngxviewbuilder.io/ai/layout-model) for how the same tree looks as raw JSON.
+Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`.
+
+Elements inside a `dynamicPanel` or `objectPanel` only need a name that is unique within that panel, so two panels can each have a `city`. Address them by **path**, `billing.city`, which `getTree()` gives on every node. Every command that takes an element name also takes a path; a bare name that matches more than one element is an error that lists the paths to choose from. See [Layout model](https://ngxviewbuilder.io/ai/layout-model) for how the same tree looks as raw JSON.
 
 **Do not set a percentage `width` on fields you want side by side.** Columns already share the row, and a fixed width fights it. Use `mobileWidth: '100%'` to make a pair stack on phones.
 
@@ -610,7 +614,7 @@ Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerEle
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
-| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
+| `objectPanel` | `column.rows` | A `dynamicPanel` with exactly one entry: children are defined in its `template`, every descendant stores its value at `<objectPanel>.<name>`, the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -1231,7 +1235,7 @@ Worked examples and the exact interfaces: [Layout model](https://ngxviewbuilder.
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
-- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Define those children in the panel's `template` map, not in the root `elements`; their names only have to be unique inside that panel. Reference the values as `{address.city}` from outside, and as `{panel.city}` from a sibling inside the same panel.
 - `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.
@@ -1969,8 +1973,9 @@ Canonical example:
 ### `objectPanel`
 
 - Use when several fields should be saved as one object: an address, a contact person, company details.
-- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
-- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- Children are laid out in `column.rows` like a `panel`'s, but defined in the panel's `template` map, like a `dynamicPanel`'s. Their names only have to be unique inside that panel.
+- Their values land at `<objectPanel>.<name>`. Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`, or `{panel.fieldName}` from inside the same panel.
+- No add or remove controls: it is always exactly one object.
 - If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`
@@ -2551,7 +2556,7 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 
 ### `objectPanel`
 
-Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+Same properties as `dynamicPanel`, without the row controls (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion` and the confirm texts). It is a dynamic panel with exactly one entry: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. Its children are defined in its `template`, so their names only have to be unique inside the panel.
 
 ```json
 "pages": [{ "name": "page1", "rows": [{ "columns": [{
@@ -2559,13 +2564,17 @@ Same properties as `panel`. The difference is the data: every element laid out u
   "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
 }] }] }],
 "elements": {
-  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
-  "city": { "name": "city", "type": "text", "label": "City" },
-  "street": { "name": "street", "type": "text", "label": "Street" }
+  "address": {
+    "name": "address", "type": "objectPanel", "label": "Address",
+    "template": {
+      "city": { "name": "city", "type": "text", "label": "City" },
+      "street": { "name": "street", "type": "text", "label": "Street" }
+    }
+  }
 }
 ```
 
-Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`).
 
 ### `dynamicPanel`
 
@@ -7061,9 +7070,10 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
 | `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
 | `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
-| `getTree()` | `nvb_get_tree` | compact outline of pages and elements |
+| `getTree()` | `nvb_get_tree` | compact outline of pages and elements, each with its `path` |
+| `getSelection()` | `nvb_get_selection` | the element the person has selected, or `null` |
 | `getStructure()` | `nvb_get_structure` | the whole view JSON |
-| `getElement(name)` | `nvb_get_element` | one element body |
+| `getElement(name)` | `nvb_get_element` | one element body (a name or a path) |
 | `getElementProperty(name, key)` | `nvb_get_element_property` | one property value |
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
@@ -7073,7 +7083,9 @@ Three more tools belong to the MCP server itself and never reach the builder: `n
 
 ## Connecting the builder
 
-The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in by giving it an address. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only for a license key that is genuine and not expired: AI access comes with an active designer license. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+
+There are two ways to open it. With nothing but `licenseKey` in the settings, the person presses **Connect** under Settings → AI access (MCP) and the builder dials our hosted server, `wss://mcp.ngxviewbuilder.io/bridge`. The hosted server asks the license console about the key before it pairs anything, and again every hour. A host that runs its own server gives the builder its address instead, and the builder connects on its own:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
@@ -7087,11 +7099,11 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
 
 | Option | Description |
 | --- | --- |
-| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and nothing connects. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and the builder waits for the **Connect** button. |
 | `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
 | `sessionKey` | A key your own backend issued. See [Keys from your backend](https://ngxviewbuilder.io/developers/ai-command-api#keys-from-your-backend). |
 
-`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired` and `lastError`. `regenerateKey()` does what the **New key** button does.
+`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired`, `aiBusy`, `licenseProblem` and `lastError`. The builder's own header already shows an **AI connected** badge while a client is paired. `regenerateKey()` does what the **New key** button does.
 
 ## Pairing
 
@@ -7101,6 +7113,8 @@ The MCP server does not let an AI client near a builder until a person says so. 
 2. The person adds the server URL, `https://<your server>/mcp`, to their AI client once. The URL carries no key, so the same connector serves every builder tab.
 3. The AI client connects. Until it is paired, every tool answers with an error telling the model to ask the user for the session key, and the server's MCP instructions say the same, so the model asks before it tries anything else.
 4. The person pastes the key into the chat and the model calls `nvb_pair` with it. The builder shows a notice with the client's name, and from then on every tool call on that connection goes to that tab.
+
+A key is valid for 24 hours. When it runs out the builder generates a new one, and the server refuses the old one.
 
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
@@ -7146,16 +7160,18 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | --- | --- | --- |
 | `NVB_MCP_PORT` | `3200` | Port. |
 | `NVB_MCP_ALLOWED_ORIGINS` | empty | Comma separated origins allowed to open `/bridge`. Empty means any, which is fine on your own machine and nowhere else. |
-| `NVB_MCP_MAX_CALLS_PER_SESSION` | `60` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
+| `NVB_MCP_MAX_CALLS_PER_SESSION` | `600` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
 | `NVB_MCP_SESSION_LIMIT_WINDOW_MS` | `3600000` | Length of that window. |
 | `NVB_MCP_CHARACTER_LIMIT` | `60000` | Longest tool answer before it is cut, with a note telling the model to ask for a narrower slice. |
 | `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
+| `NVB_MCP_KEY_TTL_MS` | `86400000` | How long a pairing key is valid. |
+| `NVB_LICENSE_CHECK_URL` | empty | Where to ask whether a license key is active. Empty turns the license check off, so a self hosted server pairs any builder. |
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder), and the demo needs no license of your own. Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -7287,7 +7303,11 @@ Every placement command shares the same target fields:
 
 Containers that hold children directly are `panel`, `objectPanel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
 
-`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. The commands are the same; only the data paths you read back from `getData()` and write in expressions differ.
+`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. An `addElement` or `insertJson` whose `parent` is an `objectPanel` or `dynamicPanel` defines the new elements in that panel's `template`, so a name only has to be free inside the panel: a `billing` and a `shipping` panel can each get a `city`. The data paths you read back from `getData()` and write in expressions are `billing.city` and `shipping.city`.
+
+Because two panels can hold the same name, commands also accept a **path** wherever they take an element name: `billing.city` is the `city` inside `billing`, and nesting goes deeper the same way (`order.address.city`). `getTree()` gives every node its `path`, so read it there rather than building one by hand. `getElement`, `updateElement`, `deleteElement`, `moveElement`, `renameElement` and `duplicateElement` all take one. A plain name still works when it is unique. Moving an element into or out of a panel moves its definition with it and fails with a clear error if the target already has an element of that name.
+
+`getSelection()` answers with the element the person clicked in the designer (`{ name, path, type }`), so an agent can act on "this field" without asking which one is meant.
 
 ```js
 await api.execute([
@@ -10927,7 +10947,23 @@ Common keys across types: `width`/`tabletWidth`/`mobileWidth`, `hidden`, `disabl
 
 ### Where a value lands in the data
 
-An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. The elements map stays flat either way; the runtime works the paths out from the layout.
+An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that, and both keep their children's definitions in their own `template` instead of the root `elements` map. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. Because the children belong to the panel, their names only need to be unique inside it.
+
+```json
+"pages": [{ "name": "page1", "rows": [{ "columns": [{
+  "elementRef": "address",
+  "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
+}] }] }],
+"elements": {
+  "address": {
+    "name": "address", "type": "objectPanel", "label": "Address",
+    "template": {
+      "city": { "name": "city", "type": "text", "label": "City" },
+      "street": { "name": "street", "type": "text", "label": "Street" }
+    }
+  }
+}
+```
 
 ```json
 // layout: address (objectPanel) > city, street
@@ -11945,7 +11981,7 @@ A panel's `visibleIf` hides the whole group at once, which is usually cleaner th
 
 ## Object panel (`objectPanel`)
 
-Looks and behaves like a Panel, with one difference: the fields inside it do not save their answers at the top of the form data. They save them inside one object named after the panel. It is the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes.
+A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](https://ngxviewbuilder.io/creators/elements/containers#dynamic-panel-dynamicpanel) with exactly one entry: the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes. There is no Add or Remove button, the panel is always there once.
 
 Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
 
@@ -11955,6 +11991,13 @@ Drop an Object panel named `address`, put a few fields in it, and the data comes
   "street": "Gedimino pr. 1",
   "zip": "01103"
 }
+```
+
+The fields belong to the panel, so their names only have to be unique inside it. A **Billing address** and a **Shipping address** panel can both have a `city` field, and the data keeps them apart:
+
+```json
+"billing":  { "city": "Vilnius", "street": "Gedimino pr. 1" },
+"shipping": { "city": "Kaunas" }
 ```
 
 Anything that stores a value works inside it: text and number inputs, selects, autocompletes, date pickers, file uploads, dynamic panels, and custom elements your developers registered. Layout containers in between do not change anything, so a Panel or Tabs inside the Object panel still put their fields into `address`. Another Object panel inside it adds one more level:
@@ -11968,12 +12011,12 @@ Anything that stores a value works inside it: text and number inputs, selects, a
 
 A few things to keep in mind:
 
-- **Refer to the fields by their full path.** In expressions and conditions write `{address.city}`, not `{city}`. The same goes for data source parameters and actions that read a value.
+- **Refer to the fields by their full path from outside.** In expressions, conditions, data source parameters and actions elsewhere in the form write `{address.city}`. Inside the panel `{panel.city}` means the neighbouring field of the same panel, which is handy when two panels share field names.
 - **Loading data works the same way.** Pass `{ "address": { "city": "Kaunas" } }` as the form data and the City field inside the panel shows `Kaunas`.
 - **Validation is per field.** A required field inside the panel is checked like any other field; the panel itself has no validators.
 - **Keep out of data JSON** on the Object panel leaves the whole object out of the submitted result.
-- The properties are the same as for [Panel](https://ngxviewbuilder.io/creators/elements/containers#panel-panel): title, colors, borders, padding, visibility and so on.
-- Inside a Dynamic panel an Object panel works as a plain Panel for now: the fields land directly in each entry, without the extra level.
+- The properties are the Dynamic panel's without the row controls: title, header, colors, borders, padding, visibility, a data source that fills the whole object, and so on.
+- Inside a Dynamic panel an Object panel adds its level to every entry: `items[0].address.city`.
 
 Use it when a group of answers belongs together and the backend expects it as one object: an address, a contact person, company details. If the user should be able to add several such groups, use a [Dynamic panel](https://ngxviewbuilder.io/creators/elements/containers#dynamic-panel-dynamicpanel) instead, which stores an array.
 
@@ -13454,7 +13497,7 @@ Source: https://ngxviewbuilder.io/creators/form-settings
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has four groups: **General**, **Form header**, **Navigation and actions**, and **Rendering and dialog**. A fifth one, **AI access (MCP)**, shows up when your developers connected the builder to an MCP server.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has five groups: **General**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**.
 
 ## General
 
@@ -13516,21 +13559,28 @@ Dialog mode is useful when a developer embeds the view as a popup (e.g. "New cli
 
 ## AI access (MCP)
 
-This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. It is only there if your developers set it up (see [MCP bridge](https://ngxviewbuilder.io/developers/ai-command-api#connecting-the-builder)).
+This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. AI access is included with an active designer license, at no extra cost.
+
+If nothing is connected yet, the group has one button, **Connect**. It links this tab to our hosted MCP server. The button only shows when the builder has a genuine license key that has not expired; otherwise the group tells you what is missing (no key, a key that is not valid, or a license that ran out). Your developers can also point the builder at an MCP server of their own (see [MCP bridge](https://ngxviewbuilder.io/developers/ai-command-api#connecting-the-builder)), in which case it connects without the button.
+
+Once connected, the group shows:
 
 | Field | What it is |
 | --- | --- |
 | **Status** | Whether the builder reached the MCP server, and which AI clients are connected right now. |
 | **Server URL** | The address you add to your AI client once. |
-| **Session key** | A key like `NVB-K990-RPNH-N2T7` that belongs to this browser tab. **Copy** puts it on the clipboard. |
+| **Session key** | A key like `NVB-K990-RPNH-N2T7` that belongs to this browser tab. **Copy** puts it on the clipboard. It only appears once the server has accepted your license. |
 | **New key** | Disconnects every AI client and gives the tab a fresh key. |
+| **Disconnect** | Closes the connection. Press **Connect** to open it again. |
 
 ### Connecting Claude
 
-1. Copy the **Server URL** and add it to Claude as a connector. In Claude this is *Settings → Connectors → Add custom connector*. You only do this once; the same URL serves every builder tab.
+1. Press **Connect**, then copy the **Server URL** and add it to Claude as a connector. In Claude this is *Settings → Connectors → Add custom connector*. You only do this once; the same URL serves every builder tab.
 2. Ask Claude to do something in the builder, for example *"add a contact section with name, email and phone"*.
 3. Claude asks for your session key. Copy it from this group and paste it into the chat.
-4. A message appears in the builder saying the AI client is connected, and the status shows its name. From here on Claude works directly on the view you have open.
+4. A message appears in the builder saying the AI client is connected, and the header shows an **AI connected** badge with the client's name. While Claude is making changes the badge reads **AI is editing…** and its dot pulses. Clicking the badge brings you back to this group.
+
+From here on Claude works directly on the view you have open. It can also see which element you have selected, so *"make this field required"* works.
 
 Typing mistakes in the key are forgiven: lower case, spaces or missing dashes all work.
 
@@ -13538,6 +13588,8 @@ Typing mistakes in the key are forgiven: lower case, spaces or missing dashes al
 
 - **Claude cannot save.** It edits the view in your tab. Nothing is stored until you press Save yourself, and every batch of its changes is a single undo step, so Ctrl+Z takes back a whole change at once.
 - **Reloading the page keeps the connection.** The key stays the same for as long as the tab is open, so you do not have to pair again after a refresh.
+- **A key lasts 24 hours.** After that the tab gets a new one on its own and Claude asks for it again.
+- **The license is checked while you work.** If it is revoked or runs out, the connection closes and this group says why.
 - **A new tab gets a new key.** If you open the builder in another tab and want Claude to work there, give it that tab's key.
 - **To cut access, press New key.** Every connected client loses access immediately. Closing the tab does the same.
 - Treat the key like a password for as long as the tab is open: whoever has it can edit that view.
