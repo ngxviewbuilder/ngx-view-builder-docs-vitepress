@@ -145,7 +145,7 @@ Worked examples and the exact interfaces: [Layout model](./layout-model).
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
-- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Define those children in the panel's `template` map, not in the root `elements`; their names only have to be unique inside that panel. Reference the values as `{address.city}` from outside, and as `{panel.city}` from a sibling inside the same panel.
 - `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.

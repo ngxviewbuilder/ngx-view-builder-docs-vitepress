@@ -49,7 +49,9 @@ api.setCssVariables({
 });
 ```
 
-or declaratively: `[cssVariables]="{ '--nvb-color-primary-500': '...' }"`.
+or declaratively: `[cssVariables]="{ '--nvb-color-primary-500': '...' }"`, or `runtimeSettings.cssVariables` at bootstrap.
+
+These refine the theme, they do not replace it. Only the variables you pass change, and everything else keeps coming from the active light or dark theme. So one brand color in dark mode leaves the rest of the dark palette alone, and when the mode switches the same overrides are applied again on top of the new theme. If you want a different set per mode, that is what `setCustomTheme` below is for.
 
 **Full custom theme**, with per-mode token sets:
 

@@ -38,8 +38,10 @@ Run these before writing anything. They cost a few round trips and remove almost
 nvb_pair                      1. with the key the user gave you
 nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
-nvb_get_tree                  4. what already exists, and the row indexes you need
+nvb_get_tree                  4. what already exists, the row indexes and element paths you need
 ```
+
+When the user says "this field" or "the selected one", call `nvb_get_selection`: it returns the element they clicked in the designer (`{ name, path, type }`), or `null` when nothing is selected.
 
 `nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
@@ -106,7 +108,9 @@ await api.execute([
 ]);
 ```
 
-Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`. See [Layout model](./layout-model) for how the same tree looks as raw JSON.
+Row indexes come from `getTree()` or from `addRow`. Target fields are `parent`, `page`, `tab`, `index`, `row`, `column`.
+
+Elements inside a `dynamicPanel` or `objectPanel` only need a name that is unique within that panel, so two panels can each have a `city`. Address them by **path**, `billing.city`, which `getTree()` gives on every node. Every command that takes an element name also takes a path; a bare name that matches more than one element is an error that lists the paths to choose from. See [Layout model](./layout-model) for how the same tree looks as raw JSON.
 
 **Do not set a percentage `width` on fields you want side by side.** Columns already share the row, and a fixed width fights it. Use `mobileWidth: '100%'` to make a pair stack on phones.
 

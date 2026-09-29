@@ -73,6 +73,10 @@ Every published build embeds its release date. A license covers **all versions r
 
 **The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
+## AI access
+
+Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](./ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour.
+
 ## License terms
 
 The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies keep their own licenses: the designer installs CodeMirror, Prettier and Lodash under MIT, the runtime installs Jexl and Lodash under MIT, and both install tslib under 0BSD.
