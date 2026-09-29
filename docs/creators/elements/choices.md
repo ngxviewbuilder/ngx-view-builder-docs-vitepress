@@ -10,7 +10,7 @@ All choice elements share the same two ways of getting their options:
 1. **Static options**, in the **Options** section: add label/value pairs by hand.
 2. **Data source**, in the **Primary source** section: load options from an API and map which response fields become the value and label. See [Data sources](../data-sources).
 
-The stored value is always the option **value** (not the label).
+The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
 
 ## Options: shared fields
 
@@ -50,13 +50,51 @@ Like Select, but stores an **array** of values. Use `contains({tags}, "vip")` in
 
 Type-ahead search. Best for long lists (clients, cities, products).
 
+It works in two ways. With a short list, give it static options or a normal data source and it filters them as the user types. With a list too big to load upfront, point it at a **search data source** and it asks the server instead.
+
 | Property | What it does |
 | --- | --- |
-| **Lazy load** | Fetch options as the user types instead of upfront. |
-| **Min search length** | Characters required before a lazy search fires. |
-| **Debounce (ms)** | Time between the last keystroke and the request. |
-| **Max suggestions** | How many suggestions to show. |
-| **Force selection** | Only values picked from the list are allowed; free-typed text is cleared. |
+| **Max suggestions** | How many suggestions the dropdown shows at most. |
+| **Force selection** | Only values picked from the list are allowed. Text that matches nothing is cleared when the field loses focus. |
+
+### Searching on the server
+
+These live in the **Search source** section of the properties sidebar.
+
+| Property | What it does |
+| --- | --- |
+| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the DataSources tab. |
+| **Items path** | Where the array sits in the response, e.g. `data.items`. Leave it empty if the response is the array itself, or wraps it in a common key such as `items`, `data`, `results`, `rows` or `content`. |
+| **Label key** | Which field of each record the user sees, e.g. `name`. Nested fields work too: `address.city`. Left empty, the element tries `label`, `name`, `title` and `text` in that order. |
+| **Value key** | Which field gets stored, e.g. `id`. Leave it empty to store the **whole record** the user picked. |
+| **Server result limit** | How many records the server returns at most, e.g. `100`. See below. |
+| **Min search length** | How many characters the user has to type before the first request. |
+| **Debounce (ms)** | How long the element waits after the last keystroke before it calls the server. The default is 1000 ms, so typing a whole word costs one request, not one per letter. |
+| **Query context key** | An extra name for the typed text, if your source expects something other than `query`. |
+
+In the data source, use `{query}` wherever the typed text should go:
+
+```text
+GET /api/cities?q={query}&limit={limit}
+```
+
+`{limit}` is the *Server result limit* (or *Max suggestions* when the limit is empty).
+
+The records can look like anything. There is no need to reshape them into `label`/`value` pairs on the server: say which field is which with *Label key* and *Value key*, and the element does the rest.
+
+**How the result limit saves requests.** Say the limit is 100. The user types `vil` and the server answers with 80 records. Fewer than 100 means the server had nothing more to give, so those 80 are every city that contains `vil`. When the user carries on typing `viln`, the element narrows the 80 it already has instead of asking again. If the answer had come back with 100 records, there could be more on the server, so the next letter sends a new request. Deleting letters back past the original `vil` always asks the server again. Leave the limit empty to call the server on every change (after the debounce).
+
+**Storing the whole record.** With *Value key* empty, the form value is the full object, for example:
+
+```json
+"city": { "id": 21, "name": "Riga", "country": { "code": "LV", "name": "Latvia" } }
+```
+
+Expressions can then reach inside it, e.g. `{city.country.code}`. A reloaded form shows the right label straight away, because the label is part of the stored object. With a *Value key* set, only the key is stored (`"city": 21`), which is smaller but shows the bare id if the form is reopened later and the record is not in the latest search results. Turn on **Force selection** when storing whole records, so free typing never replaces the object with a plain string.
+
+::: tip The older Lazy load switch
+Before the search data source existed, *Lazy load* reused the element's main data source for searching. It still works for existing forms and is hidden once a search data source is chosen. For new forms use the search data source.
+:::
 
 ## Radio (`radio`)
 

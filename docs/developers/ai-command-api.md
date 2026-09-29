@@ -13,8 +13,8 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 | Method | MCP tool | What it does |
 | --- | --- | --- |
-| `available()` | part of `nvb_status` | false whenever the builder is not on screen |
-| `help()` | `nvb_get_instructions` | the full command catalog, with schemas |
+| `available()` | | false whenever the builder is not on screen |
+| `help()` | `nvb_help` | the full command catalog, with schemas |
 | `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
 | `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
 | `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
@@ -26,39 +26,58 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
 
-## When it exists
+Three more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`. They are about who may talk to which tab, which is the next section.
 
-The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+## Connecting the builder
+
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in by giving it an address. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
 ```ts
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideNgxViewBuilderRuntime, provideNgxViewBuilderMcp } from 'ngx-view-builder-runtime';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideNgxViewBuilderRuntime(),
-    provideNgxViewBuilderMcp({ url: 'wss://mcp.ngx-view-builder.io/bridge' }),
-  ],
-});
+readonly builderSettings: INgxViewBuilderBuilderSettings = {
+  licenseKey: 'NVB-...',
+  mcp: {
+    url: 'wss://mcp.example.com/bridge',
+    client: { app: 'Back office', page: 'Order form' },
+  },
+};
 ```
 
 | Option | Description |
 | --- | --- |
-| `enabled` | Default `true`. Set `false` to keep the provider registered but leave the API closed. |
-| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. |
-| `autoConnect` | Default `true`. Set `false` to connect by hand through `NgxViewBuilderMcpBridgeService`. |
-| `client` | App and page labels, shown in `nvb_status` so a user with several tabs open can tell which one an agent is attached to. |
-| `sessionKey` | A key your own backend issued, string or resolver. Supply it and the pair code disappears: your backend already knows the key, so it can hand the same one to whatever AI client it wires up. |
-| `auth` | Token your MCP server's authorization service understands. Forwarded untouched, never interpreted. |
-| `metadata` | Anything your authorization service should see: tenant, user, plan hint. Echoed back in `nvb_status`. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and nothing connects. |
+| `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
+| `sessionKey` | A key your own backend issued. See [Keys from your backend](#keys-from-your-backend). |
 
-Without a `sessionKey`, the builder shows a pair code in its settings, under AI access (MCP), and an agent reaches the view only after a person has typed that code into their MCP client. With one, your backend has already decided who may connect, so no code is shown and nobody types anything. Either way the session lasts only as long as that tab stays open, and the panel says so once a client is attached.
+`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired` and `lastError`. `regenerateKey()` does what the **New key** button does.
 
-The MCP server itself holds no user table. It asks whatever authorization service you configure and does what it is told, which is what lets you run it next to your own product and drive it from your own backend. See its README for the auth webhook contract.
+## Pairing
+
+The MCP server does not let an AI client near a builder until a person says so. The handshake is short:
+
+1. When the builder connects, it generates a session key such as `NVB-K990-RPNH-N2T7` and shows it in its settings under AI access (MCP), next to the server URL.
+2. The person adds the server URL, `https://<your server>/mcp`, to their AI client once. The URL carries no key, so the same connector serves every builder tab.
+3. The AI client connects. Until it is paired, every tool answers with an error telling the model to ask the user for the session key, and the server's MCP instructions say the same, so the model asks before it tries anything else.
+4. The person pastes the key into the chat and the model calls `nvb_pair` with it. The builder shows a notice with the client's name, and from then on every tool call on that connection goes to that tab.
+
+A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
+
+**New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
+
+`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
+
+### Keys from your backend
+
+If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with `https://<your server>/mcp?key=<the key>` (or an `x-nvb-session-key` header). Such a connection starts out paired and nobody types anything. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
+
+### The bridge keeps itself up
+
+If the socket drops, the builder reconnects on its own, backing off from one second to thirty. The key does not change, so neither does the pairing: once the server is back, the AI continues where it stopped. The status in the settings reads *MCP server unreachable, retrying…* in the meantime.
 
 ## The two guarantees
 
-**It runs only while the builder is on screen.** Three things must all hold: the host registered the provider, the builder component is mounted, and a person paired a code. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
+**It runs only while the builder is on screen.** Three things must all hold: the host configured `mcp`, the builder component is mounted, and a person paired a key. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
 
 **It cannot save.** There is no save, publish or submit command, and none of the mutation commands reach the host's save path. `saveTemplate` and `saveSidebarGroup` write reusable builder library items, not the view.
 
@@ -70,9 +89,30 @@ The worst a runaway agent can do is leave unsaved edits in an open tab, which a 
 A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an agent can cause a data source call or a navigation without a click. That is a side effect, not a commit, but it is worth knowing when reviewing what an agent wrote.
 :::
 
+## Running the MCP server
+
+The server is the `ngx-view-builder-mcp` package. It is a router and nothing more: it holds the builder sockets, pairs AI connections to them, and forwards each call. What a command means is decided in the builder, so a new element type or command in the library needs no new server release.
+
+```bash
+npx ngx-view-builder-mcp
+```
+
+It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the builder socket at `/bridge`.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `NVB_MCP_PORT` | `3200` | Port. |
+| `NVB_MCP_ALLOWED_ORIGINS` | empty | Comma separated origins allowed to open `/bridge`. Empty means any, which is fine on your own machine and nowhere else. |
+| `NVB_MCP_MAX_CALLS_PER_SESSION` | `60` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
+| `NVB_MCP_SESSION_LIMIT_WINDOW_MS` | `3600000` | Length of that window. |
+| `NVB_MCP_CHARACTER_LIMIT` | `60000` | Longest tool answer before it is cut, with a note telling the model to ask for a narrower slice. |
+| `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
+
+Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
+
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Open the builder settings, copy the pair code from AI access (MCP), point your MCP client at `https://mcp.ngx-view-builder.io/mcp?code=NVB-XXXX-XXXX`, and watch it build.
+The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -82,7 +122,7 @@ Nothing there can be saved to anything of yours: the demo keeps its view in your
 
 It exists because of a failure that has nothing to do with the schema. An agent told to "build this form through the AI API" often answers by describing the JSON it would send, or hands it over for someone to paste, because nothing in its context said the API is live and reachable right now. The instructions say that in the first line.
 
-Call `nvb_get_instructions` first in a session. It returns both the prompt ready text and the machine readable `help()` object in one round trip.
+Call `nvb_get_instructions` first in a session, right after pairing. `nvb_pair` says so in its answer.
 
 `help()` is the machine readable version of the same thing: the command catalog with parameters and a worked example per command, the tab codes, behaviour notes, and three fields worth reading on their own.
 
@@ -96,7 +136,7 @@ Call `nvb_get_instructions` first in a session. It returns both the prompt ready
 `describeElementTypes()` is the other one to call before writing anything. It returns every registered type, whether it can hold children, and the real property keys for each. Without it a model guesses property names and every command comes back with an error.
 
 ```json
-// nvb_get_instructions -> result.help
+// nvb_help
 { "commands": [ /* 47 entries */ ], "capabilities": ["templates"] }
 
 // nvb_describe_element_types { "type": "select" }
@@ -202,7 +242,18 @@ Every placement command shares the same target fields:
 | `row` | Put the element into this existing row instead of creating one. |
 | `column` | Position inside `row`. Appends when left out. |
 
-Containers that hold children directly are `panel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
+Containers that hold children directly are `panel`, `objectPanel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
+
+`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. The commands are the same; only the data paths you read back from `getData()` and write in expressions differ.
+
+```js
+await api.execute([
+  { op: 'addElement', type: 'objectPanel', name: 'address', properties: { label: 'Address' } },
+  { op: 'addElement', type: 'text', name: 'city', parent: 'address', properties: { label: 'City' } },
+  { op: 'addElement', type: 'text', name: 'street', parent: 'address', row: 0 },
+]);
+// getData() -> { address: { city: ..., street: ... } }
+```
 
 Do not set a percentage `width` on fields you want side by side. Columns in a row already share the space, and a fixed width fights that. Use `mobileWidth: '100%'` when you want a pair to stack on narrow screens.
 

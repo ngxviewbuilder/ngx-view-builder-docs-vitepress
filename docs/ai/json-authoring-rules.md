@@ -130,7 +130,7 @@ The canonical full list is in [Common mistakes, entry 14](./common-mistakes#_14-
 - A single `row` is a horizontal band; its `columns` sit side by side. Vertical order is the order of `rows`.
 - **A column with no width takes an equal share of the row.** For a two-column layout, one `row` with two `columns` and no widths is sufficient. Never write `"width": "50%"` to get halves.
 - Widths (`width`, `tabletWidth`, `mobileWidth`, `fitContent`) are **element** properties, set in the `elements` map, and only when the split must be uneven.
-- Exactly ten types accept children: `page`, `panel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
+- Exactly eleven types accept children: `page`, `panel`, `objectPanel`, `dynamicPanel`, `dialog`, `emptyBlock` (via `column.rows`) and `tabs`, `tabsPro`, `accordion`, `splitter`, `progressFlow` (via `column.tabRows`, keyed by each tab/item/panel/step `value`). Every other type is a leaf.
 - Container inner layouts must remain in the NGX View Builder model, not via custom HTML.
 - `parentName` is not how parentage is declared. The layout tree is.
 
@@ -145,6 +145,8 @@ Worked examples and the exact interfaces: [Layout model](./layout-model).
 - `select`, `radio`, `autocomplete` typically store a single value.
 - `dateRange` must return an object with `dateFrom` and `dateTo`.
 - `dynamicPanel` and `dynamicTable` typically store an array of objects.
+- `objectPanel` stores one object: every element laid out inside it, at any depth, writes to `<objectPanel>.<name>` instead of `<name>`. Reference those values as `{address.city}`, never `{city}`.
+- `autocomplete` with a `searchDataSourceName` and no `searchValueKey` stores the whole selected record as an object.
 - `numberStepper` stores a `number`; `timePicker` stores a time string.
 - `signaturePad` stores signature image data keyed under the element's `name`.
 - `listBox`, `selectButton` store a single value, or an array when multi-select/`multiple` is enabled.

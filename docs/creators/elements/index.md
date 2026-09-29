@@ -24,6 +24,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 | Search-as-you-type choice | Autocomplete | [Choice inputs](./choices) |
 | A clickable action | Button | [Buttons & actions](./buttons) |
 | Group fields visually | Panel, Tabs, Accordion | [Containers](./containers) |
+| Several fields saved as one object (an address, a contact) | Object panel | [Containers](./containers) |
 | Repeatable entries (0 to n) | Dynamic panel, Dynamic table | [Containers](./containers) / [Tables](./tables) |
 | A modal window | Dialog | [Containers](./containers) |
 | Read-only data rows | Table | [Tables & lists](./tables) |
@@ -38,7 +39,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 
 ## Value-producing vs. presentational
 
-**Value-producing elements** (inputs, choices, editable tables) write into the form data under their `name`. **Presentational elements** (text, image, divider, badge…) only display; they add nothing to the submitted data.
+**Value-producing elements** (inputs, choices, editable tables) write into the form data under their `name`. Inside an [Object panel](./containers#object-panel-objectpanel) they write under the panel's name instead, e.g. `address.city`. **Presentational elements** (text, image, divider, badge…) only display; they add nothing to the submitted data.
 
 ## Every element shares
 

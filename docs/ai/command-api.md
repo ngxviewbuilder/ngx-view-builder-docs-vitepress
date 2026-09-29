@@ -9,30 +9,39 @@ Everything else in this section teaches you to **write** structure JSON. This pa
 
 ## Detect the mode first
 
-The live mode arrives as an MCP server. If your client has the `nvb_*` tools, call `nvb_status`.
+The live mode arrives as an MCP server. If your client has the `nvb_*` tools, you are in it.
+
+Every connection starts **unpaired**. Before anything else:
+
+1. Ask the user for their builder session key. It is shown in the builder settings under AI access (MCP) and looks like `NVB-XXXX-XXXX-XXXX`. Never guess one.
+2. Call `nvb_pair` with the key exactly as the user gave it. Case, spaces and missing dashes do not matter.
+
+After that, `nvb_status` tells you where you stand:
 
 | Result | What it means | What to do |
 | --- | --- | --- |
-| `paired` and `builder_attached` are `true` | A builder is open and the API is armed | Drive it with commands. Do not hand back raw JSON for a person to paste. |
-| `builder_attached` is `false` | The tab is connected but the builder is not on screen | Ask the user to open the builder. |
-| `browser_connected` is `false` | The paired tab was closed or lost its socket | Ask the user to reopen the builder and re-pair. |
-| An error mentioning a pair code | Nothing is paired yet | Ask the user for the code shown in the builder settings, under AI access (MCP). |
+| `paired: true`, `builderConnected: true` | A builder tab is open and yours to drive | Drive it with commands. Do not hand back raw JSON for a person to paste. |
+| `paired: true`, `builderConnected: false` | The tab was closed, or is reloading | Ask the user to open or reload the builder, then retry. A reload keeps the pairing. |
+| `paired: false` | Nothing is paired yet, or the user pressed New key | Ask for the key (again) and call `nvb_pair`. |
+| An error saying no tab has that key | The key is wrong, or belongs to a tab that is gone | Ask the user to copy it again from the builder. A new tab has a new key. |
 | No `nvb_*` tools at all | Runtime only host, or no MCP server configured | Fall back to authoring structure JSON as the rest of this section describes. |
 
-The bridge is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
+`callsRemaining` in the same answer is how many builder calls are left in the current window. Batch your changes; do not spend calls one element at a time.
+
+The API is open only while the builder component is mounted. It closes when the user leaves the builder, so re-check before a long sequence.
 
 ## Bootstrap sequence
 
-Run these before writing anything. They cost one round trip and remove almost every source of error.
+Run these before writing anything. They cost a few round trips and remove almost every source of error.
 
 ```text
-nvb_status                    1. is the door open
-nvb_get_instructions          2. the contract as text, plus the command catalog
+nvb_pair                      1. with the key the user gave you
+nvb_get_instructions          2. the contract as text
 nvb_describe_element_types    3. real element types and their real property keys
 nvb_get_tree                  4. what already exists, and the row indexes you need
 ```
 
-`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. It returns `help()` in the same call, so `help.guidelines` carries the rules on their own and `help.capabilities` tells you which optional features are present.
+`nvb_get_instructions` is the fastest way in: it states what the API is, the working order, the rules, the capabilities this builder has, and the templates already in the library. `nvb_help` returns the machine readable catalog: `help.commands` with a worked example per command, `help.guidelines` with the rules on their own, and `help.capabilities` with the optional features that are present.
 
 `help()` is authoritative and versioned. If it disagrees with this page, follow `help()`.
 
@@ -55,7 +64,7 @@ Hard rules:
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
 5. **There is no save.** You can build and edit freely, but a person commits the view. Do not claim you saved anything, and do not try to reach a save through a trigger or an element event: automation actions have no submit or save type, and an element `submit` still needs a human click.
-6. **Re-check `available()` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null. That is expected, not a fault.
+6. **Re-check with `nvb_status` after anything slow.** The API disarms the moment the user leaves the builder, and every command then fails with `apiClosed` while every read returns null (in the page itself, `available()` answers the same question). That is expected, not a fault.
 
 ### Result shape
 

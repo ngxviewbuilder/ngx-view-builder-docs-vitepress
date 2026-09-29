@@ -9,14 +9,14 @@ description: Supplying and validating the license key.
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
-Since 0.5.0 that split is enforced by packaging rather than by promise. `ngx-view-builder-runtime`
-and `ngx-view-builder-designer` are separate npm packages with separate license files:
+Since 0.5.0 that split is enforced by packaging rather than by promise. `@ngxviewbuilder/runtime`
+and `@ngxviewbuilder/designer` are separate npm packages with separate license files:
 
 | Package | `LICENSE.md` |
 | --- | --- |
-| `ngx-view-builder-runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
-| `ngx-view-builder-designer` | The commercial agreement described on this page. |
-| `ngx-view-builder-plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
+| `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
+| `@ngxviewbuilder/plugin-templates` | Follows the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -75,7 +75,7 @@ Every published build embeds its release date. A license covers **all versions r
 
 ## License terms
 
-The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies the package installs (CodeMirror, Jexl, Prettier and Lodash under MIT; tslib under 0BSD) keep their own licenses.
+The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies keep their own licenses: the designer installs CodeMirror, Prettier and Lodash under MIT, the runtime installs Jexl and Lodash under MIT, and both install tslib under 0BSD.
 
 ## Notes
 

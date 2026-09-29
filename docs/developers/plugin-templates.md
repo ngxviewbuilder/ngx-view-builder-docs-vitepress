@@ -5,16 +5,16 @@ description: Full syntax reference for the Templates plugin  control flow, trans
 
 # Templates plugin reference
 
-`ngx-view-builder-plugin-templates` adds the **Templates** tab: a library of reusable HTML/CSS snippets that List grid card templates, Select option templates, row templates, and header templates reference by name. The [creator guide](../creators/templates) covers the tab from a form-builder's point of view; this page is the developer reference the exact template syntax, how the plugin decides where templates are read from, and (the part hosts always ask about) how to wire template Save/Delete to your own backend and database.
+`@ngxviewbuilder/plugin-templates` adds the **Templates** tab: a library of reusable HTML/CSS snippets that List grid card templates, Select option templates, row templates, and header templates reference by name. The [creator guide](../creators/templates) covers the tab from a form-builder's point of view; this page is the developer reference the exact template syntax, how the plugin decides where templates are read from, and (the part hosts always ask about) how to wire template Save/Delete to your own backend and database.
 
 ## Install & register
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [ provideNgxViewBuilderTemplates() ],
 ```

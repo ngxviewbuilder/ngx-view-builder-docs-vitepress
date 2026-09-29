@@ -12,6 +12,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`
+- "fields saved as one object", "nested object", "address object" -> `objectPanel`
 - "single choice from a list" -> `select` or `radio`
 - "search in a large list" -> `autocomplete`
 - "multiple choices" -> `multiSelect` or `checkbox`
@@ -70,6 +71,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | User intent | Choose | Note |
 | --- | --- | --- |
 | Simple block with inner fields | `panel` | Most common container |
+| Group of fields saved as one object | `objectPanel` | Values land at `<name>.<field>`; not repeatable |
 | Content divided into tabs | `tabs` or `tabsPro` | Do not use if multiple pages are sufficient |
 | Collapsible sections | `accordion` | Good for longer forms |
 | Step flow or progress | `progressFlow` | Not for a plain panel layout |
@@ -117,6 +119,7 @@ They belong to the internal model, property editing, or builder infrastructure.
 | --- | --- |
 | `dynamic table`, `editable rows`, `add row`, `delete row` | `dynamicTable` |
 | `repeating block`, `repeatable section`, `repeatable group` | `dynamicPanel` |
+| `object`, `nested object`, `group as one value`, `multiple text` | `objectPanel` |
 | `data table`, `server-side table`, `paging`, `sorting`, `filtering` | `table` |
 | `search in list`, `searchable select`, `autocomplete` | `autocomplete` |
 | `multiple checkboxes`, `select multiple` | `checkbox` or `multiSelect` |
@@ -126,5 +129,6 @@ They belong to the internal model, property editing, or builder infrastructure.
 
 - `dynamicTable` vs `table`: does the user edit rows inline, or work with a datasource data grid?
 - `dynamicPanel` vs `dynamicTable`: does the data look more like a form/block or like a row-based table?
+- `panel` vs `objectPanel`: should the fields stay separate top-level values, or arrive as one object under the group's name?
 - `select` vs `autocomplete`: are there few options, or many that require search?
 - `singleCheckbox` vs `toggleSwitch`: does checkbox semantics matter, or is a switch style preferred?

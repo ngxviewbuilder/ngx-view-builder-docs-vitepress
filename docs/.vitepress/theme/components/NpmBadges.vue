@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 
 // Runtime, ne designer: ji idiegia kiekvienas, ir ji nemokama. Abu paketai
 // leidziami kartu ta pacia versija, tad runtime versija = produkto versija.
-const PACKAGE = 'ngx-view-builder-runtime';
+const PACKAGE = '@ngxviewbuilder/runtime';
 const PACKAGE_URL = `https://www.npmjs.com/package/${PACKAGE}`;
 
 // Tas pats dviguba cache kaip zvaigzduciu badge: modulyje SPA navigacijai ir

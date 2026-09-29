@@ -110,7 +110,7 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |
 | **Reload source when mapped question value changes** (*React to change*) | Auto-reload when a mapped param's value changes. |
 | **Listen fields** | Comma-separated extra paths to watch (e.g. `el1` or `panel.userId`). If empty, the system auto-detects from URL placeholders and the param mapping. |
-| **Lazy load** | Fetch on demand: tables load per page/sort, autocomplete loads as the user types. |
+| **Lazy load** | Fetch on demand: tables load per page/sort. Autocomplete has its own *Search datasource* for this, see [Autocomplete](./elements/choices#autocomplete-autocomplete). |
 
 ## Example: country → city dropdowns
 

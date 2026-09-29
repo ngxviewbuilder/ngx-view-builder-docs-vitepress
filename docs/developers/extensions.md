@@ -12,7 +12,7 @@ All customisation funnels through a single config type, `INgxViewBuilderExtensio
 **At bootstrap (recommended):**
 
 ```ts
-import { provideNgxViewBuilderExtensions } from 'ngx-view-builder-runtime';
+import { provideNgxViewBuilderExtensions } from '@ngxviewbuilder/runtime';
 
 providers: [
   provideNgxViewBuilderExtensions({

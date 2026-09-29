@@ -59,6 +59,17 @@ A flat map keyed by element name. Every entry has at least `name`, `label`, `typ
 
 Common keys across types: `width`/`tabletWidth`/`mobileWidth`, `hidden`, `disabled`, `readOnly`, `required`, logic strings (`visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, `resetIf`, `expression`, `defaultValue`), `validators`, `events`, `logicExecutionMode`, `validationExecutionMode`, `inheritParentState`. Element `type` values match `ElementTypesEnum` (`text`, `select`, `dynamicPanel`, `table`, …).
 
+### Where a value lands in the data
+
+An element's value is stored under its name, so `firstName` above ends up as `data.firstName`. Two containers change that. A `dynamicPanel` stores an array, one object per entry. An `objectPanel` stores one object: every element laid out under it, at any depth, is saved at `<objectPanel>.<name>`. The elements map stays flat either way; the runtime works the paths out from the layout.
+
+```json
+// layout: address (objectPanel) > city, street
+{ "address": { "city": "Vilnius", "street": "Gedimino pr. 1" } }
+```
+
+The same paths are used when you pass data in, when you read it back from `valueChanged` (`dataPath` is `address.city`), and in expressions (`{address.city}`).
+
 ## `settings`: view-wide configuration
 
 Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:

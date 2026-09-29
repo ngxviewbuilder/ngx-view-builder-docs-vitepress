@@ -8,11 +8,11 @@ description: The official Templates plugin and how the plugin system works.
 Plugins are separate npm packages that add builder tabs and capabilities. The core never bundles or auto-loads them: install what you need, register its provider, done.
 
 ```bash
-npm install ngx-view-builder-plugin-templates
+npm install @ngxviewbuilder/plugin-templates
 ```
 
 ```ts
-import { provideNgxViewBuilderTemplates } from 'ngx-view-builder-plugin-templates';
+import { provideNgxViewBuilderTemplates } from '@ngxviewbuilder/plugin-templates';
 
 providers: [ provideNgxViewBuilderTemplates() ],
 ```
@@ -21,7 +21,7 @@ providers: [ provideNgxViewBuilderTemplates() ],
 
 | Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
 | ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ngx-view-builder-plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](../creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](./plugin-templates) |
+| `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](../creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](./plugin-templates) |
 
 ## How gating works
 
@@ -29,6 +29,6 @@ A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the c
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the `ngx-view-builder-designer` version, which in turn pins its `ngx-view-builder-runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
+Keep every `ngx-view-builder-plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](./plugin-development).

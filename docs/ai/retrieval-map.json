@@ -745,6 +745,16 @@
         "maxChars": 1600
       }
     ],
+    "objectPanel": [
+      {
+        "path": "docs:creators/elements/containers.md",
+        "maxChars": 1500
+      },
+      {
+        "path": "docs:ai/properties-reference.md",
+        "maxChars": 1200
+      }
+    ],
     "tabs": [
       {
         "path": "docs:creators/elements/containers.md",

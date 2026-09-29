@@ -92,7 +92,7 @@ Deploying the library before the views that depend on it avoids the situation en
 Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
 
 ```ts
-import { IStructureMigration } from 'ngx-view-builder-runtime';
+import { IStructureMigration } from '@ngxviewbuilder/runtime';
 
 const renameNoteText: IStructureMigration = {
   from: 1,
