@@ -146,6 +146,37 @@ Other caption rules:
 
 ## Tables and repeating data
 
+### A `table` starts basic
+
+- **Unless the person asked for more, a `table` is columns and paging, nothing else.** Do not improvise features. The element turns on quick search, detailed search and export by default, so a basic table switches them off: `showQuickSearch: false`, `showDetailedSearch: false`, `showExport: false`.
+- **Add a feature only when it was asked for**: quick search, detailed search, export, column settings, saved filters, selection, expandable rows, inline editing, a header menu. If a feature seems useful but was not mentioned, suggest it in your summary instead of adding it.
+- **Row actions always go in the three-dots menu**: `rowActions` with `rowActionsDisplayMode: "dropdown"`. Use `iconButtons` or `buttons` only when the person explicitly asks for separate buttons in the row.
+- **The actions column has no header text**: `showActionsHeaderLabel: false`. It defaults to `true` and puts an "Actions" heading over the last column, which the three dots already explain.
+- **A row click does not navigate.** Do not put navigation in `rowClickActions`, and leave `rowClickOpensDetails` off. Opening a record is one action in the menu, **Preview**, so the person decides when to leave the list.
+
+```json
+{
+  "type": "table",
+  "name": "orders",
+  "label": "Orders",
+  "showQuickSearch": false,
+  "showDetailedSearch": false,
+  "showExport": false,
+  "columnsConfig": [
+    { "key": "number", "label": "Order", "type": "text", "showInTable": true },
+    { "key": "customer", "label": "Customer", "type": "text", "showInTable": true },
+    { "key": "total", "label": "Total", "type": "number", "showInTable": true }
+  ],
+  "rowActionsDisplayMode": "dropdown",
+  "showActionsHeaderLabel": false,
+  "rowActions": [
+    { "label": "Preview", "icon": "visibility", "type": "navigate", "navigateTo": "/orders/{row.number}" }
+  ]
+}
+```
+
+### Choosing and filling
+
 - `dynamicTable` for rows the person edits, `table` for data shown from a data source, `dynamicPanel` for a repeating block of several fields per entry.
 - A status, badge, toggle or button in a `table` column is a hosted element (`type: "element"` with `elementType`), not HTML in a template.
 - Limit rows with `maxRows`, or conditionally with `disallowAddRowsIf`; protect some rows from deletion with `disallowDeleteRowsIf` (`{row.status} == "approved"`), rather than locking the whole table.
@@ -164,9 +195,10 @@ Before you report back, check that:
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
 2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
 3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
-4. Every name is meaningful camelCase; no `el1` is left.
-5. Required fields have a `requiredMessage`; validators have messages.
-6. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
-7. Colors are theme tokens, and text contrasts with every fill.
-8. Every choice you were unsure about was asked, not guessed, and the choices you made yourself are named in your summary.
-9. Nothing was saved, and the person was told what changed.
+4. Every `table` is basic unless more was asked for (no quick or detailed search, no export by default), its row actions sit in the three-dots menu with no header over that column, and a row click navigates nowhere.
+5. Every name is meaningful camelCase; no `el1` is left.
+6. Required fields have a `requiredMessage`; validators have messages.
+7. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
+8. Colors are theme tokens, and text contrasts with every fill.
+9. Every choice you were unsure about was asked, not guessed, and the choices you made yourself are named in your summary.
+10. Nothing was saved, and the person was told what changed.
