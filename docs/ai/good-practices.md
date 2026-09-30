@@ -104,7 +104,18 @@ Other caption rules:
 
 - Follow the [layout model](./layout-model): children of a container live in the column that references it, never inside the element definition.
 - **Put related short fields side by side**: first and last name, city and postcode, start and end date. Two or three fields per row on desktop; long text fields get a row of their own.
-- **Leave widths off for even splits.** Columns without a width share the row. For an uneven pair give one element a `%` width and leave the other without one; two `%` widths that add up to 100% wrap, because `%` ignores the gap.
+- **Elements in one row need no width.** Every element without a `width` grows to fill its share of the row: two elements take half each, three take a third each, and they stretch with the screen. Do not write `width: "50%"` or `"33%"` to get that. It adds nothing, and it breaks the row: `%` widths ignore the gap between columns, so two `50%` elements no longer fit side by side and the second one wraps to the next line.
+- **Only an uneven split gets a width**, and only on one element: for a 60/40 pair give the narrow one `width: "40%"` and leave the wide one without a width, so it takes the rest.
+
+```json
+{
+  "rows": [
+    { "columns": [{ "elementRef": "firstName" }, { "elementRef": "lastName" }] }
+  ]
+}
+```
+
+`firstName` and `lastName` carry no `width`: each takes half the row.
 - **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
 - **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
 - **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
@@ -152,7 +163,7 @@ Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
 2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
-3. Related short fields share rows, and side-by-side fields stack on mobile.
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
 4. Every name is meaningful camelCase; no `el1` is left.
 5. Required fields have a `requiredMessage`; validators have messages.
 6. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
