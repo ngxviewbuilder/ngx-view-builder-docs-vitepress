@@ -31,7 +31,7 @@ A panel's `visibleIf` hides the whole group at once, which is usually cleaner th
 
 ## Object panel (`objectPanel`)
 
-Looks and behaves like a Panel, with one difference: the fields inside it do not save their answers at the top of the form data. They save them inside one object named after the panel. It is the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes.
+A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](#dynamic-panel-dynamicpanel) with exactly one entry: the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes. There is no Add or Remove button, the panel is always there once.
 
 Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
 
@@ -41,6 +41,13 @@ Drop an Object panel named `address`, put a few fields in it, and the data comes
   "street": "Gedimino pr. 1",
   "zip": "01103"
 }
+```
+
+The fields belong to the panel, so their names only have to be unique inside it. A **Billing address** and a **Shipping address** panel can both have a `city` field, and the data keeps them apart:
+
+```json
+"billing":  { "city": "Vilnius", "street": "Gedimino pr. 1" },
+"shipping": { "city": "Kaunas" }
 ```
 
 Anything that stores a value works inside it: text and number inputs, selects, autocompletes, date pickers, file uploads, dynamic panels, and custom elements your developers registered. Layout containers in between do not change anything, so a Panel or Tabs inside the Object panel still put their fields into `address`. Another Object panel inside it adds one more level:
@@ -54,12 +61,12 @@ Anything that stores a value works inside it: text and number inputs, selects, a
 
 A few things to keep in mind:
 
-- **Refer to the fields by their full path.** In expressions and conditions write `{address.city}`, not `{city}`. The same goes for data source parameters and actions that read a value.
+- **Refer to the fields by their full path from outside.** In expressions, conditions, data source parameters and actions elsewhere in the form write `{address.city}`. Inside the panel `{panel.city}` means the neighbouring field of the same panel, which is handy when two panels share field names.
 - **Loading data works the same way.** Pass `{ "address": { "city": "Kaunas" } }` as the form data and the City field inside the panel shows `Kaunas`.
 - **Validation is per field.** A required field inside the panel is checked like any other field; the panel itself has no validators.
 - **Keep out of data JSON** on the Object panel leaves the whole object out of the submitted result.
-- The properties are the same as for [Panel](#panel-panel): title, colors, borders, padding, visibility and so on.
-- Inside a Dynamic panel an Object panel works as a plain Panel for now: the fields land directly in each entry, without the extra level.
+- The properties are the Dynamic panel's without the row controls: title, header, colors, borders, padding, visibility, a data source that fills the whole object, and so on.
+- Inside a Dynamic panel an Object panel adds its level to every entry: `items[0].address.city`.
 
 Use it when a group of answers belongs together and the backend expects it as one object: an address, a contact person, company details. If the user should be able to add several such groups, use a [Dynamic panel](#dynamic-panel-dynamicpanel) instead, which stores an array.
 

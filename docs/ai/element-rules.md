@@ -79,7 +79,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 
 - Use to trigger an action.
 - Not intended for form value storage.
-- Common properties: `variant`, `events`, `actions`, `disabled`.
+- Common properties: `text`, `variant`, `tone`, `textColor`, `events`, `disabled`.
+- The caption goes in `text`. A button has no field label: set `label` to `""`, otherwise a label row with the same words is drawn above the button.
+- A solid button on a dark fill needs light text. That covers the default `primary` tone, `success`, `info`, `risk`, and any dark custom `color`: set `textColor` to `"var(--nvb-color-neutral-000)"`. A host stylesheet can otherwise leave the caption dark on the dark fill. `outline` and `text` buttons, and the light `warning` tone, keep their default text color.
 
 ### `richText` / `richTextViewer`
 
@@ -236,8 +238,9 @@ Canonical example:
 ### `objectPanel`
 
 - Use when several fields should be saved as one object: an address, a contact person, company details.
-- Children are attached in the layout exactly like a `panel`'s. Their values land at `<objectPanel>.<name>`.
-- Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`.
+- Children are laid out in `column.rows` like a `panel`'s, but defined in the panel's `template` map, like a `dynamicPanel`'s. Their names only have to be unique inside that panel.
+- Their values land at `<objectPanel>.<name>`. Value shape: one object. Refer to its fields as `{objectPanelName.fieldName}`, or `{panel.fieldName}` from inside the same panel.
+- No add or remove controls: it is always exactly one object.
 - If the user should add several such groups, use `dynamicPanel` instead.
 
 ### `dynamicPanel`

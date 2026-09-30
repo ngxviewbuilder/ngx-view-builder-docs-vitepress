@@ -7,6 +7,18 @@ description: Build a working client registration form in ten minutes.
 
 This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
+<figure class="doc-video">
+  <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
+  <img
+    src="/first-form/first-form.webp"
+    width="1280"
+    height="764"
+    alt="The whole walkthrough in the builder: First name and Email are dragged side by side, a Client type radio gets the options Private person and Company, the email is made required with an email check, a Company details panel with a Company code field appears only for companies, a Register button shows a success toast, and the Preview tab tests an empty submit, the Company choice and a valid registration."
+  />
+  </a>
+  <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
+</figure>
+
 ## 1. Place the fields
 
 From the **Single line inputs** group, drag onto the canvas:
@@ -70,10 +82,10 @@ Your form produces this data object at runtime:
 
 ```json
 {
-  "firstName": "Jonas",
-  "email": "jonas@example.com",
+  "firstName": "Sam",
+  "email": "sam@harborfoods.com",
   "clientType": "company",
-  "companyCode": "305674321"
+  "companyCode": "HF-20418"
 }
 ```
 

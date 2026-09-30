@@ -184,7 +184,7 @@ Exactly these eleven types are containers (`runtime-preview.ts`, `isContainerEle
 |---|---|---|
 | `page` | `page.rows` | The page itself; its rows are the top level |
 | `panel` | `column.rows` | The normal grouping box, with a title from `label` |
-| `objectPanel` | `column.rows` | Like `panel`, but every descendant stores its value at `<objectPanel>.<name>`; the value is one object |
+| `objectPanel` | `column.rows` | A `dynamicPanel` with exactly one entry: children are defined in its `template`, every descendant stores its value at `<objectPanel>.<name>`, the value is one object |
 | `dynamicPanel` | `column.rows` | Repeatable group; value is an array of objects |
 | `dialog` | `column.rows` | An in-view modal element |
 | `emptyBlock` | `column.rows` | Unstyled layout box with flex/grid controls |
@@ -628,6 +628,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "text": "Save",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [{ "trigger": "click", "type": "submit", "validateForm": true }]
     }

@@ -334,6 +334,7 @@ The `dialog` **element** is a modal that lives inside a page, opened by an actio
       "text": "Edit record",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [
         { "trigger": "click", "type": "dialog", "dialogName": "el2", "dialogOperation": "open" }
@@ -356,6 +357,7 @@ The `dialog` **element** is a modal that lives inside a page, opened by an actio
       "text": "Save",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [
         {
@@ -1375,6 +1377,7 @@ A counter, a bulk button that only enables with a selection, and a panel that mi
       "text": "Approve selected",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "disableIf": "{__table.el4.selectedCount} == 0",
       "events": [
@@ -1836,6 +1839,7 @@ The pattern most admin screens need, end to end.
       "icon": "add",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [
         { "trigger": "click", "type": "setValue", "setValueTargetPath": "el4", "setValueMode": "template", "setValueValue": "" },
@@ -1946,6 +1950,7 @@ The pattern most admin screens need, end to end.
       "text": "Save",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [
         {
@@ -3159,6 +3164,7 @@ Validator objects accept exactly `type`, `value`, `message`, `condition`, `apply
       "text": "Save",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "icon": "save",
       "iconPosition": "left",
       "size": "normal",

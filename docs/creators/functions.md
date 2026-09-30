@@ -16,6 +16,9 @@ All functions available in expressions, grouped by purpose. Your project may add
 | `len(value)` | length of text or array | `len({items}) >= 3` |
 | `startsWithAny(text, prefix)` | true if text starts with prefix | `startsWithAny({iban}, "LT")` |
 | `endsWithAny(text, suffix)` | true if text ends with suffix | `endsWithAny({code}, "99")` |
+| `substring(text, start, end?)` | part of the text from `start` up to, but not including, `end` (counting from 0) | `substring({personCode}, 0, 1)` |
+
+Leave `end` out and `substring` returns everything from `start` to the end of the text. A number is treated as text, so `substring({personCode}, 1, 7)` works on a Number field too. An empty field gives an empty text.
 
 ## Collections
 
@@ -33,6 +36,14 @@ All functions available in expressions, grouped by purpose. Your project may add
 | --- | --- | --- |
 | `toNumber(value)` | value as number (invalid → 0) | `toNumber({codeFromApi}) > 10` |
 | `inRange(value, min, max)` | true if min ≤ value ≤ max | `inRange({age}, 18, 65)` |
+| `roundNumber(value, digits?)` | the number rounded to `digits` decimals, 0 when left out | `roundNumber({price} * 1.21, 2)` |
+| `min(a, b, ...)` | the smallest of the numbers given | `min({requested}, {limit}, 5000)` |
+| `max(a, b, ...)` | the largest of the numbers given | `max({deposit}, 0)` |
+| `sum(a, b, ...)` | the numbers added up | `sum({grant}, {loan}, {ownFunds})` |
+
+`min`, `max` and `sum` take as many values as you like. Empty fields are skipped, so `sum` of three fields where one is still empty adds up the other two, and a form that is only half filled does not break the total. When every value is empty, `sum` gives `0` and `min` and `max` give nothing. An array passed in is opened up, so `max({scores})` works on a multi-select or a list of numbers. To total a column of a dynamic panel, use `sumArray` below, which knows how to pick the field out of each entry.
+
+`roundNumber` also gives nothing for an empty field, instead of a misleading `0`.
 
 ::: tip When toNumber is actually needed
 A Number field already stores a number, so `{price} * {quantity}` is correct as written and
@@ -111,6 +122,9 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | `addDays(value, days)` | date + n days | `addDays(today(), 14)` |
 | `dateDiffDays(from, to)` | day difference | `dateDiffDays({start}, {end}) >= 1` |
 | `startOfWeek(value)` / `endOfWeek(value)` | week boundaries | report period defaults |
+| `age(birthDate)` | full years from that date until today | `age({birthDate}) >= 18` |
+
+`age` counts a year only once the birthday has passed, so someone born on 30 June 2008 is still 17 on 29 June 2026. It gives nothing while the date is empty, which keeps a condition like `age({birthDate}) >= 18` false until the date is filled in.
 
 ## Data & element control
 

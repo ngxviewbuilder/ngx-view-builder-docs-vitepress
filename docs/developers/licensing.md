@@ -5,7 +5,7 @@ description: Supplying and validating the license key.
 
 # Licensing
 
-> NGX View Builder is in public beta, so licenses aren't for sale yet. See [Pricing](/pricing) for current status. Everything below describes the license model you'll buy into at launch.
+> NGX View Builder is in public beta, so licenses aren't for sale yet. They go on sale with the 1.0.0 release. Everything below describes the license model you'll buy into at launch.
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
 
@@ -72,6 +72,10 @@ Every published build embeds its release date. A license covers **all versions r
 | Invalid / tampered / unparseable / revoked | The canvas watermark + an invalid-license banner + modal (at most once per 24 h) |
 
 **The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
+
+## AI access
+
+Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](./ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour. It lets as many browsers use AI access at the same time as the license has seats (see [Seats](./ai-command-api#seats)). The server only relays requests between the AI client and the builder and stores none of your views or data ([what it keeps](./ai-command-api#what-the-mcp-server-keeps)).
 
 ## License terms
 

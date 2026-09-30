@@ -18,19 +18,24 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getSystemInstructions()` | `nvb_get_instructions` | the contract as one prompt ready block |
 | `describeElementTypes(type?)` | `nvb_describe_element_types` | element types and their properties |
 | `describeTemplates(name?)` | `nvb_describe_templates` | the template library, and what can host a template |
-| `getTree()` | `nvb_get_tree` | compact outline of pages and elements |
+| `getTree()` | `nvb_get_tree` | compact outline of pages and elements, each with its `path` |
+| `getSelection()` | `nvb_get_selection` | the element the person has selected, or `null` |
 | `getStructure()` | `nvb_get_structure` | the whole view JSON |
-| `getElement(name)` | `nvb_get_element` | one element body |
+| `getElement(name)` | `nvb_get_element` | one element body (a name or a path) |
 | `getElementProperty(name, key)` | `nvb_get_element_property` | one property value |
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
 
-Three more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`. They are about who may talk to which tab, which is the next section.
+Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
+
+`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference and the common mistakes. Until it has, `nvb_execute` answers with the list of pages still to read. That is about 30 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
 
 ## Connecting the builder
 
-The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only when the host opted in by giving it an address. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only for a license key that is genuine and not expired: AI access comes with an active designer license. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
+
+There are two ways to open it. With nothing but `licenseKey` in the settings, the person presses **Connect** under Settings → AI access (MCP) and the builder dials our hosted server, `wss://mcp.ngxviewbuilder.io/bridge`. The hosted server asks the license console about the key before it pairs anything, and again every hour. A host that runs its own server gives the builder its address instead, and the builder connects on its own:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
@@ -44,11 +49,11 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
 
 | Option | Description |
 | --- | --- |
-| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and nothing connects. |
+| `url` | Bridge endpoint of the MCP server. An `http(s)` URL is upgraded to `ws(s)`. Leave `mcp` out and the builder waits for the **Connect** button. |
 | `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
 | `sessionKey` | A key your own backend issued. See [Keys from your backend](#keys-from-your-backend). |
 
-`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired` and `lastError`. `regenerateKey()` does what the **New key** button does.
+`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired`, `aiBusy`, `licenseProblem` and `lastError`. The builder's own header already shows an **AI connected** badge while a client is paired. `regenerateKey()` does what the **New key** button does.
 
 ## Pairing
 
@@ -59,9 +64,13 @@ The MCP server does not let an AI client near a builder until a person says so. 
 3. The AI client connects. Until it is paired, every tool answers with an error telling the model to ask the user for the session key, and the server's MCP instructions say the same, so the model asks before it tries anything else.
 4. The person pastes the key into the chat and the model calls `nvb_pair` with it. The builder shows a notice with the client's name, and from then on every tool call on that connection goes to that tab.
 
+A key is valid for 24 hours. When it runs out the builder generates a new one, and the server refuses the old one.
+
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
 
@@ -89,6 +98,21 @@ The worst a runaway agent can do is leave unsaved edits in an open tab, which a 
 A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an agent can cause a data source call or a navigation without a click. That is a side effect, not a commit, but it is worth knowing when reviewing what an agent wrote.
 :::
 
+## What the MCP server keeps
+
+Nothing of your views or data. The server is a relay between the AI client and the builder tab: a tool call comes in from the AI client, goes down the socket to the builder, and the builder's answer goes back the same way. It does not read what passes through, it has no database, and it writes nothing to disk. Once a call is answered, the server has forgotten it.
+
+What it does hold, in memory only, is what it needs to route calls and enforce limits:
+
+- the open builder tabs and their pairing keys, and which AI connection is paired with which tab;
+- how many calls each tab made in the current hour;
+- how many browsers use each license right now (by license number), for the seat limit;
+- the license service's answer about a key, for ten minutes, so it is not asked on every connection.
+
+A restart clears all of it. The server's log records only connection events: a tab opened or closed, a license refused or full, with the license number and a shortened key such as `NVB-…TWN5`. Structures, data, commands and answers never appear in it.
+
+Your conversation with the AI stays between you and your AI provider. The server only sees the tool calls the AI makes, while they are in transit. If even that should not leave your network, run the server yourself, as described below, and point the builder at it.
+
 ## Running the MCP server
 
 The server is the `ngx-view-builder-mcp` package. It is a router and nothing more: it holds the builder sockets, pairs AI connections to them, and forwards each call. What a command means is decided in the builder, so a new element type or command in the library needs no new server release.
@@ -103,16 +127,36 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | --- | --- | --- |
 | `NVB_MCP_PORT` | `3200` | Port. |
 | `NVB_MCP_ALLOWED_ORIGINS` | empty | Comma separated origins allowed to open `/bridge`. Empty means any, which is fine on your own machine and nowhere else. |
-| `NVB_MCP_MAX_CALLS_PER_SESSION` | `60` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
+| `NVB_MCP_MAX_CALLS_PER_SESSION` | `600` | Builder tool calls per tab per window. The builder shows a notice when a client runs out. |
 | `NVB_MCP_SESSION_LIMIT_WINDOW_MS` | `3600000` | Length of that window. |
 | `NVB_MCP_CHARACTER_LIMIT` | `60000` | Longest tool answer before it is cut, with a note telling the model to ask for a narrower slice. |
 | `NVB_MCP_CLIENT_IDLE_TIMEOUT_MS` | `43200000` | An MCP session nobody used for this long is closed, pairing included. |
+| `NVB_MCP_KEY_TTL_MS` | `86400000` | How long a pairing key is valid. |
+| `NVB_LICENSE_CHECK_URL` | empty | Where to ask whether a license key is active. Empty turns the license check off, so a self hosted server pairs any builder. |
+| `NVB_LICENSE_CHECK_TOKEN` | empty | Shared secret sent with that request as `x-internal-token`. |
+| `NVB_LICENSE_CACHE_TTL_MS` | `600000` | How long one answer about a key is reused before asking again. |
+| `NVB_MCP_RECHECK_INTERVAL_MS` | `3600000` | How often the licenses of connected tabs are checked again. A tab whose license stopped qualifying is disconnected. |
+| `NVB_MCP_LICENSE_EXEMPT_ORIGINS` | empty | Comma separated origins that pair without a license, such as a public demo. |
+| `NVB_MCP_DOCS_URL` | `https://ngxviewbuilder.io/llms-authoring.txt` | The AI reference `nvb_read_docs` serves. |
+| `NVB_MCP_REQUIRE_DOCS` | `on` | `off` lets `nvb_execute` work before the docs were read, for a server with no internet access. |
+| `NVB_MCP_SEAT_IDLE_MS` | `1800000` | When a license has every seat taken, a seat nobody used for this long goes to the browser that is waiting. |
+| `NVB_MCP_DEMO_MAX_TABS` | `30` | Tabs from exempt origins that may be connected at once, all of them together. |
+| `NVB_MCP_DEMO_MAX_CALLS_PER_SESSION` | `150` | Calls per window for a tab from an exempt origin. |
+| `NVB_MCP_DEMO_KEY_TTL_MS` | `7200000` | How long a pairing key from an exempt origin is valid. |
+
+The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set.
+
+### Seats
+
+A license lets as many browsers use AI access at the same time as it has seats. Several tabs in one browser count once, because the builder tells the server which browser it runs in. When every seat is taken, the next browser is turned away with a short message in the AI access group and tries again every minute, so it gets in as soon as a colleague disconnects. A seat also frees up when a laptop goes to sleep or loses its network, within about a minute. If everyone is connected but someone has not used the AI for half an hour, their seat goes to the person waiting; pressing **Connect** brings them back with their pairing intact. Nobody is disconnected for being idle while a seat is still free.
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder). Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
+AI access works on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder) without a license of your own. Press **Connect** under Settings → AI access (MCP), add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key when it asks.
+
+The demo shares its AI access between everyone trying it, so it is kept small: up to 30 people at a time, 150 calls per hour each, and a key that lasts two hours. If it is busy, the builder says so and tries again every minute.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 
@@ -244,7 +288,11 @@ Every placement command shares the same target fields:
 
 Containers that hold children directly are `panel`, `objectPanel`, `dialog`, `splitter`, `dynamicPanel`, `emptyBlock`, `messageCard`, `statsCard` and `listGrid`. Containers that hold children per section, and therefore need a `tab`, are `tabs`, `tabsPro`, `accordion` and `progressFlow`. Targeting anything else returns a `notAContainer` error with the list.
 
-`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. The commands are the same; only the data paths you read back from `getData()` and write in expressions differ.
+`objectPanel` is laid out like `panel` but also changes where its children's values live: everything placed under it, at any depth, stores its value at `<objectPanel>.<element>`. An `addElement` or `insertJson` whose `parent` is an `objectPanel` or `dynamicPanel` defines the new elements in that panel's `template`, so a name only has to be free inside the panel: a `billing` and a `shipping` panel can each get a `city`. The data paths you read back from `getData()` and write in expressions are `billing.city` and `shipping.city`.
+
+Because two panels can hold the same name, commands also accept a **path** wherever they take an element name: `billing.city` is the `city` inside `billing`, and nesting goes deeper the same way (`order.address.city`). `getTree()` gives every node its `path`, so read it there rather than building one by hand. `getElement`, `updateElement`, `deleteElement`, `moveElement`, `renameElement` and `duplicateElement` all take one. A plain name still works when it is unique. Moving an element into or out of a panel moves its definition with it and fails with a clear error if the target already has an element of that name.
+
+`getSelection()` answers with the element the person clicked in the designer (`{ name, path, type }`), so an agent can act on "this field" without asking which one is meant.
 
 ```js
 await api.execute([

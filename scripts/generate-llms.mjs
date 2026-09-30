@@ -20,17 +20,13 @@ const SUMMARY =
 // A few top-level pages use VitePress's `home`/`page` layouts instead of plain
 // prose and have no `description:` frontmatter, so they are described by hand instead.
 const MANUAL_DESCRIPTIONS = {
-  'index.md': 'Product homepage: what NGX View Builder is, key features, and links to get started.',
   'demo.md':
     'Live, interactive demo: build a view in the Builder tab and see it rendered in the Runtime tab, right in the browser.',
-  'pricing.md': 'Licensing plans and pricing.',
   'privacy.md': 'Privacy policy.',
 };
 
-// `index.md` uses VitePress's `hero:` block (no plain `title:` or `# heading`).
-const MANUAL_TITLES = {
-  'index.md': 'NGX View Builder: the visual builder for complete Angular views',
-};
+// Pages without a plain `title:` or `# heading` get a title here.
+const MANUAL_TITLES = {};
 
 const AI_PAGE_ORDER = [
   'ai/index.md',
@@ -162,7 +158,7 @@ const groups = [
   { title: 'Developer documentation', pages: pagesUnder('developers/', pages) },
   { title: 'Creator documentation', pages: pagesUnder('creators/', pages) },
   {
-    title: 'Product & pricing',
+    title: 'Product',
     pages: pages.filter((p) => !p.relFromDocs.includes('/')),
   },
 ];
@@ -206,7 +202,7 @@ writeFileSync(path.join(DOCS_DIR, 'public', 'llms-full.txt'), `${llmsFull.trimEn
 
 // --- llms-authoring.txt: the AI reference only ---
 //
-// llms-full.txt carries the whole site (pricing, privacy, creator guides, host
+// llms-full.txt carries the whole site (privacy, creator guides, host
 // integration), which is roughly three times the size and mostly irrelevant when
 // the only task is "write me a view as NGX View Builder JSON". This file is the
 // /ai/ section alone: the rules, the property reference and the worked examples.

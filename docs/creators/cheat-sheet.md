@@ -29,6 +29,10 @@ containsAny({roles}, ["admin", "manager"])
 {price} * {quantity}
 len({selectedItems}) > 0
 inRange({age}, 18, 65)
+roundNumber({price} * 1.21, 2)
+sum({grant}, {loan}, {ownFunds})
+min({requested}, 5000)
+substring({personCode}, 0, 1)
 ```
 
 ## If / else (ternary)
@@ -75,6 +79,7 @@ pushValue({variable1}, {row})
 addDays(today(), 14)                         two weeks from now
 dateDiffDays({startDate}, {endDate}) >= 1    end after start
 isWeekend({deliveryDate})                    weekend check
+age({birthDate}) >= 18                       adult
 ```
 
 ## Row & panel context

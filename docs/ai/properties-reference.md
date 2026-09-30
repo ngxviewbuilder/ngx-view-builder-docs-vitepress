@@ -299,12 +299,15 @@ Value shape: `boolean`
 
 | Property | Type | Notes |
 |---|---|---|
-| `text` | `string` | Button text |
+| `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
+| `text` | `string` | Button text (the caption) |
 | `icon` | `string` | Icon name |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
 | `iconOnly` | `boolean` | Show icon only |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
+| `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |
+| `textColor` | `string` | Caption color. On a solid button with a dark fill (`primary`, `success`, `info`, `risk`, or a dark `color`) set `"var(--nvb-color-neutral-000)"` |
 | `size` | `string` | `small` `normal` `large` |
 | `loading` | `boolean` | Show loading spinner |
 | `badge` | `string` | Badge text |
@@ -371,7 +374,7 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 
 ### `objectPanel`
 
-Same properties as `panel`. The difference is the data: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. The element definitions do not change, only their data paths.
+Same properties as `dynamicPanel`, without the row controls (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion` and the confirm texts). It is a dynamic panel with exactly one entry: every element laid out under it, at any depth and through any plain layout containers, stores its value at `<objectPanel>.<name>`. Its children are defined in its `template`, so their names only have to be unique inside the panel.
 
 ```json
 "pages": [{ "name": "page1", "rows": [{ "columns": [{
@@ -379,13 +382,17 @@ Same properties as `panel`. The difference is the data: every element laid out u
   "rows": [{ "columns": [{ "elementRef": "city" }, { "elementRef": "street" }] }]
 }] }] }],
 "elements": {
-  "address": { "name": "address", "type": "objectPanel", "label": "Address" },
-  "city": { "name": "city", "type": "text", "label": "City" },
-  "street": { "name": "street", "type": "text", "label": "Street" }
+  "address": {
+    "name": "address", "type": "objectPanel", "label": "Address",
+    "template": {
+      "city": { "name": "city", "type": "text", "label": "City" },
+      "street": { "name": "street", "type": "text", "label": "Street" }
+    }
+  }
 }
 ```
 
-Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`. A nested `objectPanel` nests the object. Inside a `dynamicPanel` template it does not add a level.
+Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions and data source params reference `{address.city}`; inside the panel `{panel.city}` is the sibling. A nested `objectPanel` nests the object, also inside a `dynamicPanel` entry (`items[0].address.city`). Its own children go in its own `template`, not in the outer panel's: the outer template holds the inner panel, the inner template holds the inner fields.
 
 ### `dynamicPanel`
 

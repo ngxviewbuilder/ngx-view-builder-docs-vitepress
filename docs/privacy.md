@@ -12,7 +12,7 @@ This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (togethe
 
 ## What we collect
 
-**Documentation site.** After you accept the cookie banner, we use Google Analytics 4 to understand how the docs are used: pages visited, approximate location (derived from a truncated/anonymized IP), device and browser type, referrer, on-site search terms, and a small number of custom interaction events (e.g. which code snippets get copied, which demo tab you open). If you decline or don't respond to the banner, no analytics script loads and no analytics cookie is set.
+**Product page and documentation.** After you accept the cookie banner, we use Google Analytics 4 to understand how ngxviewbuilder.io is used, both the product page and the docs: pages visited, approximate location (derived from a truncated/anonymized IP), device and browser type, referrer, on-site search terms, and a small number of custom interaction events (e.g. which code snippets get copied, which demo tab you open, which links people follow from the product page). Your answer to the banner applies to the whole of ngxviewbuilder.io, so you are asked once. If you decline or don't respond to the banner, no analytics data is sent and no analytics cookie is set.
 
 **Live demo.** The structure you build in the demo (`/demo`) is saved only in your browser's local storage. We do not receive, store, or process it on any server.
 

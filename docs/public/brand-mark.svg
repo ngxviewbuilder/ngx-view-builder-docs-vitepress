@@ -1,7 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-  <g fill="none" stroke="#1554ff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M72 12H18v54M168 12h54v54M18 174v54h54M222 174v54h-54"/>
-  </g>
-  <rect x="108" y="4" width="32" height="28" rx="7" fill="#78a0ff"/>
-  <text x="17" y="168" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="82" fill="#1554ff" letter-spacing="-4">NGX</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- The logo mark simplified for browser tabs: thicker frame, two blocks instead of four. -->
+  <style>
+    .frame { fill: none; stroke: #1554ff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+    .handle { fill: #78a0ff; }
+    .strong { fill: #1554ff; }
+    .soft { fill: #9fb8ff; }
+    @media (prefers-color-scheme: dark) {
+      .frame { stroke: #9fb8ff; }
+      .handle { fill: #5b82ff; }
+      .strong { fill: #ffffff; }
+      .soft { fill: #5b82ff; }
+    }
+  </style>
+  <path class="frame" d="M3.5 14V3.5H14M34 3.5h10.5V14M3.5 34v10.5H14M44.5 34v10.5H34"/>
+  <rect class="handle" x="19" y="0" width="10" height="6" rx="2"/>
+  <rect class="strong" x="11.5" y="12" width="25" height="8" rx="2"/>
+  <rect class="soft" x="11.5" y="23.5" width="25" height="12.5" rx="2"/>
 </svg>

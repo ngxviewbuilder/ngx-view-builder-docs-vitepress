@@ -34,208 +34,7 @@
   height: 36px;
 }
 
-/* The logotype's dark-blue text is hard to read on the dark navbar. */
-.dark .VPNavBarTitle .logo {
-  filter: brightness(1.45);
-}
-
-/* ── Split hero: copy on the left, a framed dashboard screenshot on the
-   right (light/dark swap via the hero's image.light / image.dark). ── */
-
-/* Give the screenshot room: rebalance the two columns away from the
-   default 2/3 text · 1/3 image, and widen the container a touch. */
-.VPHome .VPHero .container {
-  max-width: 1200px;
-  align-items: center;
-}
-
-@media (min-width: 960px) {
-  .VPHome .VPHero.has-image .main {
-    width: 44%;
-    max-width: 520px;
-    flex-shrink: 0;
-  }
-  .VPHome .VPHero .image {
-    flex-grow: 1;
-  }
-}
-
-/* Kill the default floating-logo glow: a screenshot needs a frame, not a blur. */
-.VPHome .VPHero .image-bg {
-  display: none;
-}
-
-/* Reset the container from the 320px centered logo box to a fluid cell. */
-.VPHome .VPHero .image-container {
-  width: 100%;
-  height: auto;
-  margin: 0;
-  padding: 0;
-  transform: none;
-}
-
-.VPHome .VPHero .image {
-  margin: 0;
-}
-
-@media (max-width: 959px) {
-  .VPHome .VPHero .image {
-    margin-top: 40px;
-  }
-}
-
-/* Frame the screenshot: rounded corners, a hairline border, and a soft
-   lifted shadow biased toward the brand hue rather than flat black. */
-.VPHome .VPHero .image-src {
-  position: static;
-  transform: none;
-  width: 100%;
-  max-width: 640px;
-  max-height: none;
-  border-radius: 12px;
-  border: 1px solid var(--vp-c-divider);
-  box-shadow:
-    0 26px 60px -28px rgba(12, 32, 90, 0.30),
-    0 10px 24px -14px rgba(12, 32, 90, 0.20);
-}
-
-.dark .VPHome .VPHero .image-src {
-  border-color: rgba(125, 162, 255, 0.18);
-  box-shadow:
-    0 30px 64px -26px rgba(0, 0, 0, 0.66),
-    0 0 0 1px rgba(125, 162, 255, 0.04);
-}
-
-/* Home capabilities section: three-phase editorial layout keyed to the
-   structure-JSON vernacular (elements / dataSources / runtime). */
-.caps {
-  max-width: 1152px;
-  margin: 12px auto 8px;
-  padding: 0 24px;
-}
-
-.caps__intro {
-  max-width: 720px;
-  margin-bottom: 44px;
-}
-
-.caps__eyebrow {
-  font-family: var(--vp-font-family-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--vp-c-brand-1);
-  margin: 0 0 12px;
-}
-
-/* Scoped under .caps to beat VitePress's `.vp-doc h2` (border-top + padding). */
-.caps .caps__headline {
-  font-size: clamp(26px, 3.4vw, 38px);
-  line-height: 1.12;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-  margin: 0 0 14px;
-  border-top: none;
-  padding-top: 0;
-}
-
-.caps__lede {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--vp-c-text-2);
-  margin: 0;
-}
-
-.caps__grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  border-top: 1px solid var(--vp-c-divider);
-}
-
-.caps__phase {
-  padding: 18px 32px 8px;
-  border-right: 1px solid var(--vp-c-divider);
-}
-
-.caps__phase:first-child {
-  padding-left: 0;
-}
-
-.caps__phase:last-child {
-  border-right: none;
-  padding-right: 0;
-}
-
-.caps__phase-head {
-  margin-bottom: 20px;
-}
-
-/* Scoped under .caps to beat VitePress's `.vp-doc h3` top margin. */
-.caps .caps__phase-title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin: 0;
-}
-
-.caps__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.caps__list li {
-  display: block;
-  padding-left: 16px;
-  position: relative;
-}
-
-.caps__list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 7px;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: var(--vp-c-brand-1);
-}
-
-.caps__list strong {
-  display: block;
-  font-size: 15px;
-  font-weight: 650;
-  color: var(--vp-c-text-1);
-  margin-bottom: 5px;
-  letter-spacing: -0.005em;
-}
-
-.caps__list span {
-  display: block;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--vp-c-text-2);
-}
-
-@media (max-width: 860px) {
-  .caps__grid {
-    grid-template-columns: 1fr;
-  }
-  .caps__phase {
-    padding: 28px 0 8px;
-    border-right: none;
-    border-bottom: 1px solid var(--vp-c-divider);
-  }
-  .caps__phase:last-child {
-    border-bottom: none;
-  }
-}
+/* The dark navbar gets its own logo file (brand-dark.svg), so no filter here. */
 
 .value-pill {
   display: inline-flex;
@@ -277,4 +76,25 @@
 
 @media (max-width: 700px) {
   .element-grid { grid-template-columns: 1fr; }
+}
+
+/* A recorded walkthrough (animated WebP) at the top of a guide page. */
+.vp-doc .doc-video {
+  margin: 24px 0 32px;
+}
+
+.vp-doc .doc-video img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(10, 22, 56, 0.12);
+}
+
+.vp-doc .doc-video figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
 }
