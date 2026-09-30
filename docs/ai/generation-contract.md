@@ -26,6 +26,7 @@ The core idea is simple: when producing structures, the agent must operate not a
 4. [Logic and expression properties](./logic-and-expressions)
 5. [Element rules and value shapes](./element-rules)
 6. [Common mistakes](./common-mistakes)
+7. [Good practices](./good-practices)
 
 After that, consult the general reference pages:
 

@@ -14,6 +14,7 @@
 - [AI: Element rules and value shapes](https://ngxviewbuilder.io/ai/element-rules): AI-oriented summary of the primary NGX View Builder elements, their usage rules and value shapes.
 - [AI: Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference): The authoritative property reference for AI JSON generation. Only properties listed here are supported.
 - [AI: Common mistakes and anti-patterns](https://ngxviewbuilder.io/ai/common-mistakes): Known anti-patterns AI agents repeat when generating NGX View Builder JSON, with corrections.
+- [AI: Good practices for building views](https://ngxviewbuilder.io/ai/good-practices): How an AI agent builds NGX View Builder views that look finished and behave right. Captions and labels per element, buttons and contrast, layout, names, fields, logic, tables and a final checklist.
 - [AI: Verified example structures](https://ngxviewbuilder.io/ai/examples): A library of complete, verified NGX View Builder JSON examples covering layout, every element family, the full table feature set, dynamic tables and panels, data sources, runtime variables and expressions.
 - [AI: Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON, covering element, property, and expression mapping.
 
