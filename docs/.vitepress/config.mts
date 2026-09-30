@@ -26,7 +26,10 @@ const STRUCTURED_DATA = {
     "Live REST/route data sources with dependent fields and server-side tables",
     "Native Angular runtime with a typed API service and 59 events",
   ],
-  sameAs: ["https://github.com/ngxviewbuilder/ngx-view-builder-community"],
+  sameAs: [
+    "https://github.com/ngxviewbuilder/ngx-view-builder-community",
+    "https://www.linkedin.com/company/ngx-view-builder/",
+  ],
   publisher: { "@type": "Organization", name: "NVB Labs", url: SITE_URL },
 };
 
@@ -373,8 +376,9 @@ export default defineConfig({
         },
       ],
     },
-    // socialLinks sąmoningai tuščias: GitHub navbare rodomas kaip
-    // GitHubStarBadge (theme/Layout.vue), kad matytųsi ir žvaigždučių skaičius.
+    // GitHub is not listed here: the navbar shows it as GitHubStarBadge (theme/Layout.vue),
+    // so the star count is visible too.
+    socialLinks: [{ icon: "linkedin", link: "https://www.linkedin.com/company/ngx-view-builder/", ariaLabel: "LinkedIn" }],
     search: { provider: "local" },
     outline: { level: [2, 3], label: "On this page" },
     docFooter: { prev: "Previous", next: "Next" },
