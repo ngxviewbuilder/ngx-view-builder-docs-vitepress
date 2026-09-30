@@ -38,6 +38,7 @@ const AI_PAGE_ORDER = [
   'ai/element-rules.md',
   'ai/properties-reference.md',
   'ai/common-mistakes.md',
+  'ai/good-practices.md',
   'ai/examples.md',
   'ai/legacy-form-migration.md',
 ];

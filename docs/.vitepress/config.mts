@@ -262,6 +262,7 @@ export default defineConfig({
             { text: "Element rules & value shapes", link: "/ai/element-rules" },
             { text: "Properties reference", link: "/ai/properties-reference" },
             { text: "Common mistakes", link: "/ai/common-mistakes" },
+            { text: "Good practices", link: "/ai/good-practices" },
             { text: "Verified examples", link: "/ai/examples" },
             {
               text: "Legacy form migration",

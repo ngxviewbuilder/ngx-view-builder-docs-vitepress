@@ -206,7 +206,8 @@ Canonical example:
 ### `table`
 
 - Use for displaying data from a datasource.
-- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
+- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`, but start basic: columns, paging and quick search, with `showDetailedSearch` and `showExport` set to `false` (both default to `true`). Add detailed search, export, column settings, saved filters, selection, expandable rows or inline editing only when the user asks.
+- Row actions go in the three-dots menu, `rowActionsDisplayMode: "dropdown"`, unless the user explicitly asks for separate buttons, and the actions column shows no header text: `showActionsHeaderLabel: false` (it defaults to `true`). When the user does not say how a record opens, it opens from a **Preview** action in that menu, not from a row click.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
 - A column either prints text (`type: "text"`) or hosts a real element (`type: "element"` plus `elementType` and `element`). Use the element form whenever the cell needs a control, a badge, a button, or an event.
