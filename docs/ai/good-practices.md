@@ -148,18 +148,17 @@ Other caption rules:
 
 ### A `table` starts basic
 
-- **Unless the person asked for more, a `table` is columns and paging, nothing else.** Do not improvise features. The element turns on quick search, detailed search and export by default, so a basic table switches them off: `showQuickSearch: false`, `showDetailedSearch: false`, `showExport: false`.
-- **Add a feature only when it was asked for**: quick search, detailed search, export, column settings, saved filters, selection, expandable rows, inline editing, a header menu. If a feature seems useful but was not mentioned, suggest it in your summary instead of adding it.
+- **Unless the person asked for more, a `table` is columns, paging and the quick search box, nothing else.** Do not improvise features. The element also turns on detailed search and export by default, so a basic table switches those two off: `showDetailedSearch: false`, `showExport: false`. Quick search (`showQuickSearch`) stays on.
+- **Add a feature only when it was asked for**: detailed search, export, column settings, saved filters, selection, expandable rows, inline editing, a header menu. If a feature seems useful but was not mentioned, suggest it in your summary instead of adding it.
 - **Row actions always go in the three-dots menu**: `rowActions` with `rowActionsDisplayMode: "dropdown"`. Use `iconButtons` or `buttons` only when the person explicitly asks for separate buttons in the row.
 - **The actions column has no header text**: `showActionsHeaderLabel: false`. It defaults to `true` and puts an "Actions" heading over the last column, which the three dots already explain.
-- **A row click does not navigate.** Do not put navigation in `rowClickActions`, and leave `rowClickOpensDetails` off. Opening a record is one action in the menu, **Preview**, so the person decides when to leave the list.
+- **When the person does not say how a record opens, it opens from the three-dots menu at the end of the row**: one **Preview** row action. Do not add navigation on a row click (`rowClickActions`, `rowClickOpensDetails`) on your own. When the person does say how (a click on the row, a dialog, a details panel), build it that way.
 
 ```json
 {
   "type": "table",
   "name": "orders",
   "label": "Orders",
-  "showQuickSearch": false,
   "showDetailedSearch": false,
   "showExport": false,
   "columnsConfig": [
@@ -195,7 +194,7 @@ Before you report back, check that:
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
 2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
 3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
-4. Every `table` is basic unless more was asked for (no quick or detailed search, no export by default), its row actions sit in the three-dots menu with no header over that column, and a row click navigates nowhere.
+4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.
 7. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
