@@ -396,7 +396,9 @@ Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions an
 
 ### `dynamicPanel`
 
-Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
+Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `disallowAddRowsIf`, `disallowDeleteRowsIf`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
+
+`disallowAddRowsIf` and `disallowDeleteRowsIf` are JEXL conditions, the same pair as on `dynamicTable` below: while `disallowAddRowsIf` is `true` the add button is disabled, and `disallowDeleteRowsIf` is checked for every entry, so an entry where it is `true` has no remove button. Inside them `{row.field}` (or `{panel.field}`) reads the entry, `{index}` is its position, `{rowCount}` the number of entries, and any other `{field}` reads the form.
 
 ### `dynamicTable`
 
@@ -407,6 +409,8 @@ Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeR
 | `itemsPath` | `string` | Data path for pre-populating rows |
 | `disallowAddRows` | `boolean` | |
 | `disallowDeleteRows` | `boolean` | |
+| `disallowAddRowsIf` | `string` | JEXL. While `true`, the add row button is disabled. Form fields and `{rowCount}`: `{rowCount} >= 5 \|\| {status} == "closed"` |
+| `disallowDeleteRowsIf` | `string` | JEXL, checked per row: a row where it is `true` has no delete button. `{row.field}`, `{index}`, `{rowCount}` and form fields: `{row.status} == "approved"` |
 | `maxRows` | `number` | |
 | `confirmRowDeletion` | `boolean` | |
 | `confirmDeleteTitle` | `string` | |

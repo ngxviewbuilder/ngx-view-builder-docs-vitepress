@@ -2614,6 +2614,8 @@ Enumerations, exact values:
       "maxRows": 50,
       "disallowAddRows": false,
       "disallowDeleteRows": false,
+      "disallowAddRowsIf": "{el2} >= 10000",
+      "disallowDeleteRowsIf": "{row.column4} > 0 && {index} == 0",
       "confirmRowDeletion": true,
       "confirmDeleteTitle": "Remove line",
       "confirmDeleteMessage": "Remove this invoice line?",
@@ -2689,6 +2691,7 @@ The rules that make this work:
 - **Inside a row, other cells of the same row are `{row.columnX}`.** A bare `{column3}` reads a top-level form field with that name, not the cell.
 - `useTotals: true` publishes a footer sum. That sum is readable elsewhere as `{el1.column4-total}`: the table name, a dot, the column name, `-total`. `totalToData: true` publishes the sum without drawing the footer row.
 - `hideRowIf` is evaluated per row, also against `{row.*}`.
+- `disallowAddRowsIf` is judged for the whole table: no new lines once the invoice total reaches 10 000. `disallowDeleteRowsIf` is judged per row: the first line cannot be deleted once it has a total, the others can.
 - Column entries are element definitions, so any leaf element type and its own properties are valid there (`select` with `options`, `datepicker` with `format`, `text` with `maskType`, and so on).
 
 Value shape: an array of objects, one per row, keyed by column `name`.

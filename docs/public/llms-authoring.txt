@@ -1461,6 +1461,9 @@ This page defines which expression fields the agent may use and which rules it m
 | `expression` | Compute and write a value | `string`, `number`, `boolean`, `array`, or `object` |
 | `validators[].applyIf` | Enable a validator conditionally | `true` or `false` |
 | `validators[].condition` | Failing check, error shown while `true` | `true` or `false` |
+| `disallowAddRowsIf` | `dynamicPanel` / `dynamicTable`: disable the add button | `true` or `false` |
+| `disallowDeleteRowsIf` | `dynamicPanel` / `dynamicTable`: per row, remove that row's delete button | `true` or `false` |
+| `hideRowIf` | `dynamicTable`: per row, hide the row | `true` or `false` |
 
 ## Other expression usage points
 
@@ -1644,6 +1647,8 @@ if `customerType` does not exist in the form.
 | Automatically compute a value | `expression` |
 | Enable a validator conditionally | `validators[].applyIf` |
 | Flag a custom validation error | `validators[].condition` (error while `true`) |
+| Stop adding rows to a dynamic panel or table in some cases | `disallowAddRowsIf` (`disallowAddRows: true` locks it always) |
+| Protect some rows from deletion | `disallowDeleteRowsIf`, e.g. `{row.status} == "approved"` |
 
 ## Working with arrays and element metadata
 
@@ -1715,6 +1720,7 @@ Rules for the agent:
 - `{item.field}` for the candidate option in `filterOptionsBy`
 - `{index}` and `{value}` inside a cell
 - a published `dynamicTable` column total, `{el1.column4-total}`
+- in `hideRowIf`, `disallowAddRowsIf` and `disallowDeleteRowsIf`: `{row.field}` (also `{panel.field}` or `{item.field}`) for the row being judged, `{index}` for its position, `{rowCount}` for the number of rows, and any other `{field}` for the form. `disallowAddRowsIf` is judged once for the whole element, so it has `{rowCount}` and form fields but no row
 
 ### A table's own live state
 
@@ -1953,6 +1959,7 @@ Canonical example:
 - The user must be able to add, delete, and edit rows.
 - Value shape is typically: array of objects.
 - This is not a server-side data grid.
+- To stop adding or deleting under a condition use `disallowAddRowsIf` / `disallowDeleteRowsIf` (JEXL), not a `disableIf` on the whole table. `disallowDeleteRowsIf` is judged per row: `{row.status} == "approved"` keeps approved rows and lets the rest be deleted.
 
 ### `table`
 
@@ -2000,6 +2007,7 @@ Canonical example:
 - Use for repeating sets of blocks.
 - Value shape is typically: array of objects.
 - Suitable for addresses, family members, and education records.
+- `disallowAddRowsIf` and `disallowDeleteRowsIf` work the same as on `dynamicTable`: the add button is disabled while the first is `true`, and an entry where the second is `true` has no remove button.
 
 ### `tabs` and `tabsPro`
 
@@ -2598,7 +2606,9 @@ Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions an
 
 ### `dynamicPanel`
 
-Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
+Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `disallowAddRowsIf`, `disallowDeleteRowsIf`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
+
+`disallowAddRowsIf` and `disallowDeleteRowsIf` are JEXL conditions, the same pair as on `dynamicTable` below: while `disallowAddRowsIf` is `true` the add button is disabled, and `disallowDeleteRowsIf` is checked for every entry, so an entry where it is `true` has no remove button. Inside them `{row.field}` (or `{panel.field}`) reads the entry, `{index}` is its position, `{rowCount}` the number of entries, and any other `{field}` reads the form.
 
 ### `dynamicTable`
 
@@ -2609,6 +2619,8 @@ Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeR
 | `itemsPath` | `string` | Data path for pre-populating rows |
 | `disallowAddRows` | `boolean` | |
 | `disallowDeleteRows` | `boolean` | |
+| `disallowAddRowsIf` | `string` | JEXL. While `true`, the add row button is disabled. Form fields and `{rowCount}`: `{rowCount} >= 5 \|\| {status} == "closed"` |
+| `disallowDeleteRowsIf` | `string` | JEXL, checked per row: a row where it is `true` has no delete button. `{row.field}`, `{index}`, `{rowCount}` and form fields: `{row.status} == "approved"` |
 | `maxRows` | `number` | |
 | `confirmRowDeletion` | `boolean` | |
 | `confirmDeleteTitle` | `string` | |
@@ -6206,6 +6218,8 @@ Enumerations, exact values:
       "maxRows": 50,
       "disallowAddRows": false,
       "disallowDeleteRows": false,
+      "disallowAddRowsIf": "{el2} >= 10000",
+      "disallowDeleteRowsIf": "{row.column4} > 0 && {index} == 0",
       "confirmRowDeletion": true,
       "confirmDeleteTitle": "Remove line",
       "confirmDeleteMessage": "Remove this invoice line?",
@@ -6281,6 +6295,7 @@ The rules that make this work:
 - **Inside a row, other cells of the same row are `{row.columnX}`.** A bare `{column3}` reads a top-level form field with that name, not the cell.
 - `useTotals: true` publishes a footer sum. That sum is readable elsewhere as `{el1.column4-total}`: the table name, a dot, the column name, `-total`. `totalToData: true` publishes the sum without drawing the footer row.
 - `hideRowIf` is evaluated per row, also against `{row.*}`.
+- `disallowAddRowsIf` is judged for the whole table: no new lines once the invoice total reaches 10 000. `disallowDeleteRowsIf` is judged per row: the first line cannot be deleted once it has a total, the others can.
 - Column entries are element definitions, so any leaf element type and its own properties are valid there (`select` with `options`, `datepicker` with `format`, `text` with `maskType`, and so on).
 
 Value shape: an array of objects, one per row, keyed by column `name`.

@@ -201,6 +201,7 @@ Canonical example:
 - The user must be able to add, delete, and edit rows.
 - Value shape is typically: array of objects.
 - This is not a server-side data grid.
+- To stop adding or deleting under a condition use `disallowAddRowsIf` / `disallowDeleteRowsIf` (JEXL), not a `disableIf` on the whole table. `disallowDeleteRowsIf` is judged per row: `{row.status} == "approved"` keeps approved rows and lets the rest be deleted.
 
 ### `table`
 
@@ -248,6 +249,7 @@ Canonical example:
 - Use for repeating sets of blocks.
 - Value shape is typically: array of objects.
 - Suitable for addresses, family members, and education records.
+- `disallowAddRowsIf` and `disallowDeleteRowsIf` work the same as on `dynamicTable`: the add button is disabled while the first is `true`, and an entry where the second is `true` has no remove button.
 
 ### `tabs` and `tabsPro`
 

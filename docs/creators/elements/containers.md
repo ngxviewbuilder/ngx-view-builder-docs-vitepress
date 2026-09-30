@@ -121,6 +121,8 @@ A repeatable group. You design the fields once; users add, remove, and reorder e
 | --- | --- |
 | **Add row button text / Remove row button text** | Button captions. |
 | **Disallow adding / deleting rows** | Lock the entry count. |
+| **Disallow adding rows if** (Logic) | While this condition is true, the add button is disabled: `{rowCount} >= 3` or `{orderClosed} == true`. |
+| **Disallow deleting rows if** (Logic) | Checked for every entry: an entry where it is true has no remove button, so `{row.status} == "approved"` keeps approved entries and lets the rest go. |
 | **Max rows** | Upper limit. The add button disables once it is reached. |
 | **Confirm row deletion** (+ title, message, button texts) | Ask before removing an entry. |
 | **Empty state text** | Shown when the panel has no entries. |

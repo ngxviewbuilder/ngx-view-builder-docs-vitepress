@@ -19,6 +19,9 @@ This page defines which expression fields the agent may use and which rules it m
 | `expression` | Compute and write a value | `string`, `number`, `boolean`, `array`, or `object` |
 | `validators[].applyIf` | Enable a validator conditionally | `true` or `false` |
 | `validators[].condition` | Failing check, error shown while `true` | `true` or `false` |
+| `disallowAddRowsIf` | `dynamicPanel` / `dynamicTable`: disable the add button | `true` or `false` |
+| `disallowDeleteRowsIf` | `dynamicPanel` / `dynamicTable`: per row, remove that row's delete button | `true` or `false` |
+| `hideRowIf` | `dynamicTable`: per row, hide the row | `true` or `false` |
 
 ## Other expression usage points
 
@@ -202,6 +205,8 @@ if `customerType` does not exist in the form.
 | Automatically compute a value | `expression` |
 | Enable a validator conditionally | `validators[].applyIf` |
 | Flag a custom validation error | `validators[].condition` (error while `true`) |
+| Stop adding rows to a dynamic panel or table in some cases | `disallowAddRowsIf` (`disallowAddRows: true` locks it always) |
+| Protect some rows from deletion | `disallowDeleteRowsIf`, e.g. `{row.status} == "approved"` |
 
 ## Working with arrays and element metadata
 
@@ -273,6 +278,7 @@ Rules for the agent:
 - `{item.field}` for the candidate option in `filterOptionsBy`
 - `{index}` and `{value}` inside a cell
 - a published `dynamicTable` column total, `{el1.column4-total}`
+- in `hideRowIf`, `disallowAddRowsIf` and `disallowDeleteRowsIf`: `{row.field}` (also `{panel.field}` or `{item.field}`) for the row being judged, `{index}` for its position, `{rowCount}` for the number of rows, and any other `{field}` for the form. `disallowAddRowsIf` is judged once for the whole element, so it has `{rowCount}` and form fields but no row
 
 ### A table's own live state
 
