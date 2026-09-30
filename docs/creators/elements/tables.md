@@ -270,6 +270,8 @@ An **input** element: spreadsheet-like rows the user fills in. The value is an a
 | **Max rows** | Upper limit. The add button disables when it is reached. |
 | **Confirm row deletion** | Ask before removing, with **Delete confirm title / message / confirm & cancel button texts**. |
 | **Hide row if** | Expression that hides matching rows: `{row.status} != "A"`. |
+| **Disallow adding rows if** | While this condition is true, the add row button is disabled: `{rowCount} >= 10` or `{invoiceSent} == true`. |
+| **Disallow deleting rows if** | Checked for every row: a row where it is true has no delete button, e.g. `{row.status} == "approved"`. Other rows can still be deleted. |
 | **Status rules** | Condition + tone rules that color the whole cell background. |
 | **Use totals** | Show the column's sum in the footer row. |
 | **Total template** | Footer text with `{total}`, e.g. `Total: {total}`. |
