@@ -27,7 +27,9 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
 
-Three more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`. They are about who may talk to which tab, which is the next section.
+Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
+
+`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference and the common mistakes. Until it has, `nvb_execute` answers with the list of pages still to read. That is about 30 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
 
 ## Connecting the builder
 
@@ -68,6 +70,8 @@ A pairing belongs to the MCP session and points at the key, not at the socket. W
 
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
 
+Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
+
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
 
 `nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
@@ -94,6 +98,21 @@ The worst a runaway agent can do is leave unsaved edits in an open tab, which a 
 A trigger bound to `onLoad` does run by itself when the view is rebuilt, so an agent can cause a data source call or a navigation without a click. That is a side effect, not a commit, but it is worth knowing when reviewing what an agent wrote.
 :::
 
+## What the MCP server keeps
+
+Nothing of your views or data. The server is a relay between the AI client and the builder tab: a tool call comes in from the AI client, goes down the socket to the builder, and the builder's answer goes back the same way. It does not read what passes through, it has no database, and it writes nothing to disk. Once a call is answered, the server has forgotten it.
+
+What it does hold, in memory only, is what it needs to route calls and enforce limits:
+
+- the open builder tabs and their pairing keys, and which AI connection is paired with which tab;
+- how many calls each tab made in the current hour;
+- how many browsers use each license right now (by license number), for the seat limit;
+- the license service's answer about a key, for ten minutes, so it is not asked on every connection.
+
+A restart clears all of it. The server's log records only connection events: a tab opened or closed, a license refused or full, with the license number and a shortened key such as `NVB-…TWN5`. Structures, data, commands and answers never appear in it.
+
+Your conversation with the AI stays between you and your AI provider. The server only sees the tool calls the AI makes, while they are in transit. If even that should not leave your network, run the server yourself, as described below, and point the builder at it.
+
 ## Running the MCP server
 
 The server is the `ngx-view-builder-mcp` package. It is a router and nothing more: it holds the builder sockets, pairs AI connections to them, and forwards each call. What a command means is decided in the builder, so a new element type or command in the library needs no new server release.
@@ -118,14 +137,26 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_LICENSE_CACHE_TTL_MS` | `600000` | How long one answer about a key is reused before asking again. |
 | `NVB_MCP_RECHECK_INTERVAL_MS` | `3600000` | How often the licenses of connected tabs are checked again. A tab whose license stopped qualifying is disconnected. |
 | `NVB_MCP_LICENSE_EXEMPT_ORIGINS` | empty | Comma separated origins that pair without a license, such as a public demo. |
+| `NVB_MCP_DOCS_URL` | `https://ngxviewbuilder.io/llms-authoring.txt` | The AI reference `nvb_read_docs` serves. |
+| `NVB_MCP_REQUIRE_DOCS` | `on` | `off` lets `nvb_execute` work before the docs were read, for a server with no internet access. |
+| `NVB_MCP_SEAT_IDLE_MS` | `1800000` | When a license has every seat taken, a seat nobody used for this long goes to the browser that is waiting. |
+| `NVB_MCP_DEMO_MAX_TABS` | `30` | Tabs from exempt origins that may be connected at once, all of them together. |
+| `NVB_MCP_DEMO_MAX_CALLS_PER_SESSION` | `150` | Calls per window for a tab from an exempt origin. |
+| `NVB_MCP_DEMO_KEY_TTL_MS` | `7200000` | How long a pairing key from an exempt origin is valid. |
 
-The last four only matter when `NVB_LICENSE_CHECK_URL` is set.
+The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set.
+
+### Seats
+
+A license lets as many browsers use AI access at the same time as it has seats. Several tabs in one browser count once, because the builder tells the server which browser it runs in. When every seat is taken, the next browser is turned away with a short message in the AI access group and tries again every minute, so it gets in as soon as a colleague disconnects. A seat also frees up when a laptop goes to sleep or loses its network, within about a minute. If everyone is connected but someone has not used the AI for half an hour, their seat goes to the person waiting; pressing **Connect** brings them back with their pairing intact. Nobody is disconnected for being idle while a seat is still free.
 
 Pairings live in memory. Restarting the server means pairing again, which the builder handles by itself and the AI client handles by asking for the key.
 
 ## Try it on the public demo
 
-The bridge is armed on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder), and the demo needs no license of your own. Add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key from the builder settings (AI access (MCP)) when it asks.
+AI access works on [demo.ngxviewbuilder.io/builder](https://demo.ngxviewbuilder.io/builder) without a license of your own. Press **Connect** under Settings → AI access (MCP), add `https://mcp.ngxviewbuilder.io/mcp` to your AI client, ask it to build something in the builder, and give it the session key when it asks.
+
+The demo shares its AI access between everyone trying it, so it is kept small: up to 30 people at a time, 150 calls per hour each, and a key that lasts two hours. If it is busy, the builder says so and tries again every minute.
 
 Nothing there can be saved to anything of yours: the demo keeps its view in your own browser storage, and the API has no save command in the first place. Reloading the page restores the demo view.
 

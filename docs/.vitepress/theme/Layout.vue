@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme';
-import ComingSoonCard from './components/ComingSoonCard.vue';
 import CookieConsent from './components/CookieConsent.vue';
 // Laikinai isjungtas GitHub zvaigzduciu badge.
 // import GitHubStarBadge from './components/GitHubStarBadge.vue';
@@ -14,9 +13,6 @@ const { Layout } = DefaultTheme;
     <template #nav-bar-content-after>
       <!-- <GitHubStarBadge /> -->
       <NpmBadges />
-    </template>
-    <template #home-hero-after>
-      <ComingSoonCard />
     </template>
   </Layout>
   <CookieConsent />

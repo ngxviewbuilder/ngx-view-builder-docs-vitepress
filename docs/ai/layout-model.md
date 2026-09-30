@@ -628,6 +628,7 @@ A dialog with four titled sections, mixed one-, two- and three-field rows, condi
       "text": "Save",
       "variant": "solid",
       "tone": "primary",
+      "textColor": "var(--nvb-color-neutral-000)",
       "fitContent": true,
       "events": [{ "trigger": "click", "type": "submit", "validateForm": true }]
     }

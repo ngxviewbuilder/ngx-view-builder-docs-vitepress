@@ -22,8 +22,8 @@ function decline(): void {
 <template>
   <div v-if="visible" class="cookie-consent" role="dialog" aria-label="Cookie consent">
     <p class="cookie-consent__text">
-      We use Google Analytics to see how these docs are used. Nothing is loaded or set until you
-      accept. See the <a href="/privacy">privacy policy</a>.
+      We use Google Analytics to see how this site is used. No analytics cookie is set and nothing
+      is measured until you accept. See the <a href="/privacy">privacy policy</a>.
     </p>
     <div class="cookie-consent__actions">
       <button type="button" class="cookie-consent__decline" @click="decline">Decline</button>

@@ -97,7 +97,9 @@ Typing mistakes in the key are forgiven: lower case, spaces or missing dashes al
 - **Claude cannot save.** It edits the view in your tab. Nothing is stored until you press Save yourself, and every batch of its changes is a single undo step, so Ctrl+Z takes back a whole change at once.
 - **Reloading the page keeps the connection.** The key stays the same for as long as the tab is open, so you do not have to pair again after a refresh.
 - **A key lasts 24 hours.** After that the tab gets a new one on its own and Claude asks for it again.
+- **Seats are shared by your team.** A license lets as many browsers use AI access at once as it has seats, and all your tabs in one browser count once. If every seat is taken, this group tells you so and connects by itself as soon as a colleague disconnects.
 - **The license is checked while you work.** If it is revoked or runs out, the connection closes and this group says why.
 - **A new tab gets a new key.** If you open the builder in another tab and want Claude to work there, give it that tab's key.
 - **To cut access, press New key.** Every connected client loses access immediately. Closing the tab does the same.
 - Treat the key like a password for as long as the tab is open: whoever has it can edit that view.
+- **Nothing you build is stored on our side.** The MCP server only passes Claude's requests to your builder tab and the answers back. It keeps no copy of your views or data and does not log them. [More about what the server keeps](../developers/ai-command-api#what-the-mcp-server-keeps).

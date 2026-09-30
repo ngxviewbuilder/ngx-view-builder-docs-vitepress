@@ -4,12 +4,8 @@ import { GA_ID } from "./theme/analytics";
 const SITE_URL = "https://ngxviewbuilder.io";
 const SITE_DESCRIPTION =
   "NGX View Builder is a visual, drag-and-drop form and view builder for Angular. Design forms, dashboards, and data tables as JSON in a low-code builder, and render them natively with a full Angular runtime.";
-const OG_IMAGE = `${SITE_URL}/LOGO.png`;
-
-// Keyword-forward title for the home page and its social cards. The brand name
-// alone ("NGX View Builder") is not something people search for, so the home
-// <title> leads with the generic terms it should rank for.
-const HOME_TITLE = "Angular Form, View & Dashboard Builder | NGX View Builder";
+// Served by the landing build that is deployed next to these docs (projects/landing/public/brand).
+const OG_IMAGE = `${SITE_URL}/brand/og.png`;
 
 const STRUCTURED_DATA = {
   "@context": "https://schema.org",
@@ -25,37 +21,51 @@ const STRUCTURED_DATA = {
     "Angular form builder, Angular view builder, Angular dashboard builder, low-code Angular, drag-and-drop form builder, JSON schema forms",
   featureList: [
     "Drag-and-drop visual form and view builder for Angular",
-    "47 elements: inputs, choices, data tables, charts, KPI cards, tabs, steppers",
+    "48 elements: inputs, choices, data tables, charts, KPI cards, tabs, steppers",
     "No-code conditional logic, validation, and expression language",
     "Live REST/route data sources with dependent fields and server-side tables",
     "Native Angular runtime with a typed API service and 59 events",
   ],
   sameAs: ["https://github.com/ngxviewbuilder/ngx-view-builder-community"],
+  publisher: { "@type": "Organization", name: "NVB Labs", url: SITE_URL },
+};
+
+/** Section names for breadcrumbs, by the first path segment. */
+const SECTIONS: Record<string, string> = {
+  creators: "Guide for creators",
+  developers: "Guide for developers",
+  ai: "AI reference",
 };
 
 export default defineConfig({
   lang: "en-US",
   title: "NGX View Builder",
-  // Inner pages get "<Page title> | NGX View Builder". The home page overrides
-  // this with `titleTemplate: false` in its own frontmatter (see index.md).
+  // Pages get "<Page title> | NGX View Builder". There is no home page here: the site
+  // root belongs to the product landing page, this site holds the documentation only.
   titleTemplate: ":title | NGX View Builder",
   description: SITE_DESCRIPTION,
   cleanUrls: true,
   lastUpdated: true,
   sitemap: {
     hostname: SITE_URL,
+    // The root is the product landing page, deployed next to these docs on the same domain.
+    transformItems: (items) => [{ url: "" }, ...items],
   },
   head: [
-    ["link", { rel: "icon", href: "/brand-mark.svg" }],
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/brand-mark.svg" }],
+    ["link", { rel: "apple-touch-icon", href: "/apple-touch-icon.png" }],
     ["meta", { name: "theme-color", content: "#1554ff" }],
     ["meta", { name: "google-site-verification", content: "Gu0m-v64N5w1PHAX9p0uPPm-epZSUrNr1v-IZqBGLdw" }],
     ["meta", { name: "keywords", content: "Angular form builder, Angular view builder, Angular dashboard builder, drag-and-drop form builder, low-code Angular, JSON schema forms, visual view builder, Angular data table builder, Angular low-code builder" }],
     // Site-wide Open Graph. Per-page og:title / og:description / og:url and the
     // canonical link are added in transformPageData below so every page reflects
     // its own content instead of the home page's.
-    ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "NGX View Builder" }],
     ["meta", { property: "og:image", content: OG_IMAGE }],
+    ["meta", { property: "og:image:width", content: "1200" }],
+    ["meta", { property: "og:image:height", content: "630" }],
+    ["meta", { property: "og:image:alt", content: "The NGX View Builder logo on a dotted canvas" }],
+    ["meta", { property: "og:locale", content: "en_US" }],
     // Twitter card (per-page title/description added in transformPageData)
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     ["meta", { name: "twitter:image", content: OG_IMAGE }],
@@ -78,23 +88,60 @@ export default defineConfig({
   // Emit a correct canonical URL and per-page Open Graph / Twitter tags for
   // every page. Without this, all pages would share the home page's og:url and
   // have no canonical, which weakens indexing of the individual doc pages.
+  // The 404 page is built outside transformPageData's reach; keep it out of the index here.
+  transformHead({ pageData }) {
+    if (pageData.isNotFound) return [["meta", { name: "robots", content: "noindex" }]];
+  },
   transformPageData(pageData) {
     const rel = pageData.relativePath;
-    const isHome = rel === "index.md";
 
     let route: string;
-    if (isHome) route = "/";
-    else if (rel.endsWith("/index.md"))
+    if (rel.endsWith("/index.md"))
       route = "/" + rel.slice(0, -"index.md".length); // e.g. "/developers/"
     else route = "/" + rel.replace(/\.md$/, ""); // e.g. "/developers/installation"
 
-    // Trailing slash on "/" matches what VitePress emits in sitemap.xml.
     const canonical = `${SITE_URL}${route}`;
-    const title = isHome ? HOME_TITLE : `${pageData.title} | NGX View Builder`;
+    const title = `${pageData.title} | NGX View Builder`;
     const description = pageData.description || SITE_DESCRIPTION;
 
     pageData.frontmatter.head ??= [];
+
+    // The 404 page must not be indexed or claim a canonical URL of its own.
+    if (pageData.isNotFound || rel === "404.md") {
+      pageData.frontmatter.head.push(["meta", { name: "robots", content: "noindex" }]);
+      return;
+    }
+
+    // Each doc page is an article inside a section: Google shows the breadcrumb trail in
+    // results instead of a bare URL, and answer engines learn how the pages relate.
+    const section = route.split("/")[1];
+    const crumbs = [{ name: "NGX View Builder", item: `${SITE_URL}/` }];
+    if (SECTIONS[section]) crumbs.push({ name: SECTIONS[section], item: `${SITE_URL}/${section}/` });
+    if (canonical !== crumbs[crumbs.length - 1].item) crumbs.push({ name: pageData.title, item: canonical });
+    const pageStructuredData = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "TechArticle",
+          headline: pageData.title,
+          description,
+          url: canonical,
+          image: OG_IMAGE,
+          inLanguage: "en",
+          ...(pageData.lastUpdated ? { dateModified: new Date(pageData.lastUpdated).toISOString() } : {}),
+          about: { "@type": "SoftwareApplication", name: "NGX View Builder", url: SITE_URL },
+          publisher: { "@type": "Organization", name: "NVB Labs", url: SITE_URL },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: crumbs.map((crumb, index) => ({ "@type": "ListItem", position: index + 1, ...crumb })),
+        },
+      ],
+    };
+
     pageData.frontmatter.head.push(
+      ["meta", { property: "og:type", content: "article" }],
+      ["script", { type: "application/ld+json" }, JSON.stringify(pageStructuredData)],
       ["link", { rel: "canonical", href: canonical }],
       ["meta", { property: "og:url", content: canonical }],
       ["meta", { property: "og:title", content: title }],
@@ -105,7 +152,8 @@ export default defineConfig({
   },
   themeConfig: {
     // Full logotype in the navbar (name is part of the image, so no text title).
-    logo: { src: "/logo-header.png", alt: "NGX View Builder" },
+    // Vector, with its own version for the dark navbar.
+    logo: { light: "/brand.svg", dark: "/brand-dark.svg", alt: "NGX View Builder" },
     siteTitle: false,
     nav: [
       { text: "Creators", link: "/creators/", activeMatch: "/creators/" },
@@ -113,7 +161,6 @@ export default defineConfig({
       // AI reference intentionally has no nav tab: the /ai/ pages stay published
       // for AI agents (see public/llms.txt), humans reach them via direct links.
       { text: "Demo", link: "/demo", activeMatch: "/demo" },
-      { text: "Pricing", link: "/pricing" },
       {
         text: "Community",
         link: "https://github.com/ngxviewbuilder/ngx-view-builder-community",

@@ -299,12 +299,15 @@ Value shape: `boolean`
 
 | Property | Type | Notes |
 |---|---|---|
-| `text` | `string` | Button text |
+| `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
+| `text` | `string` | Button text (the caption) |
 | `icon` | `string` | Icon name |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
 | `iconOnly` | `boolean` | Show icon only |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
+| `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |
+| `textColor` | `string` | Caption color. On a solid button with a dark fill (`primary`, `success`, `info`, `risk`, or a dark `color`) set `"var(--nvb-color-neutral-000)"` |
 | `size` | `string` | `small` `normal` `large` |
 | `loading` | `boolean` | Show loading spinner |
 | `badge` | `string` | Badge text |

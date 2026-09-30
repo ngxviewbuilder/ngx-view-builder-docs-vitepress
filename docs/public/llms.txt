@@ -81,11 +81,9 @@
 - [Variables](https://ngxviewbuilder.io/creators/variables): Route params, host context, constants, and computed values available to every expression.
 - [The builder workspace](https://ngxviewbuilder.io/creators/workspace): The main areas of the NGX View Builder screen and what each one does.
 
-## Product & pricing
+## Product
 
 - [Live demo](https://ngxviewbuilder.io/demo): Try the Angular form and view builder in your browser. Build a view in the Builder tab, then switch to Runtime to see it exactly as your end users would.
-- [Angular Form, View & Dashboard Builder | NGX View Builder](https://ngxviewbuilder.io/): Product homepage: what NGX View Builder is, key features, and links to get started.
-- [Pricing](https://ngxviewbuilder.io/pricing): The runtime that renders your views in production is free forever and never needs a license key. The builder is free to use today and becomes a licensed product at the 1.0.0 release.
 - [Privacy Policy](https://ngxviewbuilder.io/privacy): How ngxviewbuilder.io handles analytics, cookies, and the data you enter in the live demo.
 
 ## Single-file bundles
