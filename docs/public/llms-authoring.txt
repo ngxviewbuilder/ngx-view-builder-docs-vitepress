@@ -403,7 +403,8 @@ Required:
 
 ## What to do if the user's request is ambiguous
 
-- If a term is ambiguous, decide based on the [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map).
+- In a live builder session (MCP or the command API), the person can answer: ask a short question with options and your recommendation before building the part that depends on it. See [When to ask, and when to decide](https://ngxviewbuilder.io/ai/good-practices#when-to-ask-and-when-to-decide).
+- When no one can answer (a one-shot generation), decide based on the [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map) and state the choice.
 - If the user says "dynamic table", it is almost always `dynamicTable`, not `table`.
 - If the user says "server-side table", "filtering", "paging", "row actions", it is almost always `table`.
 - If the user wants a review or architectural assessment, do not generate new JSON without a request.
@@ -3624,6 +3625,28 @@ Read it before the first change. Over MCP, `nvb_execute` does not accept a batch
 4. **Check the result.** After a batch, read the returned tree (or `getTree()`) and confirm the elements are where you meant them: in the right container, in the right order, side by side where you wanted a row.
 5. **Do not save.** Saving is the person's decision. Build, check, then stop and describe what you did.
 
+## When to ask, and when to decide
+
+When you work in a live builder, the person is right there. A short question costs them a few seconds; a view built on a wrong guess costs them a round of fixes. So when you are genuinely unsure about something that changes what they get, ask before you build it.
+
+**Ask when** the choice changes how the view looks or behaves and the request does not settle it:
+
+- **Which control for a choice**: a `radio` list with every option visible, a compact `select`, a `selectButton` row, or `autocomplete` for a long list; one answer or several (`checkbox`, `multiSelect`).
+- **Which kind of table**: rows people edit (`dynamicTable`), data shown from a server with paging and search (`table`), or a repeating block of fields (`dynamicPanel`).
+- **One page or steps**: a single form with sections, or a multi-step flow.
+- **What is required**, and what happens on submit (a toast, a data source call, navigation).
+- **Where the data comes from**: fixed options, or a data source, and which one.
+- **Anything you would have to invent**: option lists, labels in another language, business rules, limits.
+
+**Decide yourself, and say what you chose,** when a good practice already answers it or the change is easy to undo: labels in plain words, side-by-side short fields, button tones, required messages, names, layout details. Asking about every detail is as unhelpful as guessing the important ones.
+
+**How to ask:**
+
+- One short message, before the batch that depends on it, with every open question together, not one at a time.
+- Offer concrete options and your recommendation: *"For Client type I would use a radio list, since there are only two options and both stay visible. Or should it be a dropdown?"*
+- Build everything that does not depend on the answer while you wait, if the person agrees, and leave the open parts out rather than filling them with a guess.
+- Once the person has answered, follow the answer, including in later requests of the same conversation.
+
 ## Captions and labels
 
 Every element sits in a wrapper that draws a **label row** above it whenever `label` is not empty. For input fields that row is the field's caption. For elements that show their own text (a button, a card, a picture) it is a second, redundant caption in bold, and it is the most common reason an AI-built view looks unfinished.
@@ -3742,7 +3765,8 @@ Before you report back, check that:
 5. Required fields have a `requiredMessage`; validators have messages.
 6. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
 7. Colors are theme tokens, and text contrasts with every fill.
-8. Nothing was saved, and the person was told what changed.
+8. Every choice you were unsure about was asked, not guessed, and the choices you made yourself are named in your summary.
+9. Nothing was saved, and the person was told what changed.
 
 ---
 

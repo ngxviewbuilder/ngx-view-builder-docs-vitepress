@@ -120,7 +120,8 @@ Required:
 
 ## What to do if the user's request is ambiguous
 
-- If a term is ambiguous, decide based on the [Element selection map](./element-selection-map).
+- In a live builder session (MCP or the command API), the person can answer: ask a short question with options and your recommendation before building the part that depends on it. See [When to ask, and when to decide](./good-practices#when-to-ask-and-when-to-decide).
+- When no one can answer (a one-shot generation), decide based on the [Element selection map](./element-selection-map) and state the choice.
 - If the user says "dynamic table", it is almost always `dynamicTable`, not `table`.
 - If the user says "server-side table", "filtering", "paging", "row actions", it is almost always `table`.
 - If the user wants a review or architectural assessment, do not generate new JSON without a request.
