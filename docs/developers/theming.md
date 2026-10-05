@@ -16,6 +16,7 @@ All visuals derive from CSS custom properties (design tokens): color scales, fon
 | Risk / Warning / Caution | `--nvb-color-risk-*`, `--nvb-color-warning-*` | destructive & warning states |
 | Success / Info | `--nvb-color-success-*`, `--nvb-color-info-*` | positive & informational states |
 | Typography | `--nvb-font-family-base` | base font stack |
+| Charts | `--nvb-chart-single`, `--nvb-chart-1 … 8`, `--nvb-chart-other` | chart colors (see below) |
 
 Values are `oklch(...)` colors on an 050-950 scale (050 lightest). Components mix tokens with `color-mix()`, so overriding a scale re-colors everything consistently.
 
@@ -29,6 +30,10 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 
 `--nvb-surface` is the one token meant for the host rather than for us. `.nvb-root` paints its own background so a light theme stays readable on a dark page, and setting `--nvb-surface: transparent` turns that off when the view already sits on a surface you control.
 
+### Chart colors
+
+A bar, line or area chart has one series and draws it in `--nvb-chart-single`, which is your primary color by default. Pie and donut slices take `--nvb-chart-1` to `--nvb-chart-8` in order, and the folded *Other* slice `--nvb-chart-other`. The default eight are a palette checked for color blind readers in both modes, and their order is part of that: neighbours were picked to stay apart. To match your brand, override the values but keep a similar spread of hues, and give the dark mode its own steps through `setCustomTheme` if you change them.
+
 ## Light / dark mode
 
 ```html
@@ -37,6 +42,8 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 ```
 
 or `api.setThemeMode('dark')`. Creators can also set a default in Form settings.
+
+A panel used as a page section with **Section colours: Dark** takes the dark palette for itself only, inside a light view. It does this by matching the `.nvb-section-theme-dark` class in the same token block as the dark theme, so your dark overrides from `setCustomTheme` apply there too.
 
 ## Overriding tokens
 

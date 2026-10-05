@@ -82,19 +82,30 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](./events-actions#send-socket-message).
 
-#### Object creator
+### Building JSON without typing it
 
-For non-trivial JSON, the **Object creator** dialog builds a valid object visually instead of hand-typing:
+Local JSON data, a REST request body and a WebSocket message all have a **Build visually** link above their editor. It opens a builder that writes the JSON for you, with the result shown on the right as you go.
 
-| Field | What it does |
+The first choice is the shape: **A list of items** (`[ ]`, for options, rows, records) or **One record** (`{ }`, named fields such as a request body). An empty builder also offers four starting points: **Dropdown options** (a value and a label per choice), **Table of records**, **Simple list** and **One record**. You can rename and add fields afterwards.
+
+A list of flat records opens as a table, which is the quickest way to type demo data or dropdown options:
+
+| In the table | What it does |
 | --- | --- |
-| **Root type** | Whether the root is an object or array. |
-| **Add root field / Add field / Add nested field** | Grow the structure; objects and arrays can contain nested fields. |
-| **Field name** | The JSON key. |
-| **Type** | `Object`, `Array`, `Property`, or a plain value (`Text`, `Number`, `Boolean`, `Null`). |
-| **Value / other field name** | The literal value, or a reference to another field. |
-| **Binding path** | Use `{path}` to bind to live form data, or a static value. |
-| **JSON preview** → **Insert into JSON** | Review the generated JSON, then insert it into the source. |
+| Column header | Click the name to rename it; the type underneath is **Text**, **Number** or **Yes / No**. |
+| **Column** / **Add row** | Add a column to every row, or a new row with the same columns. |
+| **Paste from Excel** | Copy cells from Excel or Google Sheets, header row included, and paste them. The first row becomes the field names; columns that hold only numbers become numbers, only `true`/`false` become yes/no. You can replace the current items or add below them. |
+
+Anything else (one record, nested groups, lists inside records) is edited in the **Fields** view, one line per field: its name, its type and its value.
+
+| Type | Value |
+| --- | --- |
+| **Text**, **Number**, **Yes / No**, **Empty (null)** | A fixed value. |
+| **Form field value** | Pick a field or variable; it is saved as `{path}` and filled in when the request runs. |
+| **Group of fields { }** | A nested object; **Add field to …** adds inside it. |
+| **List [ ]** | A nested array. A new item copies the fields of the item above it, so a list of records only needs its fields defined once. |
+
+Problems are shown next to the field that causes them (a missing or repeated name, a number that is not a number), and **Apply** stays blocked until they are fixed. Ctrl + Enter applies.
 
 ## Binding a source to an element
 

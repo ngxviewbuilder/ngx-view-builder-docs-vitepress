@@ -493,6 +493,7 @@ Every property below is real. Notice what each element does **not** have: `phone
       "maxFileSizeMb": 10,
       "showPreview": true,
       "dropzoneText": "Drop files here",
+      "storageMode": "server",
       "uploadDataSourceName": "ds1",
       "downloadDataSourceName": "ds2",
       "deleteDataSourceName": "ds3",

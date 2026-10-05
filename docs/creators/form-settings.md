@@ -52,8 +52,8 @@ See [Pages & navigation](./pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow) or `Dialog`, where the whole view opens as a modal. |
-| **Dialog header title** / **Dialog header description** | Modal header texts. |
+| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](./layout#web-pages-with-canvas)). |
+| **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
 | **Dialog padding** | Inner padding of the modal content. |

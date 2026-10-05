@@ -9,6 +9,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 
 ## Quick reference
 
+- "landing page", "web page", "website", "hero", "full width section" -> `settings.renderMode: "canvas"` with `panel` elements that have `sectionMode: true` (see [Layout model](./layout-model#web-pages-canvas-render-mode-and-page-sections))
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`

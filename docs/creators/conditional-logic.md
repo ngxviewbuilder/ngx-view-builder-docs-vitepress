@@ -15,6 +15,18 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+## Building a rule without writing it
+
+Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.
+
+Each row is one condition: pick a **field**, pick what should be true about it, and give a value. The rule list follows the field's type, in plain words: a text field offers *is equal to*, *contains*, *starts with*, *is empty* and so on; a number adds *is greater than* and friends; a date says *is after* and *is before*; a checkbox is simply *is Yes* or *is No*. The value box follows the field too: a dropdown or radio field offers its own options, a number field takes a number, a date field opens a date picker. **Compare with another field** swaps the value for a second field.
+
+With more than one row, **Match all conditions** or **Match any condition** decides how they combine.
+
+The line on top reads the rule back as a sentence, for example *When Team is equal to "Sales" and Age is greater than 18*, and the expression that will be saved is shown underneath, so you can check it and pick up the syntax as you go. A row that is not filled in yet is marked and left out until it is complete.
+
+When you open an existing rule, the builder reads it back into rows. If it uses something the rows cannot show (mixed *and* and *or*, brackets, other functions), the builder says so and leaves it alone: edit it on the **Code** tab, or choose **Start over in the builder** to replace it. Editors open on the visual builder whenever it can show the rule.
+
 ## Visible if
 
 ```text

@@ -568,9 +568,16 @@ Value shape: `string` (HTML).
 
 | Property | Type | Notes |
 |---|---|---|
-| `tone` | `string` | `primary` `success` `warning` `risk` `neutral` `info` |
-| `icon` | `string` | Icon name |
-| `text` | `string` | Card message text |
+| `title` | `string` | Heading |
+| `descriptionText` | `string` | Text under the title; typed line breaks are kept |
+| `variant` | `string` | Colour: `info` `primary` `success` `warn` `risk` `neutral` |
+| `appearance` | `"soft"` \| `"card"` \| `"accent"` | `soft` tinted banner (default), `card` white card with the icon in a tile above the title (feature lists, empty states), `accent` a coloured left rule and no box (hints inside forms) |
+| `actionsLayout` | `"stacked"` \| `"inline"` | Buttons under the text (default) or beside it when the card is wide |
+| `events` | `IElementActionConfig[]` | Every `trigger: "click"` action with a `label` becomes a small button. Keep to one or two. Without `buttonVariant`/`buttonTone` the first is filled in the message colour and the rest are outlined |
+| `icon` / `showIcon` | `string` / `boolean` | Leading icon; each variant has a default |
+| `dismissible` | `boolean` | Close button |
+| `initiallyVisible` | `boolean` | Start hidden (shown by an action) |
+| `variantMode` / `variantRules` / `variantExpression` | | Conditional colour |
 
 ### `statsCard`
 

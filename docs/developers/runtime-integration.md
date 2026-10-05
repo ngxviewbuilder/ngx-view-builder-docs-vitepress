@@ -92,9 +92,11 @@ this.api.showToast({ title: 'Saved', variant: 'success' });
 
 Tables emit column-settings and saved-filters events so hosts can persist per-user preferences (`tableSettingsChanged`, `tableSavedFiltersChanged`, and their request/save counterparts). Store them by `tableName` + user, feed them back with `api.setTableSettings(...)` / `api.setTableSavedFilters(...)`.
 
-## Dialog render mode
+## Dialog and canvas render modes
 
-If the view's settings use `renderMode: 'dialog'`, the runtime renders it as a modal. Track closure via `api.onDialogClosed`.
+If the view's settings use `renderMode: 'dialog'`, the runtime renders it as a modal. Track closure via `api.onDialogClosed`. `{field}` tokens in the dialog title and description show live field values.
+
+`renderMode: 'canvas'` renders the view as a plain web page: full width, no page card, no pager or Submit bar, no outer spacing, every page stacked. Give the runtime the full width of its container; the creator's page sections bring their own backgrounds and inner spacing.
 
 ## Renderer & unified components
 

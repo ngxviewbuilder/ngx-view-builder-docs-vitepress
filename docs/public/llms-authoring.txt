@@ -697,6 +697,69 @@ Every page needs its twin in `elements`:
 
 Page element properties: `name`, `label`, `description`, `type`, `visibleIf`, `disableIf`, `readonlyIf`, `hideHeader`, `removeBackgraund` (spelled exactly like that), `pageBackgroundColor`, `pagePadding`, `mobilePadding`. Nothing else.
 
+## Web pages: canvas render mode and page sections
+
+When the user asks for a web page rather than a form (a landing page, product page, event page, "a simple website"), set `settings.renderMode` to `"canvas"`: no page card, no pager or Submit bar, no outer spacing, full width, every page stacked into one long page. On phones, columns without `mobileWidth` stack.
+
+Build the page from `panel` elements with `sectionMode: true`, one per band, each in its own row of the page. Put the content (page titles, text, buttons, cards, fields) inside the sections; an element placed directly on a canvas page has no spacing around it.
+
+```json
+{
+  "schemaVersion": 1,
+  "settings": { "language": "en", "renderMode": "canvas" },
+  "pages": [
+    {
+      "name": "home",
+      "rows": [
+        {
+          "columns": [
+            {
+              "elementRef": "hero",
+              "rows": [
+                { "columns": [{ "elementRef": "heroTitle" }] },
+                { "columns": [{ "elementRef": "startButton" }, { "elementRef": "docsButton" }] }
+              ]
+            }
+          ]
+        },
+        {
+          "columns": [
+            {
+              "elementRef": "features",
+              "rows": [
+                { "columns": [{ "elementRef": "featuresTitle" }] },
+                { "columns": [{ "elementRef": "featureForms" }, { "elementRef": "featureTables" }, { "elementRef": "featureCharts" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "elements": {
+    "home": { "name": "home", "label": "Home", "type": "page", "hideHeader": true },
+    "hero": {
+      "name": "hero", "label": "", "type": "panel",
+      "sectionMode": true, "sectionTheme": "dark", "sectionMinHeight": "480px",
+      "backgroundImage": "https://example.com/hero.jpg", "backgroundOverlayColor": "rgba(2, 6, 23, 0.45)"
+    },
+    "heroTitle": {
+      "name": "heroTitle", "label": "", "type": "pageTitle", "level": "h1",
+      "title": "Ship internal tools in days", "subtitle": "Forms, tables and dashboards, built visually."
+    },
+    "startButton": { "name": "startButton", "label": "", "type": "button", "text": "Start free trial", "fitContent": true, "size": "large" },
+    "docsButton": { "name": "docsButton", "label": "", "type": "button", "text": "Read the docs", "fitContent": true, "size": "large", "variant": "outline", "tone": "neutral" },
+    "features": { "name": "features", "label": "", "type": "panel", "sectionMode": true },
+    "featuresTitle": { "name": "featuresTitle", "label": "", "type": "pageTitle", "level": "h2", "align": "center", "title": "Everything a back office needs" },
+    "featureForms": { "name": "featureForms", "label": "", "type": "messageCard", "variant": "info", "title": "Forms", "descriptionText": "Validation and conditions without code." },
+    "featureTables": { "name": "featureTables", "label": "", "type": "messageCard", "variant": "success", "title": "Tables", "descriptionText": "Sorting, filters and Excel export." },
+    "featureCharts": { "name": "featureCharts", "label": "", "type": "messageCard", "variant": "primary", "title": "Dashboards", "descriptionText": "Charts that read from the same data." }
+  }
+}
+```
+
+Section properties: `sectionMode`, `sectionTheme` (`light`/`dark`), `sectionContentWidth`, `sectionPaddingY`, `sectionMinHeight`, `sectionVerticalAlign`, `backgroundImage`, `backgroundOverlayColor`, plus the panel's own `panelBackgroundColor`. A form inside a web page (a sign-up box) still goes in a section; its button carries the submit or data source action, since canvas has no Submit bar.
+
 ## Building a layout from a screenshot or description
 
 Follow this order every time. Do not start writing JSON at step 1.
@@ -1319,6 +1382,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 
 ## Quick reference
 
+- "landing page", "web page", "website", "hero", "full width section" -> `settings.renderMode: "canvas"` with `panel` elements that have `sectionMode: true` (see [Layout model](https://ngxviewbuilder.io/ai/layout-model#web-pages-canvas-render-mode-and-page-sections))
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`
@@ -1833,7 +1897,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `fileUpload`
 
 - Use for file uploads.
-- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`), never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- `storageMode`: `"base64"` (default, the file content goes into the value, no backend needed) or `"server"` (uploaded through `uploadDataSourceName`). Set `"server"` explicitly whenever you configure upload/download/delete sources.
+- Value shape, the same in both modes (an array when `multiple`): `{ name, size, type, lastModified, contentType }` plus `base64` or `fileKey`. In server mode the name, type, size and key are read from the response using `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- With base64, set `maxFileSizeMb`: the value is about a third larger than the file.
 - Do not treat it as a plain text URL field.
 - Consulting mode: for the exact upload/download/delete request and response contract, see [Properties reference](https://ngxviewbuilder.io/ai/properties-reference#fileupload) and [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
 
@@ -1986,6 +2052,9 @@ Canonical example:
 
 - Use for graphical visualization.
 - Do not use as a data input element.
+- `chartType`: `bar` and `horizontalBar` compare categories (horizontal for long names), `line` and `area` show change over time, `pie` and `donut` show parts of a whole with at most six slices (more fold into "Other").
+- `showLegend` and `legendLayout` apply to `pie` and `donut` only; single series charts have no legend, so put what is plotted in `title`.
+- Click actions (`events` with `trigger: "click"`) receive the clicked point as `{item.label}`, `{item.value}` and `{index}`.
 
 ## Container and layout elements
 
@@ -2783,9 +2852,16 @@ Value shape: `string` (HTML).
 
 | Property | Type | Notes |
 |---|---|---|
-| `tone` | `string` | `primary` `success` `warning` `risk` `neutral` `info` |
-| `icon` | `string` | Icon name |
-| `text` | `string` | Card message text |
+| `title` | `string` | Heading |
+| `descriptionText` | `string` | Text under the title; typed line breaks are kept |
+| `variant` | `string` | Colour: `info` `primary` `success` `warn` `risk` `neutral` |
+| `appearance` | `"soft"` \| `"card"` \| `"accent"` | `soft` tinted banner (default), `card` white card with the icon in a tile above the title (feature lists, empty states), `accent` a coloured left rule and no box (hints inside forms) |
+| `actionsLayout` | `"stacked"` \| `"inline"` | Buttons under the text (default) or beside it when the card is wide |
+| `events` | `IElementActionConfig[]` | Every `trigger: "click"` action with a `label` becomes a small button. Keep to one or two. Without `buttonVariant`/`buttonTone` the first is filled in the message colour and the rest are outlined |
+| `icon` / `showIcon` | `string` / `boolean` | Leading icon; each variant has a default |
+| `dismissible` | `boolean` | Close button |
+| `initiallyVisible` | `boolean` | Start hidden (shown by an action) |
+| `variantMode` / `variantRules` / `variantExpression` | | Conditional colour |
 
 ### `statsCard`
 
@@ -4322,6 +4398,7 @@ Every property below is real. Notice what each element does **not** have: `phone
       "maxFileSizeMb": 10,
       "showPreview": true,
       "dropzoneText": "Drop files here",
+      "storageMode": "server",
       "uploadDataSourceName": "ds1",
       "downloadDataSourceName": "ds2",
       "deleteDataSourceName": "ds3",

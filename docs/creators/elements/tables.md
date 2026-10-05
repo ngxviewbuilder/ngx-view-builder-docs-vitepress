@@ -210,14 +210,25 @@ The chevron normally shows only where there is something to open, which is right
 | **Show record count** | Total results summary near the paginator. |
 | **Flat footer surface** | Footer without extra border/shadow accents. |
 
+### Exporting
+
+**Export** opens a dialog where the person picks, in this order:
+
+- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
+- **Rows**, each with the number of rows it would export: **Selected rows** (only when some are selected), **All rows** (or *All rows matching search and filters* while a search or filter is active), or **Current page only**. On a lazy table, *All rows* loads every page from the server, not only the one on screen.
+- **Columns**, when the column picker is on.
+- **File name**, prefilled and editable; the extension follows the format.
+
+The button at the bottom says exactly what will happen, for example *Export 37 rows*. The last format used is remembered in that browser.
+
 ### Header controls
 
 | Property | What it does |
 | --- | --- |
 | **Show header controls** | Master switch for the header bar (search, export, menu…). |
-| **Show export buttons** | CSV / Excel / PDF export, generated entirely in the browser from the rows the table already has (or re-fetches with a larger page size for "export all"). There is no separate server-side export endpoint to build. |
-| **Export column picker dialog** | Choose which columns to export. Handy for wide tables. |
-| **Export file name** | Default download name. |
+| **Show export buttons** | Adds an **Export** button that opens the export dialog (see below). Files are built entirely in the browser; there is no server-side export endpoint to build. |
+| **Export column picker dialog** | Shows the column checklist in the export dialog. Handy for wide tables; turn it off to always export every column. |
+| **Export file name** | Suggested file name. When empty, the table's label plus today's date, e.g. `invoices-2026-10-05`. |
 | **Export all page size** | Batch size when exporting all pages of a lazy table. |
 | **Column settings** (*Show column settings*) | End users change visible columns, order, and widths. |
 | **Column settings mode** | Where preferences live: local UI, localStorage, or host/server. |

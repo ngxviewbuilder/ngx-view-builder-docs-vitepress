@@ -259,6 +259,69 @@ Every page needs its twin in `elements`:
 
 Page element properties: `name`, `label`, `description`, `type`, `visibleIf`, `disableIf`, `readonlyIf`, `hideHeader`, `removeBackgraund` (spelled exactly like that), `pageBackgroundColor`, `pagePadding`, `mobilePadding`. Nothing else.
 
+## Web pages: canvas render mode and page sections
+
+When the user asks for a web page rather than a form (a landing page, product page, event page, "a simple website"), set `settings.renderMode` to `"canvas"`: no page card, no pager or Submit bar, no outer spacing, full width, every page stacked into one long page. On phones, columns without `mobileWidth` stack.
+
+Build the page from `panel` elements with `sectionMode: true`, one per band, each in its own row of the page. Put the content (page titles, text, buttons, cards, fields) inside the sections; an element placed directly on a canvas page has no spacing around it.
+
+```json
+{
+  "schemaVersion": 1,
+  "settings": { "language": "en", "renderMode": "canvas" },
+  "pages": [
+    {
+      "name": "home",
+      "rows": [
+        {
+          "columns": [
+            {
+              "elementRef": "hero",
+              "rows": [
+                { "columns": [{ "elementRef": "heroTitle" }] },
+                { "columns": [{ "elementRef": "startButton" }, { "elementRef": "docsButton" }] }
+              ]
+            }
+          ]
+        },
+        {
+          "columns": [
+            {
+              "elementRef": "features",
+              "rows": [
+                { "columns": [{ "elementRef": "featuresTitle" }] },
+                { "columns": [{ "elementRef": "featureForms" }, { "elementRef": "featureTables" }, { "elementRef": "featureCharts" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "elements": {
+    "home": { "name": "home", "label": "Home", "type": "page", "hideHeader": true },
+    "hero": {
+      "name": "hero", "label": "", "type": "panel",
+      "sectionMode": true, "sectionTheme": "dark", "sectionMinHeight": "480px",
+      "backgroundImage": "https://example.com/hero.jpg", "backgroundOverlayColor": "rgba(2, 6, 23, 0.45)"
+    },
+    "heroTitle": {
+      "name": "heroTitle", "label": "", "type": "pageTitle", "level": "h1",
+      "title": "Ship internal tools in days", "subtitle": "Forms, tables and dashboards, built visually."
+    },
+    "startButton": { "name": "startButton", "label": "", "type": "button", "text": "Start free trial", "fitContent": true, "size": "large" },
+    "docsButton": { "name": "docsButton", "label": "", "type": "button", "text": "Read the docs", "fitContent": true, "size": "large", "variant": "outline", "tone": "neutral" },
+    "features": { "name": "features", "label": "", "type": "panel", "sectionMode": true },
+    "featuresTitle": { "name": "featuresTitle", "label": "", "type": "pageTitle", "level": "h2", "align": "center", "title": "Everything a back office needs" },
+    "featureForms": { "name": "featureForms", "label": "", "type": "messageCard", "variant": "info", "title": "Forms", "descriptionText": "Validation and conditions without code." },
+    "featureTables": { "name": "featureTables", "label": "", "type": "messageCard", "variant": "success", "title": "Tables", "descriptionText": "Sorting, filters and Excel export." },
+    "featureCharts": { "name": "featureCharts", "label": "", "type": "messageCard", "variant": "primary", "title": "Dashboards", "descriptionText": "Charts that read from the same data." }
+  }
+}
+```
+
+Section properties: `sectionMode`, `sectionTheme` (`light`/`dark`), `sectionContentWidth`, `sectionPaddingY`, `sectionMinHeight`, `sectionVerticalAlign`, `backgroundImage`, `backgroundOverlayColor`, plus the panel's own `panelBackgroundColor`. A form inside a web page (a sign-up box) still goes in a section; its button carries the submit or data source action, since canvas has no Submit bar.
+
 ## Building a layout from a screenshot or description
 
 Follow this order every time. Do not start writing JSON at step 1.
