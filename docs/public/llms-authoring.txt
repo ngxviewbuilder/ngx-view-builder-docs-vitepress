@@ -2537,11 +2537,18 @@ Value shape: `boolean`
 | `multiple` | `boolean` | Allow multiple files |
 | `maxFiles` | `number` | Max number of attached files (default `5`) |
 | `maxFileSizeMb` | `number` | Max file size **in megabytes**, not bytes |
-| `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources; empty `uploadDataSourceName` means files never leave the browser (local metadata only) |
+| `storageMode` | `"base64"` \| `"server"` | `base64` (default) keeps each file's content in the value. `server` uploads through `uploadDataSourceName` and keeps the returned `fileKey`. A view saved without `storageMode` but with an upload source counts as `server` |
+| `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources, used only when `storageMode` is `server` |
 | `uploadFormFieldName` | `string` | `multipart/form-data` field name for the file (default `file`). Upload always sends single-field `FormData`, never JSON/base64 |
 | `fileKeyField` / `fileNameField` / `fileTypeField` / `fileSizeField` | `string` | Field names read from the server's response object (defaults `key`, `name`, `contentType`, `size`; the older `fil_key`/`fil_name`/`fil_content_type`/`fil_size` names are still recognized as fallback aliases) |
 
-Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name`, never file bytes/base64. Full request/response wire contract: [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
+Value shape (an array of these when `multiple`), keyed under the element's `name`, the same in both modes:
+
+```json
+{ "name": "logo.png", "size": 4507, "type": "image/png", "lastModified": 1790764181739, "contentType": "image/png", "base64": "iVBORw0KGgo..." }
+```
+
+With `storageMode: "base64"` the object carries `base64` (file content without the `data:` prefix). With `"server"` it carries `fileKey` instead. Base64 makes the value about a third larger than the file, so set `maxFileSizeMb` when using it. Full request/response wire contract: [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
 
 ### `page`
 
@@ -2584,6 +2591,14 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 | `titleUnderlineColor` | `string` | Underline color (when `titleUnderline`) |
 | `titleUnderlineWidth` | `string` | Underline thickness (when `titleUnderline`) |
 | `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
+| `sectionMode` | `boolean` | Turns the panel into a page section: a full width band with no border, content centred at `sectionContentWidth`. The building block of web pages; pair it with `settings.renderMode: "canvas"` |
+| `sectionTheme` | `"light"` \| `"dark"` | `dark` switches every colour inside the section to the dark palette, so text, buttons and inputs on it stay readable |
+| `sectionContentWidth` | `string` | Max width of the content inside the band (default `1120px`) |
+| `sectionPaddingY` | `string` | Space above and below the content (default grows from 48px to 96px with the screen) |
+| `sectionMinHeight` | `string` | Minimum height, e.g. `"80vh"` for a hero band |
+| `sectionVerticalAlign` | `"start"` \| `"center"` \| `"end"` | Content position when `sectionMinHeight` makes the band taller than its content |
+| `backgroundImage` | `string` | Section background image URL (with `sectionMode`) |
+| `backgroundOverlayColor` | `string` | Colour over the background image so text stays readable, e.g. `rgba(0, 0, 0, 0.45)` |
 
 **A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](https://ngxviewbuilder.io/ai/layout-model#nesting-the-mistake-that-breaks-everything).
 
@@ -2752,8 +2767,8 @@ Modal element. Configure via `settings.dialog*` fields:
 | Setting | Notes |
 |---|---|
 | `settings.renderMode` | `"dialog"` |
-| `settings.dialogTitle` | Dialog title |
-| `settings.dialogDescription` | Subtitle |
+| `settings.dialogTitle` | Dialog title. `{field}` tokens show that field's current value, e.g. `"Order {orderNo}"` |
+| `settings.dialogDescription` | Subtitle. Takes `{field}` tokens like the title |
 | `settings.dialogWidth` | Width |
 | `settings.dialogShowCloseButton` | boolean |
 | `settings.dialogPadding` | CSS padding |
@@ -2921,7 +2936,7 @@ Only include settings actually needed by the form.
 | `locale` | `string` | E.g. `"en-US"`, `"lt-LT"` |
 | `width` | `string` | Form width |
 | `widthUnit` | `"px" \| "%"` | |
-| `renderMode` | `"page" \| "dialog"` | |
+| `renderMode` | `"page" \| "dialog" \| "canvas"` | `canvas`: full width, no page card, no Prev/Next or Submit bar, no outer spacing, every page stacked into one long page. For web pages; build them from panels with `sectionMode`. Columns without `mobileWidth` stack on phones |
 | `theme` | `"light" \| "dark"` | |
 | `pageNavigationMode` | `"default" \| "stepper"` | |
 | `allowStepWithoutValidation` | `boolean` | |

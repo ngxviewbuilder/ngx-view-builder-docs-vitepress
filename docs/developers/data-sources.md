@@ -110,7 +110,20 @@ GET /api/cities?q=vil&limit=100
 
 ## File upload requests
 
-`fileUpload` can bind up to three independent data sources (**Upload data source**, **Download data source**, **Delete data source**), each a normal REST source. If **Upload data source** is left empty, files never leave the browser: only local metadata (`name`/`size`/`type`/`lastModified`) is kept as the field's value, which is a common foot-gun for a field that otherwise looks "filled in".
+`fileUpload` has a **Save files as** setting (`storageMode`):
+
+- **Base64 in the form data** (`base64`, the default): no request is made. Each file is read in the browser and its content goes into the field's value as `base64`.
+- **Upload to server** (`server`): the file is sent to the **Upload data source** and the value keeps the `fileKey` your endpoint returns. The **Download** and **Delete** data sources are used for preview, download and removal.
+
+Either way the value has the same shape, so your backend reads one format:
+
+```json
+{ "name": "resume.pdf", "size": 245678, "type": "application/pdf", "lastModified": 1790764181739, "contentType": "application/pdf", "fileKey": "9f2c1e6a-..." }
+```
+
+In base64 mode `base64` takes the place of `fileKey`. Views saved before this setting existed keep uploading if they have an upload data source.
+
+The rest of this section describes the server mode.
 
 ### Upload
 
@@ -141,7 +154,7 @@ Your endpoint should respond with an object describing the stored file:
 
 Field names are configurable via the **File key / name / size / type field** properties (defaults shown above: `key`, `name`, `size`, `contentType`); if your backend already uses different keys (including the older `fil_key`/`fil_name`/`fil_size`/`fil_content_type` convention from earlier versions), the parser also recognizes common aliases automatically (`fileKey`/`filKey`/`fil_key`/`id`/`fileId`/`uuid` for the key, `fileName`/`fil_name` for the name, `mimeType`/`fil_content_type` for the type, `fil_size` for the size). The response can also come wrapped as `{ "data": {...} } `/`{ "items": [...] }`/etc., and the first record found is used.
 
-**The entire response object is stored verbatim as the field's value** (or an array of responses when **Max files** > 1). There is never a file-bytes/base64 field in the form's own JSON result, only whatever metadata your endpoint returned.
+The field's value is not the response itself: it is the standard object shown above, with the name, size and type taken from the response (falling back to the picked file) and the key stored as `fileKey`. An array of them is stored when **Multiple** is on.
 
 ### Download
 
