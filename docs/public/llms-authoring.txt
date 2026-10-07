@@ -3852,6 +3852,7 @@ Other caption rules:
 - **Add a feature only when it was asked for**: detailed search, export, column settings, saved filters, selection, expandable rows, inline editing, a header menu. If a feature seems useful but was not mentioned, suggest it in your summary instead of adding it.
 - **Row actions always go in the three-dots menu**: `rowActions` with `rowActionsDisplayMode: "dropdown"`. Use `iconButtons` or `buttons` only when the person explicitly asks for separate buttons in the row.
 - **The actions column has no header text**: `showActionsHeaderLabel: false`. It defaults to `true` and puts an "Actions" heading over the last column, which the three dots already explain.
+- **A `table` gets a full-width row of its own.** Inside a container narrower than 768px it switches to stacked mobile cards, so on a desktop page it must never end up looking like a phone. Do not put it beside another element, in a narrow column, a side panel or a small dialog, and do not give it a `width`. Leave `responsiveMode` on `"auto"` so it stacks only on a real phone; `"stack"` shows cards everywhere and is only for when the person asks for cards.
 - **When the person does not say how a record opens, it opens from the three-dots menu at the end of the row**: one **Preview** row action. Do not add navigation on a row click (`rowClickActions`, `rowClickOpensDetails`) on your own. When the person does say how (a click on the row, a dialog, a details panel), build it that way.
 
 ```json
@@ -3894,7 +3895,7 @@ Before you report back, check that:
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
 2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
 3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
-4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click.
+4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.
 7. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
