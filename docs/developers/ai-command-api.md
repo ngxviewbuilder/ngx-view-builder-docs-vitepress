@@ -7,6 +7,8 @@ description: A JSON command surface that lets an external agent read and edit a 
 
 The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so nothing Angular shaped leaks out and the whole contract survives a trip through a websocket.
 
+NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas.
+
 An agent reaches it over MCP. The browser dials out to the MCP server and the server forwards each method call back down that socket, so the user's machine never has to accept an inbound connection.
 
 It exposes one write door and a handful of read methods, one MCP tool each:

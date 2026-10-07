@@ -30,7 +30,7 @@ const STRUCTURED_DATA = {
     "https://github.com/ngxviewbuilder/ngx-view-builder-community",
     "https://www.linkedin.com/company/ngx-view-builder/",
   ],
-  publisher: { "@type": "Organization", name: "NVB Labs", url: SITE_URL },
+  publisher: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
 };
 
 /** Section names for breadcrumbs, by the first path segment. */
@@ -133,7 +133,7 @@ export default defineConfig({
           inLanguage: "en",
           ...(pageData.lastUpdated ? { dateModified: new Date(pageData.lastUpdated).toISOString() } : {}),
           about: { "@type": "SoftwareApplication", name: "NGX View Builder", url: SITE_URL },
-          publisher: { "@type": "Organization", name: "NVB Labs", url: SITE_URL },
+          publisher: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
         },
         {
           "@type": "BreadcrumbList",
@@ -390,8 +390,8 @@ export default defineConfig({
     footer: {
       message:
         'Documentation for NGX View Builder. Found a bug or have an idea? <a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/issues" target="_blank" rel="noopener">Open an issue</a>. ' +
-        '<a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/releases" target="_blank" rel="noopener">Releases</a> · <a href="/developers/licensing">License</a> · <a href="/privacy">Privacy</a> · <a href="mailto:support@ngxviewbuilder.io">support@ngxviewbuilder.io</a>',
-      copyright: `Copyright © ${new Date().getFullYear()} NGX View Builder`,
+        '<a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/releases" target="_blank" rel="noopener">Releases</a> · <a href="/developers/licensing">License</a> · <a href="/privacy">Privacy</a> · <a href="mailto:info@heydelabs.com">info@heydelabs.com</a>',
+      copyright: `© ${new Date().getFullYear()} Heyde Labs, MB · NGX View Builder`,
     },
   },
 });

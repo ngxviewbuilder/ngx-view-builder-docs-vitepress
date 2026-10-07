@@ -67,7 +67,7 @@ Dialog mode is useful when a developer embeds the view as a popup (e.g. "New cli
 
 ## AI access (MCP)
 
-This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. AI access is included with an active designer license, at no extra cost.
+This group lets an AI client such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. There is no chat inside the builder; you talk to the AI in your own AI app, and it drives the builder over MCP. AI access is included with an active designer license, at no extra cost.
 
 If nothing is connected yet, the group has one button, **Connect**. It links this tab to our hosted MCP server. The button only shows when the builder has a genuine license key that has not expired; otherwise the group tells you what is missing (no key, a key that is not valid, or a license that ran out). Your developers can also point the builder at an MCP server of their own (see [MCP bridge](../developers/ai-command-api#connecting-the-builder)), in which case it connects without the button.
 

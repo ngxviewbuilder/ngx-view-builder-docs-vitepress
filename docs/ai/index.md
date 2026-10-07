@@ -5,6 +5,8 @@ description: The canonical, indexed knowledge base an AI agent needs to generate
 
 # AI reference
 
+> NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas. Nothing in this section describes a chat window in the builder, because there is none.
+
 This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](../developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.

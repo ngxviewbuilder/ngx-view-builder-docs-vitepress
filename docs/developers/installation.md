@@ -72,6 +72,14 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
+### Build warning about jexl
+
+The expression engine, `jexl`, is published as CommonJS, so the Angular build prints "Module 'jexl' used by ... is not ESM" a few times. It works as it is. To keep the build output clean, allow it in `angular.json`, under the build target's `options`:
+
+```json
+"allowedCommonJsDependencies": ["jexl"]
+```
+
 ## Stylesheet
 
 Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. It ships with the runtime and covers both packages, so the path is the same whether or not you installed the designer. Import it once:

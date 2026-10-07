@@ -96,4 +96,4 @@ Developers can add more tabs through plugins. If you see extra tabs, they come f
 
 ## Undo and history
 
-The builder tracks your edits. Use undo and redo in the header to step through recent changes before saving; Ctrl+S saves. A change an AI client made in one go, even when it arrived in several parts, undoes in one step.
+The builder tracks your edits. Use undo and redo in the header, or Ctrl+Z and Ctrl+Y (Cmd on a Mac), to step through recent changes before saving; Ctrl+S saves. Inside a text field these keys undo the typing in that field. A change an AI client made in one go, even when it arrived in several parts, undoes in one step.

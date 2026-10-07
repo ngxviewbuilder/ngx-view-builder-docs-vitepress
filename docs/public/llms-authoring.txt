@@ -1,6 +1,6 @@
 # NGX View Builder: JSON authoring reference
 
-> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app.
+> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.
 
 This file is the complete AI reference for AUTHORING NGX View Builder structure JSON: the rules of engagement, the layout model, every supported property, and verified end-to-end examples. It is self-contained on purpose, so it can be pasted whole into a chat as system material.
 
@@ -210,6 +210,8 @@ Everything in [JSON authoring rules](https://ngxviewbuilder.io/ai/json-authoring
 Source: https://ngxviewbuilder.io/ai/
 
 # AI reference
+
+> NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas. Nothing in this section describes a chat window in the builder, because there is none.
 
 This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](https://ngxviewbuilder.io/developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 

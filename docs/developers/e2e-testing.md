@@ -35,7 +35,7 @@ nvb-country-option-LT          the option whose value is LT
 nvb-button-trigger-save        a button named save
 ```
 
-Option ids end with the option's **value**, not its label, so they do not change when the labels are translated.
+Option ids end with the option's **value**, not its label, so they do not change when the labels are translated. A value made only of symbols is spelled out: `%` gives `...-option-percent`, `+` gives `...-option-plus`.
 
 ## Repeaters
 
@@ -89,10 +89,16 @@ builder-canvas                      the canvas
 builder-column-firstName            the firstName element on the canvas
 builder-element-duplicate-firstName its Duplicate action
 builder-element-delete-firstName    its Delete action
+builder-row-firstName               the row that starts with firstName
+property-row-label                  the Label row in the properties panel
+property-search-input               the property search box
+header-settings                     the Form settings button
 builder-ai-status                   what a connected AI client is doing
 ```
 
-Library tiles add an element on double click or Enter, and dragging works like any HTML5 drag and drop.
+Library tiles add an element on double click or Enter, and dragging works like any HTML5 drag and drop. A property's control is easiest to reach through its row, for example `[data-testid="property-row-label"] input`.
+
+`builder-row-…` named after the row's first element, `header-settings`, the spelled-out ids for symbol option values, and test ids on every dropdown in the properties panel come with 0.12.1. In 0.12.0 rows carry a random id that changes on every load.
 
 ## Your own elements
 
