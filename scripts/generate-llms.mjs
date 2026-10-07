@@ -15,7 +15,7 @@ const DOCS_DIR = path.join(ROOT, 'docs');
 const SITE_URL = 'https://ngxviewbuilder.io';
 
 const SUMMARY =
-  'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app.';
+  'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.';
 
 // A few top-level pages use VitePress's `home`/`page` layouts instead of plain
 // prose and have no `description:` frontmatter, so they are described by hand instead.
@@ -38,6 +38,7 @@ const AI_PAGE_ORDER = [
   'ai/element-rules.md',
   'ai/properties-reference.md',
   'ai/common-mistakes.md',
+  'ai/good-practices.md',
   'ai/examples.md',
   'ai/legacy-form-migration.md',
 ];

@@ -5,7 +5,7 @@ description: Multi-page views, steppers, and page-level states.
 
 # Pages & navigation
 
-A view can have one page or many. Pages appear in the footer strip under the canvas: click to switch, use **+** to add, drag to reorder.
+A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
 
 ## When to use multiple pages
 

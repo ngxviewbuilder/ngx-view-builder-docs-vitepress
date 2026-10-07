@@ -71,7 +71,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `fileUpload`
 
 - Use for file uploads.
-- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`), never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- `storageMode`: `"base64"` (default, the file content goes into the value, no backend needed) or `"server"` (uploaded through `uploadDataSourceName`). Set `"server"` explicitly whenever you configure upload/download/delete sources.
+- Value shape, the same in both modes (an array when `multiple`): `{ name, size, type, lastModified, contentType }` plus `base64` or `fileKey`. In server mode the name, type, size and key are read from the response using `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- With base64, set `maxFileSizeMb`: the value is about a third larger than the file.
 - Do not treat it as a plain text URL field.
 - Consulting mode: for the exact upload/download/delete request and response contract, see [Properties reference](./properties-reference#fileupload) and [File upload requests](../developers/data-sources#file-upload-requests).
 
@@ -206,7 +208,8 @@ Canonical example:
 ### `table`
 
 - Use for displaying data from a datasource.
-- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
+- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`, but start basic: columns, paging and quick search, with `showDetailedSearch` and `showExport` set to `false` (both default to `true`). Add detailed search, export, column settings, saved filters, selection, expandable rows or inline editing only when the user asks.
+- Row actions go in the three-dots menu, `rowActionsDisplayMode: "dropdown"`, unless the user explicitly asks for separate buttons, and the actions column shows no header text: `showActionsHeaderLabel: false` (it defaults to `true`). When the user does not say how a record opens, it opens from a **Preview** action in that menu, not from a row click.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
 - A column either prints text (`type: "text"`) or hosts a real element (`type: "element"` plus `elementType` and `element`). Use the element form whenever the cell needs a control, a badge, a button, or an event.
@@ -223,6 +226,9 @@ Canonical example:
 
 - Use for graphical visualization.
 - Do not use as a data input element.
+- `chartType`: `bar` and `horizontalBar` compare categories (horizontal for long names), `line` and `area` show change over time, `pie` and `donut` show parts of a whole with at most six slices (more fold into "Other").
+- `showLegend` and `legendLayout` apply to `pie` and `donut` only; single series charts have no legend, so put what is plotted in `title`.
+- Click actions (`events` with `trigger: "click"`) receive the clicked point as `{item.label}`, `{item.value}` and `{index}`.
 
 ## Container and layout elements
 

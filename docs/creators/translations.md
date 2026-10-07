@@ -11,8 +11,10 @@ A view can serve several languages from one definition. Content texts (labels, d
 
 1. **Form settings → Language** sets the default language.
 2. The **Translations** tab lists all languages of the view. Add a language with **+**.
-3. The tab shows every translatable text in a table: one row per text, one column per language. Fill in the empty cells.
+3. Pick a language at the top. The table lists every translatable text: the field it belongs to, the source text, and its translation in that language. Fill in the empty cells.
 4. At runtime, the host application (or the language switcher) selects which language renders.
+
+On a large view, the bar above the table helps you find things. The search box matches field names, source texts and translations, and ignores accents, so `zinute` finds *Žinutė*. **All**, **Missing** and **Translated** narrow the list, each with its count; **Missing** is the quickest way to finish a language. A row you are translating stays in the list until you change the filter, so it does not vanish after the first letter.
 
 The texts live in the view definition under `localization`:
 

@@ -1,6 +1,6 @@
 # NGX View Builder
 
-> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app.
+> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.
 
 This file contains the full text of every documentation page, concatenated for AI agents and tools that cannot crawl links. See https://ngxviewbuilder.io/llms.txt for a linked index instead.
 
@@ -68,7 +68,7 @@ shapes, which are the same either way.
 
 Hard rules:
 
-1. **An array is atomic.** If one command fails, none are applied. Prefer one batch over a sequence of single calls, so a partial build cannot happen.
+1. **An array is atomic.** If one command fails, none are applied. Group commands into batches by section rather than sending single calls: a change goes in one batch, a new view of more than about eight elements in one batch per section, all with the same `group`.
 2. **Use `{ dryRun: true }` first** for anything large or destructive. It runs every check and reports `changed` without touching the view.
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
@@ -185,7 +185,9 @@ Note that a mutation rebuilds the view, which clears working data. Set data afte
 
 ## Your changes are one undo step
 
-Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. Batches that share a `group` option (MCP: `group` on `nvb_execute`) fold into one undo step as long as the person edits nothing in between, so a view built section by section still undoes whole. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+
+While you build, the canvas shows the person what you are doing (reading, checking, building with a count) and plays the elements a batch adds in one by one, top to bottom.
 
 ## What gets checked
 
@@ -205,6 +207,8 @@ Source: https://ngxviewbuilder.io/ai/
 
 # AI reference
 
+> NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas. Nothing in this section describes a chat window in the builder, because there is none.
+
 This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](https://ngxviewbuilder.io/developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.
@@ -222,8 +226,9 @@ An agent (or a person building prompts) should consume the pages in this order:
 6. [Element rules & value shapes](https://ngxviewbuilder.io/ai/element-rules): per-element expectations.
 7. [Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference): the authoritative property list.
 8. [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes): anti-patterns to avoid.
-9. [Verified examples](https://ngxviewbuilder.io/ai/examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
-10. [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
+9. [Good practices](https://ngxviewbuilder.io/ai/good-practices): what makes a view look finished, element by element. Read before building or changing a view.
+10. [Verified examples](https://ngxviewbuilder.io/ai/examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
+11. [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
@@ -236,6 +241,7 @@ An agent (or a person building prompts) should consume the pages in this order:
 | [Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference) | Every supported property per element type, settings, data sources | Always |
 | [Element rules & value shapes](https://ngxviewbuilder.io/ai/element-rules) | Per-element usage rules and value shapes | Always |
 | [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes) | Known anti-patterns with corrections | Always; especially in review mode |
+| [Good practices](https://ngxviewbuilder.io/ai/good-practices) | What makes a view look finished: captions and labels per element, buttons and contrast, layout, names, fields, logic | Always, before building or changing a view |
 | [Verified examples](https://ngxviewbuilder.io/ai/examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |
@@ -303,6 +309,7 @@ The core idea is simple: when producing structures, the agent must operate not a
 4. [Logic and expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions)
 5. [Element rules and value shapes](https://ngxviewbuilder.io/ai/element-rules)
 6. [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes)
+7. [Good practices](https://ngxviewbuilder.io/ai/good-practices)
 
 After that, consult the general reference pages:
 
@@ -396,7 +403,8 @@ Required:
 
 ## What to do if the user's request is ambiguous
 
-- If a term is ambiguous, decide based on the [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map).
+- In a live builder session (MCP or the command API), the person can answer: ask a short question with options and your recommendation before building the part that depends on it. See [When to ask, and when to decide](https://ngxviewbuilder.io/ai/good-practices#when-to-ask-and-when-to-decide).
+- When no one can answer (a one-shot generation), decide based on the [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map) and state the choice.
 - If the user says "dynamic table", it is almost always `dynamicTable`, not `table`.
 - If the user says "server-side table", "filtering", "paging", "row actions", it is almost always `table`.
 - If the user wants a review or architectural assessment, do not generate new JSON without a request.
@@ -688,6 +696,69 @@ Every page needs its twin in `elements`:
 ```
 
 Page element properties: `name`, `label`, `description`, `type`, `visibleIf`, `disableIf`, `readonlyIf`, `hideHeader`, `removeBackgraund` (spelled exactly like that), `pageBackgroundColor`, `pagePadding`, `mobilePadding`. Nothing else.
+
+## Web pages: canvas render mode and page sections
+
+When the user asks for a web page rather than a form (a landing page, product page, event page, "a simple website"), set `settings.renderMode` to `"canvas"`: no page card, no pager or Submit bar, no outer spacing, full width, every page stacked into one long page. On phones, columns without `mobileWidth` stack.
+
+Build the page from `panel` elements with `sectionMode: true`, one per band, each in its own row of the page. Put the content (page titles, text, buttons, cards, fields) inside the sections; an element placed directly on a canvas page has no spacing around it.
+
+```json
+{
+  "schemaVersion": 1,
+  "settings": { "language": "en", "renderMode": "canvas" },
+  "pages": [
+    {
+      "name": "home",
+      "rows": [
+        {
+          "columns": [
+            {
+              "elementRef": "hero",
+              "rows": [
+                { "columns": [{ "elementRef": "heroTitle" }] },
+                { "columns": [{ "elementRef": "startButton" }, { "elementRef": "docsButton" }] }
+              ]
+            }
+          ]
+        },
+        {
+          "columns": [
+            {
+              "elementRef": "features",
+              "rows": [
+                { "columns": [{ "elementRef": "featuresTitle" }] },
+                { "columns": [{ "elementRef": "featureForms" }, { "elementRef": "featureTables" }, { "elementRef": "featureCharts" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "elements": {
+    "home": { "name": "home", "label": "Home", "type": "page", "hideHeader": true },
+    "hero": {
+      "name": "hero", "label": "", "type": "panel",
+      "sectionMode": true, "sectionTheme": "dark", "sectionMinHeight": "480px",
+      "backgroundImage": "https://example.com/hero.jpg", "backgroundOverlayColor": "rgba(2, 6, 23, 0.45)"
+    },
+    "heroTitle": {
+      "name": "heroTitle", "label": "", "type": "pageTitle", "level": "h1",
+      "title": "Ship internal tools in days", "subtitle": "Forms, tables and dashboards, built visually."
+    },
+    "startButton": { "name": "startButton", "label": "", "type": "button", "text": "Start free trial", "fitContent": true, "size": "large" },
+    "docsButton": { "name": "docsButton", "label": "", "type": "button", "text": "Read the docs", "fitContent": true, "size": "large", "variant": "outline", "tone": "neutral" },
+    "features": { "name": "features", "label": "", "type": "panel", "sectionMode": true },
+    "featuresTitle": { "name": "featuresTitle", "label": "", "type": "pageTitle", "level": "h2", "align": "center", "title": "Everything a back office needs" },
+    "featureForms": { "name": "featureForms", "label": "", "type": "messageCard", "variant": "info", "title": "Forms", "descriptionText": "Validation and conditions without code." },
+    "featureTables": { "name": "featureTables", "label": "", "type": "messageCard", "variant": "success", "title": "Tables", "descriptionText": "Sorting, filters and Excel export." },
+    "featureCharts": { "name": "featureCharts", "label": "", "type": "messageCard", "variant": "primary", "title": "Dashboards", "descriptionText": "Charts that read from the same data." }
+  }
+}
+```
+
+Section properties: `sectionMode`, `sectionTheme` (`light`/`dark`), `sectionContentWidth`, `sectionPaddingY`, `sectionMinHeight`, `sectionVerticalAlign`, `backgroundImage`, `backgroundOverlayColor`, plus the panel's own `panelBackgroundColor`. A form inside a web page (a sign-up box) still goes in a section; its button carries the submit or data source action, since canvas has no Submit bar.
 
 ## Building a layout from a screenshot or description
 
@@ -1311,6 +1382,7 @@ This page helps the agent decide which NGX View Builder element to use based on 
 
 ## Quick reference
 
+- "landing page", "web page", "website", "hero", "full width section" -> `settings.renderMode: "canvas"` with `panel` elements that have `sectionMode: true` (see [Layout model](https://ngxviewbuilder.io/ai/layout-model#web-pages-canvas-render-mode-and-page-sections))
 - "dynamic table", "editable rows", "add row", "delete row" -> `dynamicTable`
 - "server-side table", "paging", "sorting", "filtering", "export", "row actions" -> `table`
 - "repeating block", "repeatable section" -> `dynamicPanel`
@@ -1825,7 +1897,9 @@ This page is an AI-oriented summary of the primary NGX View Builder elements. Fo
 ### `fileUpload`
 
 - Use for file uploads.
-- Value shape: the upload endpoint's response object, stored verbatim (or an array when `multiple`), never file bytes/base64. Depends on `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- `storageMode`: `"base64"` (default, the file content goes into the value, no backend needed) or `"server"` (uploaded through `uploadDataSourceName`). Set `"server"` explicitly whenever you configure upload/download/delete sources.
+- Value shape, the same in both modes (an array when `multiple`): `{ name, size, type, lastModified, contentType }` plus `base64` or `fileKey`. In server mode the name, type, size and key are read from the response using `fileKeyField`/`fileNameField`/`fileTypeField`/`fileSizeField`.
+- With base64, set `maxFileSizeMb`: the value is about a third larger than the file.
 - Do not treat it as a plain text URL field.
 - Consulting mode: for the exact upload/download/delete request and response contract, see [Properties reference](https://ngxviewbuilder.io/ai/properties-reference#fileupload) and [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
 
@@ -1960,7 +2034,8 @@ Canonical example:
 ### `table`
 
 - Use for displaying data from a datasource.
-- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`.
+- Supports `sorting`, `filtering`, `paging`, `rowActions`, and `export`, but start basic: columns, paging and quick search, with `showDetailedSearch` and `showExport` set to `false` (both default to `true`). Add detailed search, export, column settings, saved filters, selection, expandable rows or inline editing only when the user asks.
+- Row actions go in the three-dots menu, `rowActionsDisplayMode: "dropdown"`, unless the user explicitly asks for separate buttons, and the actions column shows no header text: `showActionsHeaderLabel: false` (it defaults to `true`). When the user does not say how a record opens, it opens from a **Preview** action in that menu, not from a row click.
 - Requires `columnsConfig` and often datasource properties.
 - Use `key`, not `name`, for `columnsConfig[*]` columns.
 - A column either prints text (`type: "text"`) or hosts a real element (`type: "element"` plus `elementType` and `element`). Use the element form whenever the cell needs a control, a badge, a button, or an event.
@@ -1977,6 +2052,9 @@ Canonical example:
 
 - Use for graphical visualization.
 - Do not use as a data input element.
+- `chartType`: `bar` and `horizontalBar` compare categories (horizontal for long names), `line` and `area` show change over time, `pie` and `donut` show parts of a whole with at most six slices (more fold into "Other").
+- `showLegend` and `legendLayout` apply to `pie` and `donut` only; single series charts have no legend, so put what is plotted in `title`.
+- Click actions (`events` with `trigger: "click"`) receive the clicked point as `{item.label}`, `{item.value}` and `{index}`.
 
 ## Container and layout elements
 
@@ -2528,11 +2606,18 @@ Value shape: `boolean`
 | `multiple` | `boolean` | Allow multiple files |
 | `maxFiles` | `number` | Max number of attached files (default `5`) |
 | `maxFileSizeMb` | `number` | Max file size **in megabytes**, not bytes |
-| `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources; empty `uploadDataSourceName` means files never leave the browser (local metadata only) |
+| `storageMode` | `"base64"` \| `"server"` | `base64` (default) keeps each file's content in the value. `server` uploads through `uploadDataSourceName` and keeps the returned `fileKey`. A view saved without `storageMode` but with an upload source counts as `server` |
+| `uploadDataSourceName` / `downloadDataSourceName` / `deleteDataSourceName` | `string` | Names of REST data sources, used only when `storageMode` is `server` |
 | `uploadFormFieldName` | `string` | `multipart/form-data` field name for the file (default `file`). Upload always sends single-field `FormData`, never JSON/base64 |
 | `fileKeyField` / `fileNameField` / `fileTypeField` / `fileSizeField` | `string` | Field names read from the server's response object (defaults `key`, `name`, `contentType`, `size`; the older `fil_key`/`fil_name`/`fil_content_type`/`fil_size` names are still recognized as fallback aliases) |
 
-Value shape: the upload response object stored verbatim (or an array of them when `multiple`), keyed under the element's `name`, never file bytes/base64. Full request/response wire contract: [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
+Value shape (an array of these when `multiple`), keyed under the element's `name`, the same in both modes:
+
+```json
+{ "name": "logo.png", "size": 4507, "type": "image/png", "lastModified": 1790764181739, "contentType": "image/png", "base64": "iVBORw0KGgo..." }
+```
+
+With `storageMode: "base64"` the object carries `base64` (file content without the `data:` prefix). With `"server"` it carries `fileKey` instead. Base64 makes the value about a third larger than the file, so set `maxFileSizeMb` when using it. Full request/response wire contract: [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests).
 
 ### `page`
 
@@ -2575,6 +2660,14 @@ A page's children are **not** listed here. They live in `pages[*].rows`; see [La
 | `titleUnderlineColor` | `string` | Underline color (when `titleUnderline`) |
 | `titleUnderlineWidth` | `string` | Underline thickness (when `titleUnderline`) |
 | `resetChildrenOnHide` | `boolean` | Clear descendant field values when the panel becomes hidden |
+| `sectionMode` | `boolean` | Turns the panel into a page section: a full width band with no border, content centred at `sectionContentWidth`. The building block of web pages; pair it with `settings.renderMode: "canvas"` |
+| `sectionTheme` | `"light"` \| `"dark"` | `dark` switches every colour inside the section to the dark palette, so text, buttons and inputs on it stay readable |
+| `sectionContentWidth` | `string` | Max width of the content inside the band (default `1120px`) |
+| `sectionPaddingY` | `string` | Space above and below the content (default grows from 48px to 96px with the screen) |
+| `sectionMinHeight` | `string` | Minimum height, e.g. `"80vh"` for a hero band |
+| `sectionVerticalAlign` | `"start"` \| `"center"` \| `"end"` | Content position when `sectionMinHeight` makes the band taller than its content |
+| `backgroundImage` | `string` | Section background image URL (with `sectionMode`) |
+| `backgroundOverlayColor` | `string` | Colour over the background image so text stays readable, e.g. `rgba(0, 0, 0, 0.45)` |
 
 **A panel never lists its children.** There is no `rows`, `columns`, `children`, `elements` or `items` property on `panel`. Child fields are attached in the layout tree, on the column that references the panel. See [Layout model](https://ngxviewbuilder.io/ai/layout-model#nesting-the-mistake-that-breaks-everything).
 
@@ -2743,8 +2836,8 @@ Modal element. Configure via `settings.dialog*` fields:
 | Setting | Notes |
 |---|---|
 | `settings.renderMode` | `"dialog"` |
-| `settings.dialogTitle` | Dialog title |
-| `settings.dialogDescription` | Subtitle |
+| `settings.dialogTitle` | Dialog title. `{field}` tokens show that field's current value, e.g. `"Order {orderNo}"` |
+| `settings.dialogDescription` | Subtitle. Takes `{field}` tokens like the title |
 | `settings.dialogWidth` | Width |
 | `settings.dialogShowCloseButton` | boolean |
 | `settings.dialogPadding` | CSS padding |
@@ -2759,9 +2852,16 @@ Value shape: `string` (HTML).
 
 | Property | Type | Notes |
 |---|---|---|
-| `tone` | `string` | `primary` `success` `warning` `risk` `neutral` `info` |
-| `icon` | `string` | Icon name |
-| `text` | `string` | Card message text |
+| `title` | `string` | Heading |
+| `descriptionText` | `string` | Text under the title; typed line breaks are kept |
+| `variant` | `string` | Colour: `info` `primary` `success` `warn` `risk` `neutral` |
+| `appearance` | `"soft"` \| `"card"` \| `"accent"` | `soft` tinted banner (default), `card` white card with the icon in a tile above the title (feature lists, empty states), `accent` a coloured left rule and no box (hints inside forms) |
+| `actionsLayout` | `"stacked"` \| `"inline"` | Buttons under the text (default) or beside it when the card is wide |
+| `events` | `IElementActionConfig[]` | Every `trigger: "click"` action with a `label` becomes a small button. Keep to one or two. Without `buttonVariant`/`buttonTone` the first is filled in the message colour and the rest are outlined |
+| `icon` / `showIcon` | `string` / `boolean` | Leading icon; each variant has a default |
+| `dismissible` | `boolean` | Close button |
+| `initiallyVisible` | `boolean` | Start hidden (shown by an action) |
+| `variantMode` / `variantRules` / `variantExpression` | | Conditional colour |
 
 ### `statsCard`
 
@@ -2912,7 +3012,7 @@ Only include settings actually needed by the form.
 | `locale` | `string` | E.g. `"en-US"`, `"lt-LT"` |
 | `width` | `string` | Form width |
 | `widthUnit` | `"px" \| "%"` | |
-| `renderMode` | `"page" \| "dialog"` | |
+| `renderMode` | `"page" \| "dialog" \| "canvas"` | `canvas`: full width, no page card, no Prev/Next or Submit bar, no outer spacing, every page stacked into one long page. For web pages; build them from panels with `sectionMode`. Columns without `mobileWidth` stack on phones |
 | `theme` | `"light" \| "dark"` | |
 | `pageNavigationMode` | `"default" \| "stepper"` | |
 | `allowStepWithoutValidation` | `boolean` | |
@@ -3599,6 +3699,212 @@ Before returning a response, the agent must verify:
 
 ---
 
+## AI: Good practices for building views
+
+Source: https://ngxviewbuilder.io/ai/good-practices
+
+# AI: Good practices for building views
+
+The other AI pages say what is **valid**. This page says what is **good**: the choices a careful designer makes so the view looks finished the first time the person sees it, and does not need a second round of fixes. Every rule here comes from a view that looked wrong or behaved wrong until it was followed.
+
+Read it before the first change. Over MCP, `nvb_execute` does not accept a batch until this page and the other required pages were read on the connection.
+
+## How to work
+
+1. **Look before you build.** Call `getTree()` (MCP: `nvb_get_tree`) first. Extend what is there; never rebuild a view the user only asked to change.
+2. **Build in sections the person can watch.** A change to an existing view goes in one `execute()` call. A new view of more than about eight elements goes in a few batches, one per section from the top (header and first fields, each further group, then the buttons), each sent as soon as it is ready. The first section shows up right away and the canvas plays the new elements in one by one, instead of the whole form landing after a long wait. Give every batch of that build the same `group` option, for example `"build-contact-form"`, so the person still undoes the whole build in one step. Each batch is atomic on its own, so a failure never leaves a half applied section.
+3. **Dry run large batches** with `dryRun: true`, fix what it reports, then send it for real.
+4. **Check the result.** After a batch, read the returned tree (or `getTree()`) and confirm the elements are where you meant them: in the right container, in the right order, side by side where you wanted a row.
+5. **Do not save.** Saving is the person's decision. Build, check, then stop and describe what you did.
+
+## When to ask, and when to decide
+
+When you work in a live builder, the person is right there. A short question costs them a few seconds; a view built on a wrong guess costs them a round of fixes. So when you are genuinely unsure about something that changes what they get, ask before you build it.
+
+**Ask when** the choice changes how the view looks or behaves and the request does not settle it:
+
+- **Which control for a choice**: a `radio` list with every option visible, a compact `select`, a `selectButton` row, or `autocomplete` for a long list; one answer or several (`checkbox`, `multiSelect`).
+- **Which kind of table**: rows people edit (`dynamicTable`), data shown from a server with paging and search (`table`), or a repeating block of fields (`dynamicPanel`).
+- **One page or steps**: a single form with sections, or a multi-step flow.
+- **What is required**, and what happens on submit (a toast, a data source call, navigation).
+- **Where the data comes from**: fixed options, or a data source, and which one.
+- **Anything you would have to invent**: option lists, labels in another language, business rules, limits.
+
+**Decide yourself, and say what you chose,** when a good practice already answers it or the change is easy to undo: labels in plain words, side-by-side short fields, button tones, required messages, names, layout details. Asking about every detail is as unhelpful as guessing the important ones.
+
+**How to ask:**
+
+- One short message, before the batch that depends on it, with every open question together, not one at a time.
+- Offer concrete options and your recommendation: *"For Client type I would use a radio list, since there are only two options and both stay visible. Or should it be a dropdown?"*
+- Build everything that does not depend on the answer while you wait, if the person agrees, and leave the open parts out rather than filling them with a guess.
+- Once the person has answered, follow the answer, including in later requests of the same conversation.
+
+## Captions and labels
+
+Every element sits in a wrapper that draws a **label row** above it whenever `label` is not empty. For input fields that row is the field's caption. For elements that show their own text (a button, a card, a picture) it is a second, redundant caption in bold, and it is the most common reason an AI-built view looks unfinished.
+
+**Rule: a visible word belongs to exactly one property, and it is the one the element is built to show.**
+
+| Element | Visible text goes in | `label` |
+| --- | --- | --- |
+| `text`, `number`, `textarea`, `select`, `radio`, `datepicker` and every other input | `label`, in plain words: "Company code" | the field caption |
+| `button` | `text` | `""` |
+| `badge` | `text` | `""` |
+| `statsCard` | `title` (the metric name) and `valueText` | `""` |
+| `messageCard` | `title` and `descriptionText` | `""` |
+| `pageTitle` | `title` and `subtitle` | `""` |
+| `image` | `alt` (always) and optionally `caption` | `""` |
+| `chart` | its `title` | `""` |
+| `divider`, `spacer`, `emptyBlock`, `customHtml`, `richTextViewer`, `video`, `iframe`, `progressBar`, `avatar`, `icon`, `breadcrumbs` | their own content | `""` |
+| `singleCheckbox` | the statement next to the box in `checkboxLabel`: "I agree to the terms" | `""`, or a question when the box answers it |
+| `toggleSwitch` | `label` for what it switches, `trueLabel` / `falseLabel` for the states | the caption |
+| `panel`, `dynamicPanel` | `label` is the panel heading | `""` when the panel only groups fields |
+| `page` | `label` is the page title | `""` hides the title |
+
+Since 0.10.6, `addElement` without a label already leaves these display elements without one, turns a button's `label` into its `text`, and gives a named field a readable label (`companyCode` becomes "Company code"). Older builders do not, so set the properties yourself either way.
+
+```json
+{ "op": "addElement", "type": "statsCard", "name": "revenue", "properties": { "label": "", "title": "Revenue this month", "valueText": "€48,200" } }
+```
+
+Other caption rules:
+
+- **Write labels for people**, in sentence case and the language of the view: "Delivery date", not `deliveryDate`, "DELIVERY DATE" or "Delivery Date".
+- **Never show a technical name.** A label equal to the element's `name` (`el3`, `customerEmail`) means the label was forgotten.
+- `placeholder` is an example of the answer ("name@company.com"), not a second label. `description` is for help that does not fit the label. Do not repeat the label in either.
+
+## Buttons
+
+- The caption is `text`; `label` is `""`. A caption left in `label` is drawn twice: once as a field caption above the button, once on the button.
+- **One primary action per area**: `variant: "solid"`, `tone: "primary"`. Secondary actions next to it are `variant: "outline"` with `tone: "neutral"`. A destructive action is `tone: "risk"`.
+- **A dark fill needs light text.** A solid button with a dark tone (`primary`, `success`, `info`, `risk`) or a dark custom `color` gets `textColor: "var(--nvb-color-neutral-000)"`. Before 0.10.6 some host stylesheets left the caption dark on dark; setting it explicitly is correct on every version. A light fill (`warning`, or a light custom `color`) gets dark text, `"var(--nvb-color-neutral-900)"`.
+- **Button bars go in an `emptyBlock`**, not in a panel row: `contentDisplay: "grid"`, `gridTemplateColumns: "max-content max-content"`, a `contentJustify` and a `contentGap`. Flex does not line them up, because every row inside the block is full width.
+- A button does something. Give it `events` (a `submit`, a `validate`, a data source call, a toast), or leave it out.
+
+```json
+{
+  "type": "button",
+  "name": "register",
+  "label": "",
+  "text": "Register",
+  "variant": "solid",
+  "tone": "primary",
+  "textColor": "var(--nvb-color-neutral-000)",
+  "events": [{ "trigger": "click", "type": "submit", "validateForm": true }]
+}
+```
+
+## Color and contrast
+
+- Use the theme's tokens, `var(--nvb-color-primary-600)`, `var(--nvb-color-neutral-100)`, `var(--nvb-color-risk-500)` and so on, rather than hex values. The view then follows the host's theme and dark mode.
+- Text on a filled surface always contrasts with it: light text on a dark fill, dark text on a light fill. Check every place you set a background (`color` on a button, `panelBackgroundColor` on a block).
+- Use tones for meaning, not decoration: `success` for done, `warning` for attention, `risk` for errors and destructive actions, `info` for neutral notes.
+
+## Layout
+
+- Follow the [layout model](https://ngxviewbuilder.io/ai/layout-model): children of a container live in the column that references it, never inside the element definition.
+- **Put related short fields side by side**: first and last name, city and postcode, start and end date. Two or three fields per row on desktop; long text fields get a row of their own.
+- **Elements in one row need no width.** Every element without a `width` grows to fill its share of the row: two elements take half each, three take a third each, and they stretch with the screen. Do not write `width: "50%"` or `"33%"` to get that. It adds nothing, and it breaks the row: `%` widths ignore the gap between columns, so two `50%` elements no longer fit side by side and the second one wraps to the next line.
+- **Only an uneven split gets a width**, and only on one element: for a 60/40 pair give the narrow one `width: "40%"` and leave the wide one without a width, so it takes the rest.
+
+```json
+{
+  "rows": [
+    { "columns": [{ "elementRef": "firstName" }, { "elementRef": "lastName" }] }
+  ]
+}
+```
+
+`firstName` and `lastName` carry no `width`: each takes half the row.
+- **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
+- **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
+- **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
+- A dashboard or display page is not a form: set `showValidateButton: false` and `showSubmitButton: false` in `settings` so the Validate and Submit toolbar does not appear.
+
+## Names
+
+- `name` is the data key the application receives. Make it meaningful camelCase: `companyCode`, `deliveryDate`, `invoiceLines`. Never leave `el1`, `el2`.
+- Names are stable. Renaming a field changes the data the host receives and breaks every expression that uses it; use `renameElement`, which updates the references, and only when asked.
+- Inside an `objectPanel` or `dynamicPanel`, child names only need to be unique inside that panel; address them by their path (`billing.city`).
+
+## Fields
+
+- **Required means it**: set `required: true` together with a `requiredMessage` in plain words ("Enter your e-mail address"). A conditional requirement is `requireIf`, not a validator.
+- Check formats with validators (`email`, `pattern`, `minLength`, `min`, `max`) and give each a message that tells the person what to fix.
+- **Pick the choice control by the number of options**: two to four short options, `radio` or `selectButton` (all visible, one click); more, `select`; a long or server-backed list, `autocomplete`; several answers, `checkbox` or `multiSelect`; a yes/no, `singleCheckbox` or `toggleSwitch`.
+- Option `value`s are stable codes (`company`, `person`); option `label`s are what people read.
+- Pre-fill with `defaultValue`, not `value`.
+- Use the specific element for the data: `datepicker` for dates, `number` for amounts, `phoneInput` for phone numbers, `fileUpload` for files. A `text` field loses validation and formatting the specific one gives for free.
+
+## Logic
+
+- Conditions reference fields by `name` in braces: `{clientType} == "company"`.
+- Logic that must react while the person is typing or choosing needs `logicExecutionMode: "onChange"` on the element that carries it; the default waits for blur.
+- A field hidden by `visibleIf` usually should not keep its value: set `resetOnHide`, or a `resetIf` with the same condition.
+- An `expression` computes a value from *other* fields. It never reads its own field.
+- Show or hide a whole group by putting `visibleIf` on its panel, not on every field inside it.
+
+## Tables and repeating data
+
+### A `table` starts basic
+
+- **Unless the person asked for more, a `table` is columns, paging and the quick search box, nothing else.** Do not improvise features. The element also turns on detailed search and export by default, so a basic table switches those two off: `showDetailedSearch: false`, `showExport: false`. Quick search (`showQuickSearch`) stays on.
+- **Add a feature only when it was asked for**: detailed search, export, column settings, saved filters, selection, expandable rows, inline editing, a header menu. If a feature seems useful but was not mentioned, suggest it in your summary instead of adding it.
+- **Row actions always go in the three-dots menu**: `rowActions` with `rowActionsDisplayMode: "dropdown"`. Use `iconButtons` or `buttons` only when the person explicitly asks for separate buttons in the row.
+- **The actions column has no header text**: `showActionsHeaderLabel: false`. It defaults to `true` and puts an "Actions" heading over the last column, which the three dots already explain.
+- **A `table` gets a full-width row of its own.** Inside a container narrower than 768px it switches to stacked mobile cards, so on a desktop page it must never end up looking like a phone. Do not put it beside another element, in a narrow column, a side panel or a small dialog, and do not give it a `width`. Leave `responsiveMode` on `"auto"` so it stacks only on a real phone; `"stack"` shows cards everywhere and is only for when the person asks for cards.
+- **When the person does not say how a record opens, it opens from the three-dots menu at the end of the row**: one **Preview** row action. Do not add navigation on a row click (`rowClickActions`, `rowClickOpensDetails`) on your own. When the person does say how (a click on the row, a dialog, a details panel), build it that way.
+
+```json
+{
+  "type": "table",
+  "name": "orders",
+  "label": "Orders",
+  "showDetailedSearch": false,
+  "showExport": false,
+  "columnsConfig": [
+    { "key": "number", "label": "Order", "type": "text", "showInTable": true },
+    { "key": "customer", "label": "Customer", "type": "text", "showInTable": true },
+    { "key": "total", "label": "Total", "type": "number", "showInTable": true }
+  ],
+  "rowActionsDisplayMode": "dropdown",
+  "showActionsHeaderLabel": false,
+  "rowActions": [
+    { "label": "Preview", "icon": "visibility", "type": "navigate", "navigateTo": "/orders/{row.number}" }
+  ]
+}
+```
+
+### Choosing and filling
+
+- `dynamicTable` for rows the person edits, `table` for data shown from a data source, `dynamicPanel` for a repeating block of several fields per entry.
+- A status, badge, toggle or button in a `table` column is a hosted element (`type: "element"` with `elementType`), not HTML in a template.
+- Limit rows with `maxRows`, or conditionally with `disallowAddRowsIf`; protect some rows from deletion with `disallowDeleteRowsIf` (`{row.status} == "approved"`), rather than locking the whole table.
+- A `dynamicPanel` defines its children in its `template` map and lays them out in `column.rows`.
+
+## Text and content
+
+- One language per view, the view's language, including placeholders, messages and button captions.
+- Examples and sample data use neutral, international names and places (Sam Carter, Harbor Foods, Amsterdam).
+- Short, specific wording: "Save order", not "Submit"; "Enter your e-mail address", not "Invalid input".
+
+## Final checklist
+
+Before you report back, check that:
+
+1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
+2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
+4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
+5. Every name is meaningful camelCase; no `el1` is left.
+6. Required fields have a `requiredMessage`; validators have messages.
+7. Live logic has `logicExecutionMode: "onChange"`, and hidden fields do not keep stale values.
+8. Colors are theme tokens, and text contrasts with every fill.
+9. Every choice you were unsure about was asked, not guessed, and the choices you made yourself are named in your summary.
+10. Nothing was saved, and the person was told what changed.
+
+---
+
 ## AI: Verified example structures
 
 Source: https://ngxviewbuilder.io/ai/examples
@@ -4093,6 +4399,7 @@ Every property below is real. Notice what each element does **not** have: `phone
       "maxFileSizeMb": 10,
       "showPreview": true,
       "dropzoneText": "Drop files here",
+      "storageMode": "server",
       "uploadDataSourceName": "ds1",
       "downloadDataSourceName": "ds2",
       "deleteDataSourceName": "ds3",
@@ -7125,6 +7432,8 @@ Source: https://ngxviewbuilder.io/developers/ai-command-api
 
 The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so nothing Angular shaped leaks out and the whole contract survives a trip through a websocket.
 
+NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas.
+
 An agent reaches it over MCP. The browser dials out to the MCP server and the server forwards each method call back down that socket, so the user's machine never has to accept an inbound connection.
 
 It exposes one write door and a handful of read methods, one MCP tool each:
@@ -7147,7 +7456,7 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
-`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference and the common mistakes. Until it has, `nvb_execute` answers with the list of pages still to read. That is about 30 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
+`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference, the common mistakes and the [good practices](https://ngxviewbuilder.io/ai/good-practices). Until it has, `nvb_execute` answers with the list of pages still to read. That is about 33 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
 
 ## Connecting the builder
 
@@ -7196,7 +7505,7 @@ The key is forgiving to type: case, spaces and missing dashes are ignored, and `
 
 ### Keys from your backend
 
-If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with `https://<your server>/mcp?key=<the key>` (or an `x-nvb-session-key` header). Such a connection starts out paired and nobody types anything. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
+If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with an `x-nvb-session-key: <the key>` header on `https://<your server>/mcp`. Such a connection starts out paired and nobody types anything. The server does not read the key from the URL, because a query string ends up in proxy logs and browser history. Make the key random, at least 128 bits, 16 to 128 characters of letters, digits and `. _ ~ -`. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
 
 ### The bridge keeps itself up
 
@@ -7261,8 +7570,19 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_MCP_DEMO_MAX_TABS` | `30` | Tabs from exempt origins that may be connected at once, all of them together. |
 | `NVB_MCP_DEMO_MAX_CALLS_PER_SESSION` | `150` | Calls per window for a tab from an exempt origin. |
 | `NVB_MCP_DEMO_KEY_TTL_MS` | `7200000` | How long a pairing key from an exempt origin is valid. |
+| `NVB_MCP_DEMO_MAX_TABS_PER_IP` | `5` | Tabs from exempt origins one address may hold, so one network cannot take the whole demo pool. |
+| `NVB_MCP_MAX_CONNECTIONS` | `5000` | Open MCP sessions in total. When it is reached, a new session pushes out the unpaired one idle the longest, never a working pairing. |
+| `NVB_MCP_UNPAIRED_IDLE_TIMEOUT_MS` | `900000` | An MCP session that never paired is closed after this long without a request. |
+| `NVB_MCP_MAX_SOCKETS` | `10000` | Builder tabs connected in total. |
+| `NVB_MCP_MAX_SOCKETS_PER_IP` | `500` | Builder tabs connected from one address. An office behind one address fits easily. |
+| `NVB_MCP_HELLO_TIMEOUT_MS` | `15000` | A tab that does not introduce itself by then is closed. |
+| `NVB_MCP_TRUST_PROXY` | `loopback, linklocal, uniquelocal` | Which proxies may name the client address in `X-Forwarded-For` (Express `trust proxy`). The default takes it only from a proxy on the same machine or a private network. |
+| `NVB_MCP_ALLOWED_HOSTS` | empty | `Host` values `/mcp` answers to, comma separated. Set it to turn on DNS rebinding protection. |
+| `NVB_MCP_MAX_CONNECTIONS_PER_IP` | `0` (off) | Open MCP sessions per address. Leave it off when AI clients are hosted (claude.ai, ChatGPT): they reach the server from their provider's addresses, shared by everyone. |
+| `NVB_MCP_NEW_SESSIONS_PER_IP_PER_MINUTE` | `0` (off) | New MCP sessions per address per minute. Same caveat. |
+| `NVB_MCP_MAX_FAILED_PAIRS_PER_IP` | `0` (off) | Wrong pairing keys per address per 15 minutes. Same caveat. |
 
-The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set.
+The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set. Seats are counted per license and per browser, never per address, so twenty people behind one office address with their own licenses each get their own seat.
 
 ### Seats
 
@@ -8642,7 +8962,7 @@ An `apiPrefix` interceptor also lets creators use short relative URLs (`/clients
 
 This only applies to a **`table`** element with **Lazy load** on (creator-side property, `tableDataSourceName`). With Lazy load off, the table's data source is a plain source that must return every row in one response. The table paginates/sorts/filters in the browser and none of the contract below applies.
 
-With Lazy load on, set the source's **Method** to the literal string **`TABLE-POST`** in the DataSources tab. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
+With Lazy load on, give the source the **POST** method in the Data sources tab and turn on **Send the table's paging, sorting and filters**. The switch shows up on a POST source as soon as a table or list grid loads from it, and names the tables that do. The view stores this as the method `TABLE-POST`, which is also what you write when you author the JSON yourself, and views saved with it keep working. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
 
 - If the source's **Request body** is left empty, the body sent to your endpoint is exactly the object below.
 - If you *do* configure a body template (e.g. `{"tenantId":"{el1}"}`), your fields are kept and `pagingParams`/`params`/`extendedParams` are added on top.
@@ -8730,7 +9050,20 @@ GET /api/cities?q=vil&limit=100
 
 ## File upload requests
 
-`fileUpload` can bind up to three independent data sources (**Upload data source**, **Download data source**, **Delete data source**), each a normal REST source. If **Upload data source** is left empty, files never leave the browser: only local metadata (`name`/`size`/`type`/`lastModified`) is kept as the field's value, which is a common foot-gun for a field that otherwise looks "filled in".
+`fileUpload` has a **Save files as** setting (`storageMode`):
+
+- **Base64 in the form data** (`base64`, the default): no request is made. Each file is read in the browser and its content goes into the field's value as `base64`.
+- **Upload to server** (`server`): the file is sent to the **Upload data source** and the value keeps the `fileKey` your endpoint returns. The **Download** and **Delete** data sources are used for preview, download and removal.
+
+Either way the value has the same shape, so your backend reads one format:
+
+```json
+{ "name": "resume.pdf", "size": 245678, "type": "application/pdf", "lastModified": 1790764181739, "contentType": "application/pdf", "fileKey": "9f2c1e6a-..." }
+```
+
+In base64 mode `base64` takes the place of `fileKey`. Views saved before this setting existed keep uploading if they have an upload data source.
+
+The rest of this section describes the server mode.
 
 ### Upload
 
@@ -8761,7 +9094,7 @@ Your endpoint should respond with an object describing the stored file:
 
 Field names are configurable via the **File key / name / size / type field** properties (defaults shown above: `key`, `name`, `size`, `contentType`); if your backend already uses different keys (including the older `fil_key`/`fil_name`/`fil_size`/`fil_content_type` convention from earlier versions), the parser also recognizes common aliases automatically (`fileKey`/`filKey`/`fil_key`/`id`/`fileId`/`uuid` for the key, `fileName`/`fil_name` for the name, `mimeType`/`fil_content_type` for the type, `fil_size` for the size). The response can also come wrapped as `{ "data": {...} } `/`{ "items": [...] }`/etc., and the first record found is used.
 
-**The entire response object is stored verbatim as the field's value** (or an array of responses when **Max files** > 1). There is never a file-bytes/base64 field in the form's own JSON result, only whatever metadata your endpoint returned.
+The field's value is not the response itself: it is the standard object shown above, with the name, size and type taken from the response (falling back to the picked file) and the key stored as `fileKey`. An array of them is stored when **Multiple** is on.
 
 ### Download
 
@@ -8827,7 +9160,7 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 
 ## WebSocket sources
 
-A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [DataSources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
+A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [Data sources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
 
 Enable the type in the builder UI first, otherwise creators cannot pick it:
 
@@ -8908,6 +9241,135 @@ Sockets die for reasons that have nothing to do with your code. Load balancers a
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.
+
+---
+
+## E2E testing
+
+Source: https://ngxviewbuilder.io/developers/e2e-testing
+
+# E2E testing
+
+Every interactive control NGX View Builder renders has a `data-testid`: inputs, select triggers and their options, date pickers, table menus and dialogs, rich text toolbars, dynamic panel rows, and in the builder every property editor and canvas action. You never have to reach for CSS classes or text in a test.
+
+The ids are built from the element's **data path**, so they stay the same when you restyle a view, change a label or translate it. Two fields of the same type never share an id, which matters because Playwright's locators are strict: if `getByTestId()` matches two nodes, the test fails instead of picking one.
+
+## How an id is built
+
+```
+nvb-<element type>-<part>-<data path>
+```
+
+| Piece | What it is | Example |
+| --- | --- | --- |
+| `nvb-<element type>` | the element that owns the control | `nvb-select` |
+| `<part>` | which control inside it | `trigger`, `search`, `option` |
+| `<data path>` | where the value lives in the data, written as one token | `country`, `orders-0-status` |
+
+The data path is the element's `dataPath`, or its `name` when it has none. Dots, brackets and any other characters that are not letters, digits or `_` become a single dash, and the case is kept, so `orders[0].status` becomes `orders-0-status` and `billing.city` becomes `billing-city`. Nothing is shortened.
+
+A field called `firstName` and a select called `country` render, among others:
+
+```
+nvb-element-firstName          the element's wrapper
+nvb-label-firstName            its label
+nvb-text-input-firstName       the input itself
+nvb-select-trigger-country     the select's button
+nvb-select-search-country      its search box
+nvb-country-option-LT          the option whose value is LT
+nvb-button-trigger-save        a button named save
+```
+
+Option ids end with the option's **value**, not its label, so they do not change when the labels are translated. A value made only of symbols is spelled out: `%` gives `...-option-percent`, `+` gives `...-option-plus`.
+
+## Repeaters
+
+Inside a dynamic panel or a dynamic table the data path already carries the row, so the ids do too. For a dynamic panel called `orders` with a text field `sku` in it:
+
+```
+nvb-dynamic-panel-row-orders-0          the first row
+nvb-text-input-orders-0-sku             the sku field in the first row
+nvb-text-input-orders-1-sku             the same field in the second row
+nvb-dynamic-panel-delete-row-orders-1   delete button of the second row
+```
+
+Fields in an object panel work the same way through their path: `address.city` gives `nvb-text-input-address-city`.
+
+## Playwright
+
+`data-testid` is Playwright's default test id attribute, so `getByTestId()` works without any configuration.
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test('new order', async ({ page }) => {
+  await page.goto('/orders/new');
+
+  await page.getByTestId('nvb-text-input-firstName').fill('Ada');
+
+  // A select: open it, then pick the option by its value.
+  await page.getByTestId('nvb-select-trigger-country').click();
+  await page.getByTestId('nvb-country-option-LT').click();
+
+  // A repeater row.
+  await page.getByTestId('nvb-text-input-orders-0-sku').fill('A-100');
+
+  await page.getByTestId('nvb-button-trigger-save').click();
+  await expect(page.getByTestId('nvb-element-firstName')).toBeVisible();
+});
+```
+
+With Cypress, use the attribute selector: `cy.get('[data-testid="nvb-text-input-firstName"]')`.
+
+The fastest way to find an id is the browser's element inspector: select the control and read its `data-testid`. Every id you see there is stable as long as the element keeps its name.
+
+## Testing a page with the builder in it
+
+The builder's own controls use the `builder-` prefix (and `sidebar-` for the element library), followed by the area and, where there are several, the element or property they belong to:
+
+```
+sidebar-element-search              the library search box
+sidebar-element-text                the Text input tile in the library
+builder-canvas                      the canvas
+builder-column-firstName            the firstName element on the canvas
+builder-element-duplicate-firstName its Duplicate action
+builder-element-delete-firstName    its Delete action
+builder-row-firstName               the row that starts with firstName
+property-row-label                  the Label row in the properties panel
+property-search-input               the property search box
+header-settings                     the Form settings button
+builder-ai-status                   what a connected AI client is doing
+```
+
+Library tiles add an element on double click or Enter, and dragging works like any HTML5 drag and drop. A property's control is easiest to reach through its row, for example `[data-testid="property-row-label"] input`.
+
+`builder-row-…` named after the row's first element, `header-settings`, the spelled-out ids for symbol option values, and test ids on every dropdown in the properties panel come with 0.12.1. In 0.12.0 rows carry a random id that changes on every load.
+
+## Your own elements
+
+A [custom element](https://ngxviewbuilder.io/developers/custom-elements) gets the same scheme from `createElementTestId()`:
+
+```ts
+import { createElementTestId } from '@ngxviewbuilder/runtime';
+
+export class RatingElement {
+  readonly model = input.required<RatingModel>();
+
+  protected readonly tid = createElementTestId(this.model, 'nvb-rating', 'rating');
+}
+```
+
+```html
+@for (star of stars; track star) {
+  <button [attr.data-testid]="tid('star', star)">…</button>
+}
+```
+
+`tid('star', 3)` on an element named `score` gives `nvb-rating-star-score-3`. The extra arguments are for parts that repeat inside one element, like the stars here or the options of a list. `toTestIdToken()` is exported too, for building a token from your own values.
+
+## Upgrading from 0.11 or earlier
+
+Before 0.12.0 a data path kept its dots and brackets (`nvb-text-input-orders[0].sku`), option ids were lower case and cut at 50 characters, and dynamic panel rows were not namespaced by the panel. Selectors written against those ids need the new form shown above.
 
 ---
 
@@ -9274,6 +9736,14 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
+### Build warning about jexl
+
+The expression engine, `jexl`, is published as CommonJS, so the Angular build prints "Module 'jexl' used by ... is not ESM" a few times. It works as it is. To keep the build output clean, allow it in `angular.json`, under the build target's `options`:
+
+```json
+"allowedCommonJsDependencies": ["jexl"]
+```
+
 ## Stylesheet
 
 Each component carries its own scoped styles, but the design tokens and the shared element rules live in one global stylesheet. It ships with the runtime and covers both packages, so the path is the same whether or not you installed the designer. Import it once:
@@ -9461,7 +9931,7 @@ The designer is **commercial software**, distributed under the NGX View Builder 
 - Keep the key out of client repositories where possible; inject it from environment configuration.
 - The `domain` sent to the validation server is `window.location.hostname`; issue keys per environment if you validate domains.
 
-Licensing questions: **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**.
+Licensing questions: **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
 ---
 
@@ -9939,9 +10409,11 @@ this.api.showToast({ title: 'Saved', variant: 'success' });
 
 Tables emit column-settings and saved-filters events so hosts can persist per-user preferences (`tableSettingsChanged`, `tableSavedFiltersChanged`, and their request/save counterparts). Store them by `tableName` + user, feed them back with `api.setTableSettings(...)` / `api.setTableSavedFilters(...)`.
 
-## Dialog render mode
+## Dialog and canvas render modes
 
-If the view's settings use `renderMode: 'dialog'`, the runtime renders it as a modal. Track closure via `api.onDialogClosed`.
+If the view's settings use `renderMode: 'dialog'`, the runtime renders it as a modal. Track closure via `api.onDialogClosed`. `{field}` tokens in the dialog title and description show live field values.
+
+`renderMode: 'canvas'` renders the view as a plain web page: full width, no page card, no pager or Submit bar, no outer spacing, every page stacked. Give the runtime the full width of its container; the creator's page sections bring their own backgrounds and inner spacing.
 
 ## Renderer & unified components
 
@@ -11083,7 +11555,7 @@ An `objectPanel` inside another `objectPanel` or a `dynamicPanel` keeps its own 
 
 ## `settings`: view-wide configuration
 
-Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
+Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog' | 'canvas'` + `dialog*` keys; `canvas` is a full width page without chrome for web pages), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
 
 | Key | Holds |
 | --- | --- |
@@ -11150,6 +11622,7 @@ All visuals derive from CSS custom properties (design tokens): color scales, fon
 | Risk / Warning / Caution | `--nvb-color-risk-*`, `--nvb-color-warning-*` | destructive & warning states |
 | Success / Info | `--nvb-color-success-*`, `--nvb-color-info-*` | positive & informational states |
 | Typography | `--nvb-font-family-base` | base font stack |
+| Charts | `--nvb-chart-single`, `--nvb-chart-1 … 8`, `--nvb-chart-other` | chart colors (see below) |
 
 Values are `oklch(...)` colors on an 050-950 scale (050 lightest). Components mix tokens with `color-mix()`, so overriding a scale re-colors everything consistently.
 
@@ -11163,6 +11636,10 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 
 `--nvb-surface` is the one token meant for the host rather than for us. `.nvb-root` paints its own background so a light theme stays readable on a dark page, and setting `--nvb-surface: transparent` turns that off when the view already sits on a surface you control.
 
+### Chart colors
+
+A bar, line or area chart has one series and draws it in `--nvb-chart-single`, which is your primary color by default. Pie and donut slices take `--nvb-chart-1` to `--nvb-chart-8` in order, and the folded *Other* slice `--nvb-chart-other`. The default eight are a palette checked for color blind readers in both modes, and their order is part of that: neighbours were picked to stay apart. To match your brand, override the values but keep a similar spread of hues, and give the dark mode its own steps through `setCustomTheme` if you change them.
+
 ## Light / dark mode
 
 ```html
@@ -11171,6 +11648,8 @@ Not putting them on `:root` keeps the reverse true: importing our stylesheet can
 ```
 
 or `api.setThemeMode('dark')`. Creators can also set a default in Form settings.
+
+A panel used as a page section with **Section colours: Dark** takes the dark palette for itself only, inside a light view. It does this by matching the `.nvb-section-theme-dark` class in the same token block as the dark theme, so your dark overrides from `setCustomTheme` apply there too.
 
 ## Overriding tokens
 
@@ -11449,6 +11928,8 @@ Two Logic properties produce values instead of true/false.
 sumInArray({orderLines}, "total")               sum over table rows
 ```
 
+The **Visual builder** tab can write this kind of expression too: give the conditions, then what to return when they match and what to return otherwise (a text, a number, Yes/No, another field's value, nothing, or a formula). See [Building a rule without writing it](https://ngxviewbuilder.io/creators/conditional-logic#building-a-rule-without-writing-it).
+
 Rules of thumb:
 
 - A field with an Expression is effectively computed, so combine it with **Read only** and users won't fight the recalculation.
@@ -11622,6 +12103,18 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+## Building a rule without writing it
+
+Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.
+
+Each row is one condition: pick a **field**, pick what should be true about it, and give a value. The rule list follows the field's type, in plain words: a text field offers *is equal to*, *contains*, *starts with*, *is empty* and so on; a number adds *is greater than* and friends; a date says *is after* and *is before*; a checkbox is simply *is Yes* or *is No*. The value box follows the field too: a dropdown or radio field offers its own options, a number field takes a number, a date field opens a date picker. **Compare with another field** swaps the value for a second field.
+
+With more than one row, **Match all conditions** or **Match any condition** decides how they combine.
+
+The line on top reads the rule back as a sentence, for example *When Team is equal to "Sales" and Age is greater than 18*, and the expression that will be saved is shown underneath, so you can check it and pick up the syntax as you go. A row that is not filled in yet is marked and left out until it is complete.
+
+When you open an existing rule, the builder reads it back into rows. If it uses something the rows cannot show (mixed *and* and *or*, brackets, other functions), the builder says so and leaves it alone: edit it on the **Code** tab, or choose **Start over in the builder** to replace it. Editors open on the visual builder whenever it can show the rule.
+
 ## Visible if
 
 ```text
@@ -11718,11 +12211,11 @@ Source: https://ngxviewbuilder.io/creators/data-sources
 
 # Data sources
 
-A data source is a named connection to data, usually an API endpoint. You define sources once per view in the bottom **DataSources** tab, then bind elements to them. Sources are referenced everywhere by **name**.
+A data source is a named connection to data, usually an API endpoint. You define sources once per view in the **Data sources** tab below the canvas, then bind elements to them. Sources are referenced everywhere by **name**.
 
 ## The source editor
 
-Click **Add Source** in the bottom DataSources tab. Every source has:
+Click **New data source** in the **Data sources** tab below the canvas. Every source has:
 
 | Field | What it does |
 | --- | --- |
@@ -11735,7 +12228,7 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | Field | What it does |
 | --- | --- |
 | **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required: actions using a URL-less REST source warn in the editor. |
-| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST`, a special method for a **Table**'s data source that sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
+| **Method** | `GET`, `POST`, `PUT`, `PATCH` or `DELETE`, picked in the request bar next to the URL. When a **Table** loads from a `POST` source, a switch **Send the table's paging, sorting and filters** appears: turned on, the request still goes out as a `POST`, with the current page, sort and search state added to the body. Ask your developer to read [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 
@@ -11795,19 +12288,30 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](https://ngxviewbuilder.io/creators/events-actions#send-socket-message).
 
-#### Object creator
+### Building JSON without typing it
 
-For non-trivial JSON, the **Object creator** dialog builds a valid object visually instead of hand-typing:
+Local JSON data, a REST request body and a WebSocket message all have a **Build visually** link above their editor. It opens a builder that writes the JSON for you, with the result shown on the right as you go.
 
-| Field | What it does |
+The first choice is the shape: **A list of items** (`[ ]`, for options, rows, records) or **One record** (`{ }`, named fields such as a request body). An empty builder also offers four starting points: **Dropdown options** (a value and a label per choice), **Table of records**, **Simple list** and **One record**. You can rename and add fields afterwards.
+
+A list of flat records opens as a table, which is the quickest way to type demo data or dropdown options:
+
+| In the table | What it does |
 | --- | --- |
-| **Root type** | Whether the root is an object or array. |
-| **Add root field / Add field / Add nested field** | Grow the structure; objects and arrays can contain nested fields. |
-| **Field name** | The JSON key. |
-| **Type** | `Object`, `Array`, `Property`, or a plain value (`Text`, `Number`, `Boolean`, `Null`). |
-| **Value / other field name** | The literal value, or a reference to another field. |
-| **Binding path** | Use `{path}` to bind to live form data, or a static value. |
-| **JSON preview** → **Insert into JSON** | Review the generated JSON, then insert it into the source. |
+| Column header | Click the name to rename it; the type underneath is **Text**, **Number** or **Yes / No**. |
+| **Column** / **Add row** | Add a column to every row, or a new row with the same columns. |
+| **Paste from Excel** | Copy cells from Excel or Google Sheets, header row included, and paste them. The first row becomes the field names; columns that hold only numbers become numbers, only `true`/`false` become yes/no. You can replace the current items or add below them. |
+
+Anything else (one record, nested groups, lists inside records) is edited in the **Fields** view, one line per field: its name, its type and its value.
+
+| Type | Value |
+| --- | --- |
+| **Text**, **Number**, **Yes / No**, **Empty (null)** | A fixed value. |
+| **Form field value** | Pick a field or variable; it is saved as `{path}` and filled in when the request runs. |
+| **Group of fields { }** | A nested object; **Add field to …** adds inside it. |
+| **List [ ]** | A nested array. A new item copies the fields of the item above it, so a list of records only needs its fields defined once. |
+
+Problems are shown next to the field that causes them (a missing or repeated name, a number that is not a number), and **Apply** stays blocked until they are fixed. Ctrl + Enter applies.
 
 ## Binding a source to an element
 
@@ -11976,7 +12480,7 @@ These live in the **Search source** section of the properties sidebar.
 
 | Property | What it does |
 | --- | --- |
-| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the DataSources tab. |
+| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the Data sources tab. |
 | **Items path** | Where the array sits in the response, e.g. `data.items`. Leave it empty if the response is the array itself, or wraps it in a common key such as `items`, `data`, `results`, `rows` or `content`. |
 | **Label key** | Which field of each record the user sees, e.g. `name`. Nested fields work too: `address.city`. Left empty, the element tries `label`, `name`, `title` and `text` in that order. |
 | **Value key** | Which field gets stored, e.g. `id`. Leave it empty to store the **whole record** the user picked. |
@@ -12090,10 +12594,25 @@ A titled box that groups related fields.
 | **Min height / Max height / Height / Fit content** | Sizing; content past *Max height* scrolls (see *Overflow*). |
 | **Overflow** | `visible`, `auto`, `hidden`, `scroll`, `clip`. |
 | **Opacity / Backdrop filter** | Transparency and glass-style effects. |
-| **Background image (+ position, size, repeat, overlay color, blend mode)** | Full image-background support for hero panels and cards. |
+| **Use as page section** | Turns the panel into a full width band for web pages: no border, content centred at a readable width. Its settings are listed below. |
 | **Content display** | How children lay out: `flex` or `grid`. |
 | **Flex direction / Content gap / Content justify / Content align / Content wrap / Align content / Row & column gap** | Flex composition of the children. |
 | **Grid columns / Grid rows / Grid auto rows** | Grid composition, e.g. `repeat(2, minmax(0, 1fr))`, `minmax(120px, auto)`. |
+
+### Page section
+
+With **Use as page section** on (Design → Page section), a panel becomes the kind of block a web page is made of: a hero, a row of features, a call to action. It stretches the full width of its parent and centres its content inside.
+
+| Property | What it does |
+| --- | --- |
+| **Section colours** | `Light`, or `Dark (light text)`: everything inside switches to the dark palette, so headings, text, buttons and inputs stay readable on a dark background without any CSS. |
+| **Content width** | How wide the content may get inside the band (default `1120px`). Narrow it, e.g. `720px`, for a sign-up box or a block of text. |
+| **Space above and below** | Vertical breathing room. The default grows with the screen, from 48px on phones to 96px on wide screens. |
+| **Minimum height** + **Vertical position** | For a hero band, e.g. `480px` or `80vh`, with the content at the top, middle or bottom. |
+| **Background color** | The band's colour (the regular panel setting). |
+| **Background image** + **Image overlay** | A picture behind the band, and a colour laid over it, e.g. `rgba(0, 0, 0, 0.45)`, so text on a busy photo stays readable. |
+
+Sections work in any render mode, but they shine with **Canvas**, where nothing else sits around them; see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas).
 
 A panel's `visibleIf` hides the whole group at once, which is usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
 
@@ -12371,12 +12890,25 @@ Renders a chart from a data source or expression-provided data.
 
 | Property | What it does |
 | --- | --- |
-| **Chart type** | `bar`, `line`, `pie`, … Match it to the data shape. |
-| **Data source / Chart data path** | Where the series data comes from; point the path at the dataset (`stats.points`). |
-| **Points** | Data passed directly at the property level (instead of a source). |
-| **Label / value mapping** | Which fields feed axes and series. |
-| **Chart height** | Stable widget size for dashboards and cards. |
-| **Show legend** | Explains colors/series. |
+| **Chart type** | `Bar`, `Horizontal bar`, `Line`, `Area`, `Pie`, `Donut`. See below for which to pick. |
+| **Data source / Data path** | Where the items come from; point the path at the list inside the response (`stats.points`). |
+| **Points** | Items typed in directly, instead of a source. |
+| **Label key / Value key** | Which field of each item is its name and which its number (default `label` and `value`). |
+| **Merge items with the same label** | Two items called `Audi` become one bar with their sum. On by default. |
+| **Chart height** | Height of the plot area in pixels. |
+| **Show legend** / **Legend layout** | Pie and donut only: the legend lists every slice with its value and share, as a list beside the chart or inline under it. |
+
+Which type to pick:
+
+- **Bar** compares a handful of categories; **Horizontal bar** is better when the names are long or there are many of them.
+- **Line** and **Area** show change over time.
+- **Pie** and **Donut** show parts of a whole. They work for up to six slices; anything beyond that is folded into one *Other* slice. A donut shows the total in its centre, and the hovered slice's value and share.
+
+A bar, line or area chart is one series, so it is drawn in one colour and needs no legend: the title says what it shows. Pie and donut slices get distinct colours from a palette picked so that neighbouring slices stay apart for colour blind readers too.
+
+Hovering a bar, point or slice shows its value. The chart can also be used with the keyboard: tab to it, move with the arrow keys, Enter runs the click action.
+
+**Click actions.** Add actions under **Events** with the *Click* trigger and they run when someone clicks a bar, a point, a slice or a legend row. The clicked item is available as `{item.label}` and `{item.value}` (and `{index}`), so a click can, for example, set a filter field to `{item.label}` or open a detail dialog. Only a chart with a click action shows the hand cursor and the "Click to select" hint.
 
 Charts refresh when their data source reloads. Combine that with **React to change** to make dashboards live.
 
@@ -12465,15 +12997,17 @@ A small colored label: `Active`, `Draft`, `Overdue`.
 
 ## Message card (`messageCard`)
 
-A highlighted box with icon, title, and text, for inline notices ("Your application is being reviewed").
+A box with an icon, a title and a description, for inline notices ("Your trial ends in 3 days"), hints next to a field, or a row of feature cards.
 
 | Property | What it does |
 | --- | --- |
-| **Title / Description text** | The heading and extended content. |
-| **Variant** | `info`, `success`, `warning`, `error`. |
-| **Show icon / Icon** | The leading icon. |
-| **Dismissible** | The user can close the card manually. |
-| **Primary / Secondary button text** | Optional CTA buttons (wire them with [actions](https://ngxviewbuilder.io/creators/events-actions)). |
+| **Title / Description text** | The heading and the text under it. Line breaks you type in the description are kept. Both start on the same left edge. |
+| **Buttons** | Small buttons under the text. Each click action with a label becomes one, and runs its actions when pressed. One or two work best: the first is drawn as the main action in the message's colour, the rest as quiet outlined buttons, unless you set a style on the action yourself (filled, outlined or text). |
+| **Appearance** | `Soft banner` (a tinted box, the default), `Card (icon above)` (a white card with the icon in a tile above the title, good for feature lists and empty states) or `Accent line` (just a coloured line on the left, for a hint inside a form). |
+| **Buttons position** | `Under the text`, or `Beside the text`: on the right of a wide message, falling back under the text when it gets narrow. |
+| **Variant** | The colour: `info`, `primary`, `success`, `warn`, `risk` or `neutral`. With **Variant mode: Conditional** the colour follows rules instead. |
+| **Show icon / Icon** | The leading icon; each variant has a sensible default. |
+| **Dismissible** | Adds a close button. Closing it also runs click actions with the `dismiss` reason in `{action}`. |
 
 Combine with `visibleIf` to show it only in the relevant state:
 
@@ -12691,36 +13225,48 @@ Source: https://ngxviewbuilder.io/creators/elements/special
 
 ## File upload (`fileUpload`)
 
-Lets users attach files. The element stores file metadata in the form data and can upload to a server through a data source.
+Lets users attach files. **Save files as** decides where the file goes:
+
+- **Base64 in the form data** (the default): nothing is sent anywhere. The file is read in the browser and its content travels inside the form value, so whoever receives the submitted form gets the file too.
+- **Upload to server (data source)**: each file is sent to the **Upload data source** as soon as it is picked, and the form value keeps only the key your server returns.
+
+The value looks the same either way (an array of these when **Multiple** is on), which keeps the backend simple:
+
+```json
+{ "name": "cv.pdf", "size": 48213, "type": "application/pdf", "lastModified": 1790764181739, "contentType": "application/pdf", "base64": "JVBERi0xLjcK..." }
+```
+
+With **Upload to server**, `fileKey` takes the place of `base64`.
 
 | Property | What it does |
 | --- | --- |
+| **Save files as** | `Base64 in the form data` or `Upload to server (data source)`. The fields below marked *server* only show in the second mode. |
 | **Accepted types** | Restrict extensions/MIME types per HTML `accept` rules (e.g. `.pdf,image/*`) |
 | **Max files** | How many files may be attached; further uploads are blocked at the limit |
 | **Max file size (MB)** | Oversized files are rejected before upload |
 | **Dropzone text** | Caption of the drag-and-drop area. Keep it short and say what to do |
-| **Upload data source** | Source that receives the file: a POST (or configured method) with `FormData` |
-| **Upload form field name** | The `FormData` field name for the file (e.g. `file`) |
-| **Download data source / Delete data source** | Sources for fetching and removing stored files; the file key is passed via the key field below |
-| **File key / name / size / type field** | Field names in the server's file object (default: `key`, `name`, `size`, `contentType`) |
+| **Upload data source** (*server*) | Source that receives the file: a POST (or configured method) with `FormData` |
+| **Upload form field name** (*server*) | The `FormData` field name for the file (e.g. `file`) |
+| **Download data source / Delete data source** (*server*) | Sources for fetching and removing stored files; the file key is passed via the key field below |
+| **File key / name / size / type field** (*server*) | Field names in the server's response (default: `key`, `name`, `size`, `contentType`) |
 
-::: warning Without an upload data source, the file never leaves the browser
-Only local metadata (name/size/type) is kept as the field's value, so the field can look "filled in" while your backend never receives the actual bytes. Set **Upload data source** whenever the file must be stored server-side.
+::: tip Set a max file size with base64
+Base64 makes the value about a third larger than the file itself, and the whole value travels with every submit. Keep **Max file size** sensible (a few MB) or switch to **Upload to server** for large files.
 :::
 
 A few things worth knowing before you brief your developer:
 
-- Uploads are always sent as `multipart/form-data` with a single field (its name is **Upload form field name**), never JSON, never base64. Any **Request body** template configured on the upload source is ignored; only `{placeholders}` in its URL are used.
+- In server mode uploads are always sent as `multipart/form-data` with a single field (its name is **Upload form field name**), never JSON. Any **Request body** template configured on the upload source is ignored; only `{placeholders}` in its URL are used.
 - With **Max files** > 1, files upload as separate sequential requests, not one batch call.
 - There's no upload progress percentage, only pending/ready/error per file, and no resumable or chunked upload.
-- The field's value in the form result is whatever your endpoint's response contained (the **File key / name / size / type field** properties), never the file's bytes.
+- A view saved before **Save files as** existed keeps uploading if it has an upload data source.
 
 **For the exact request/response JSON your backend must implement, see [File upload requests](https://ngxviewbuilder.io/developers/data-sources#file-upload-requests) in the developer docs.**
 
 Typical setup, CV upload:
 
 - *Name*: `cvFile`, *Accepted types*: `.pdf`, *Max size*: `5 MB`, *Required*: on.
-- Upload data source: `uploadDocument` (a REST source configured by your developer).
+- *Save files as*: `Upload to server`, upload data source `uploadDocument` (a REST source configured by your developer). For a small form that is emailed as a whole, `Base64 in the form data` needs no backend setup at all.
 
 Check with expressions:
 
@@ -12773,7 +13319,7 @@ A column either prints its value as text, or hosts a real element in every row. 
 
 | Property | What it does |
 | --- | --- |
-| **Data source** | Primary source from the DataSources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
+| **Data source** | Primary source from the Data sources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |
@@ -12954,14 +13500,25 @@ The chevron normally shows only where there is something to open, which is right
 | **Show record count** | Total results summary near the paginator. |
 | **Flat footer surface** | Footer without extra border/shadow accents. |
 
+### Exporting
+
+**Export** opens a dialog where the person picks, in this order:
+
+- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
+- **Rows**, each with the number of rows it would export: **Selected rows** (only when some are selected), **All rows** (or *All rows matching search and filters* while a search or filter is active), or **Current page only**. On a lazy table, *All rows* loads every page from the server, not only the one on screen.
+- **Columns**, when the column picker is on.
+- **File name**, prefilled and editable; the extension follows the format.
+
+The button at the bottom says exactly what will happen, for example *Export 37 rows*. The last format used is remembered in that browser.
+
 ### Header controls
 
 | Property | What it does |
 | --- | --- |
 | **Show header controls** | Master switch for the header bar (search, export, menu…). |
-| **Show export buttons** | CSV / Excel / PDF export, generated entirely in the browser from the rows the table already has (or re-fetches with a larger page size for "export all"). There is no separate server-side export endpoint to build. |
-| **Export column picker dialog** | Choose which columns to export. Handy for wide tables. |
-| **Export file name** | Default download name. |
+| **Show export buttons** | Adds an **Export** button that opens the export dialog (see below). Files are built entirely in the browser; there is no server-side export endpoint to build. |
+| **Export column picker dialog** | Shows the column checklist in the export dialog. Handy for wide tables; turn it off to always export every column. |
+| **Export file name** | Suggested file name. When empty, the table's label plus today's date, e.g. `invoices-2026-10-05`. |
 | **Export all page size** | Batch size when exporting all pages of a lazy table. |
 | **Column settings** (*Show column settings*) | End users change visible columns, order, and widths. |
 | **Column settings mode** | Where preferences live: local UI, localStorage, or host/server. |
@@ -13195,7 +13752,7 @@ Calls a [data source](https://ngxviewbuilder.io/creators/data-sources). This is 
 
 | Field                                         | JSON key                           | What it does                                                                                                                                                                                                                 |
 | --------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Data source**                               | `dataSourceName`                   | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the DataSources tab.                                                                               |
+| **Data source**                               | `dataSourceName`                   | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the Data sources tab.                                                                               |
 | **Placeholder mapping (URL/body)**            | `params`                           | Maps each `{placeholder}` in the source URL/body to a context path or plain value. Example: body `{selectedRows}` → `__table.el1.selectedRows`, URL `{id}` → `row.id`. Shown only when the source actually has placeholders. |
 | **Response action**                           | `responseMode`                     | What to do with the response: `none` (do nothing), `download` (save response as a file), `setValue` (write response into an element).                                                                                        |
 | **Response data path (optional)**             | `responseDataPath`                 | Which part of the response to use. Example: `data`, `result.item`, `payload.items`.                                                                                                                                          |
@@ -13537,9 +14094,9 @@ This walkthrough builds a small **client registration form**: name, email, clien
   <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
   <img
     src="/first-form/first-form.webp"
-    width="1280"
-    height="764"
-    alt="The whole walkthrough in the builder: First name and Email are dragged side by side, a Client type radio gets the options Private person and Company, the email is made required with an email check, a Company details panel with a Company code field appears only for companies, a Register button shows a success toast, and the Preview tab tests an empty submit, the Company choice and a valid registration."
+    width="1024"
+    height="611"
+    alt="The whole walkthrough in the builder: First name and Email are dragged side by side and named from their labels, a Client type radio gets the options Private person and Company, the email is made required with an email validator, a Company details panel and its Company code field get Visible if and Require if rules from the visual rule builder, a Register button gets a success toast that validates the form first, and the Preview tab tests an empty submit, the Company choice and a valid registration."
   />
   </a>
   <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
@@ -13547,30 +14104,30 @@ This walkthrough builds a small **client registration form**: name, email, clien
 
 ## 1. Place the fields
 
-From the **Single line inputs** group, drag onto the canvas:
+From the **Single line inputs** group, drag onto the canvas (or double click a tile to add it after the selected element):
 
-- **Text**: set *Label* to `First name`, *Name* to `firstName`.
-- **Text**: set *Label* to `Email`, *Name* to `email`.
+- **Text**: set *Label* to `First name`. The *Name* follows the label and becomes `firstName` on its own.
+- **Text**: set *Label* to `Email`; its name becomes `email`.
 
 From the **Choice inputs** group:
 
-- **Radio**: set *Label* to `Client type`, *Name* to `clientType`. In the **Options** category add two options: `Private person` (value `person`) and `Company` (value `company`).
+- **Radio**: set *Label* to `Client type` (name `clientType`). In the **Options** category set the first two options to `Private person` (value `person`) and `Company` (value `company`), and delete the third.
 
 ::: tip
-Drag two elements next to each other to place them side by side in one row. Set their *Width* in the **Design** category, for example `50%` each.
+Drag two elements next to each other to place them side by side in one row. They share the row evenly without any width. Set a *Width* in the **Design** category only for an uneven split, and only on one of them: `50%` on both makes the second one wrap, because a percentage does not count the gap between them.
 :::
 
 ## 2. Make fields required
 
-Select the email field and in the **Restrictions** category turn on **Required**. In **Validators**, set *Required message* to `Email is required`.
+Select the email field and in the **Restrictions** category turn on **Required**. In **Validators**, set *Required field message* to `Email is required`.
 
-Then add a format check: in **Validators → Validators** add a rule of type `email` with the message `Enter a valid email address`.
+Then add a format check: still in **Validators**, press **Add validator**, pick the type `email` and set the error message to `Enter a valid email address`. Close the dialog; the validator is kept.
 
 ## 3. Add a conditional section
 
 From **Containers**, drag a **Panel** below the radio. Set its *Label* to `Company details`. Inside it place a **Text** element named `companyCode` with label `Company code`.
 
-Select the panel and in the **Logic** category set:
+Select the panel and in the **Logic** category press **Add expression**. A new rule starts as **Visible if**. In the visual builder choose the field *Client type*, keep *is equal to*, and pick *Company* as the value. The line above the rule reads it back in words, and the expression it saves is:
 
 ```
 visibleIf:  {clientType} == "company"
@@ -13578,7 +14135,7 @@ visibleIf:  {clientType} == "company"
 
 The panel now appears only when *Company* is selected. Expressions in `{curly braces}` reference other fields by name; see [Expressions basics](https://ngxviewbuilder.io/creators/expressions).
 
-Make the company code mandatory only when visible. On the `companyCode` field set:
+Make the company code mandatory only when visible. Select the `companyCode` field, add another expression, switch its type to **Require if**, and build the same condition:
 
 ```
 requireIf:  {clientType} == "company"
@@ -13586,11 +14143,11 @@ requireIf:  {clientType} == "company"
 
 ## 4. Add a submit button
 
-From **Actions**, drag a **Button**. Set *Label* to `Register`. In the **Actions** category add an event:
+From **Actions**, drag a **Button**. A button shows its caption in *Text*, so set *Text* to `Register`; it has no label row above it. In the **Events** category press **Add action**:
 
-- **Trigger**: `click`
-- **Validate form**: on
-- **Type**: `toast` with title `Done`, message `Registration saved`, variant `success`
+- **Trigger**: `Click`
+- **Action**: `Toast notification` with title `Done`, message `Registration saved`, variant `Success`
+- **Conditions & safety**: turn on *Validate whole form before action*, so an incomplete form shows its messages instead of the toast
 
 In a real project the button would call a data source (`Type: dataSource`) to send the data to a server; see [Events & actions](https://ngxviewbuilder.io/creators/events-actions).
 
@@ -13678,8 +14235,8 @@ See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow) or `Dialog`, where the whole view opens as a modal. |
-| **Dialog header title** / **Dialog header description** | Modal header texts. |
+| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
+| **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
 | **Dialog padding** | Inner padding of the modal content. |
@@ -13693,7 +14250,7 @@ Dialog mode is useful when a developer embeds the view as a popup (e.g. "New cli
 
 ## AI access (MCP)
 
-This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. AI access is included with an active designer license, at no extra cost.
+This group lets an AI client such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. There is no chat inside the builder; you talk to the AI in your own AI app, and it drives the builder over MCP. AI access is included with an active designer license, at no extra cost.
 
 If nothing is connected yet, the group has one button, **Connect**. It links this tab to our hosted MCP server. The button only shows when the builder has a genuine license key that has not expired; otherwise the group tells you what is missing (no key, a key that is not valid, or a license that ran out). Your developers can also point the builder at an MCP server of their own (see [MCP bridge](https://ngxviewbuilder.io/developers/ai-command-api#connecting-the-builder)), in which case it connects without the button.
 
@@ -14057,6 +14614,24 @@ Details and properties for each: [Containers](https://ngxviewbuilder.io/creators
 
 The global gap between rows is set in **Form settings → Element spacing**. Panels additionally have their own padding controls (desktop and mobile) in the **Design** category.
 
+## Web pages with Canvas
+
+NGX View Builder is not only for forms. With **Form settings → Render mode → Canvas (full width, no frame)** a view becomes a plain web page: a landing page, a product page, a status page, an event sign-up.
+
+What Canvas changes:
+
+- No page card, no page title bar, no Prev/Next, Validate or Submit buttons, no outer spacing. The view fills the full width.
+- All visible pages are shown one after another as one long page, so you can split a long page into pages in the builder just to keep it tidy.
+- On phones, columns without a **Mobile width** stack under each other, the way web pages do. Set a mobile width yourself where you want something to stay side by side.
+
+Build the page from panels with **Use as page section** on (see [Page section](https://ngxviewbuilder.io/creators/elements/containers#page-section)). A typical page:
+
+1. A hero section: dark colours, a background image with an overlay, minimum height `480px`; inside it a Page title (level `h1`) and two buttons with **Fit content** on.
+2. A features section: a centred Page title, then a row of three Message cards or Stats cards. On phones they stack automatically.
+3. A call to action: a light grey background, content width `720px`, a title, an email field and a button.
+
+Elements placed directly on a Canvas page, outside a section, run edge to edge without any spacing around them, so keep content inside sections. Buttons and links are ordinary elements with actions; there is no built-in Submit bar on a Canvas.
+
 ## Practical guidelines
 
 - Group related fields into panels; users scan grouped forms faster.
@@ -14072,7 +14647,7 @@ Source: https://ngxviewbuilder.io/creators/pages
 
 # Pages & navigation
 
-A view can have one page or many. Pages appear in the footer strip under the canvas: click to switch, use **+** to add, drag to reorder.
+A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
 
 ## When to use multiple pages
 
@@ -14409,8 +14984,10 @@ A view can serve several languages from one definition. Content texts (labels, d
 
 1. **Form settings → Language** sets the default language.
 2. The **Translations** tab lists all languages of the view. Add a language with **+**.
-3. The tab shows every translatable text in a table: one row per text, one column per language. Fill in the empty cells.
+3. Pick a language at the top. The table lists every translatable text: the field it belongs to, the source text, and its translation in that language. Fill in the empty cells.
 4. At runtime, the host application (or the language switcher) selects which language renders.
+
+On a large view, the bar above the table helps you find things. The search box matches field names, source texts and translations, and ignores accents, so `zinute` finds *Žinutė*. **All**, **Missing** and **Translated** narrow the list, each with its count; **Missing** is the quickest way to finish a language. A row you are translating stays in the list until you change the filter, so it does not vanish after the first letter.
 
 The texts live in the view definition under `localization`:
 
@@ -14508,7 +15085,7 @@ The list can be longer in your application: developers can register named rules 
 
 ## Custom validators
 
-A `custom` rule is a true/false [expression](https://ngxviewbuilder.io/creators/expressions) that describes the **error**: the message shows while the condition is true. You can write it directly or assemble it in the visual rule builder (field + operator + value, joined with and/or).
+A `custom` rule is a true/false [expression](https://ngxviewbuilder.io/creators/expressions) that describes the **error**: the message shows while the condition is true. You can write it directly or put it together on the **Visual builder** tab (field, rule and value per row, matching all or any of them); see [Building a rule without writing it](https://ngxviewbuilder.io/creators/conditional-logic#building-a-rule-without-writing-it).
 
 ```text
 dateDiffDays({startDate}, {endDate}) < 1        error: end date not after start
@@ -14638,20 +15215,21 @@ Source: https://ngxviewbuilder.io/creators/workspace
 
 # The builder workspace
 
-The builder screen has four working areas:
+The builder screen has five working areas:
 
 | Area | Location | Purpose |
 | --- | --- | --- |
-| Elements sidebar | Left | Drag elements onto the canvas |
+| Elements sidebar | Left | Add elements, or find them in the Layers tab |
 | Canvas | Center | The page you are building |
+| Footer | Below the canvas | Pages, data sources and variables |
 | Properties sidebar | Right | Configure the selected element |
-| Header tabs | Top | Switch between builder modes |
+| Header | Top | Switch between builder modes, settings, undo and save |
 
 ![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
 
 ## Elements sidebar
 
-Elements are grouped so you can scan them quickly:
+The sidebar has two tabs. **Add** is the element library, grouped so you can scan it quickly:
 
 - **Single line inputs**: text, number, date, phone, and other typed fields.
 - **Choice inputs**: dropdowns, checkboxes, radios, toggles.
@@ -14660,15 +15238,38 @@ Elements are grouped so you can scan them quickly:
 - **Content**: text, images, video, icons, badges, cards.
 - **Tables**: data tables, dynamic tables, list grids.
 
-Use the search box at the top of the sidebar to filter by name. Drag any element into a row on the canvas or into a container.
+Use the search box at the top to filter by name. **Double click** a tile (or select it and press Enter) to add the element right after the selected one, inside the selected container, or at the end of the page. You can also drag a tile to exactly where you want it. A single click does nothing, so a stray click never adds anything.
 
 You can also save your own configured elements (or whole groups of elements) back into the sidebar as reusable library items.
 
+**Layers** lists every element of the view as a tree, including the ones inside panels, tabs and other containers. Search it by label or name; clicking a row selects the element on the canvas, and hovering a row highlights it there.
+
 ## Canvas
 
-The canvas shows the current page. Elements are placed in **rows**; each row holds one or more **columns**, and each column holds one element. Drag elements to reorder them, drop them next to each other to share a row, or drop them inside containers.
+The canvas shows the current page. Elements are placed in **rows**; each row holds one or more **columns**, and each column holds one element. Drag elements to reorder them, drop them next to each other to share a row, or drop them inside containers. While you drag, a thin line with the element's name shows where it will land, and the container it goes into gets a dashed outline. The gap between two fields is a drop target too.
 
-Selecting an element highlights it and opens its settings on the right. The footer below the canvas lists all pages of the view: click to switch, add, or reorder pages.
+Selecting an element opens its settings on the right and marks it with a small tag that shows its type and name, for example *Text input · email*. Next to the tag sit two quick actions:
+
+| Action | Shortcut | What it does |
+| --- | --- | --- |
+| Duplicate | Ctrl+D | Copies the element right after it. The copy keeps the label and gets the next free name (`email` becomes `email2`). |
+| Delete | Del | Removes the element. Undo brings it back. |
+
+An element inside a panel or another container also gets a **Select parent** button there. Right click an element for the full menu. A selected **page** has the same tag, and its Duplicate copies the page with all of its elements.
+
+A view with no pages yet starts with a short start screen: begin from a blank page or from one of the quick start elements.
+
+New elements are named after their type (`text1`, `dynamicTable2`). As long as you have not changed the name yourself, it follows the label: type *First name* as the label and the name becomes `firstName`.
+
+When an AI client works on the view through [AI access](https://ngxviewbuilder.io/ai/), its new elements come onto the canvas one by one, and a small status chip at the bottom of the canvas says what it is doing: reading the view, checking changes, or building with a count.
+
+## Footer
+
+The footer below the canvas has three tabs:
+
+- **Pages**: every page of the view as a card with its number, name, element count and code. Click a card to open the page, drag it to reorder (a line shows where it will land), and use Duplicate or Delete when you hover it. **New page** adds one. See [Pages](https://ngxviewbuilder.io/creators/pages).
+- **Data sources**: where the view loads data from. See [Data sources](https://ngxviewbuilder.io/creators/data-sources).
+- **Variables**: values the view keeps while it runs. See [Variables](https://ngxviewbuilder.io/creators/variables).
 
 ## Properties sidebar
 
@@ -14684,27 +15285,28 @@ Every property of the selected element lives here, organised into categories:
 | Validators | Required message and extra validation rules |
 | Logic | `visibleIf`, `disableIf`, `requireIf`, expressions, default value |
 | Actions | Events that run actions (navigate, load data, toast…) |
-| Design | Width, responsive widths, colors, padding |
+| Design | Width, responsive widths, colors, spacing |
 
-Only the categories relevant to the selected element are shown. See [Common properties](https://ngxviewbuilder.io/creators/properties) for the full reference.
+Only the categories relevant to the selected element are shown. On/off properties are switches, and padding and margin use one compact control: a horizontal and a vertical value, or each side on its own when you turn on **Each side**. See [Common properties](https://ngxviewbuilder.io/creators/properties) for the full reference.
 
-## Header tabs
+With nothing selected, the sidebar shows how to add, find and edit elements.
+
+## Header
 
 | Tab | Purpose |
 | --- | --- |
 | Builder | The visual editor (default) |
 | Preview | Run the view exactly as end users will see it |
-| JSON | Edit the raw view definition |
+| JSON Editor | Edit the raw view definition |
 | Templates | Manage reusable HTML templates *(plugin)* |
-| Form settings | View-wide settings: width, navigation, buttons, custom CSS |
-| Translations | Translate labels and texts into other languages |
-| Variables | Define runtime variables (route params, constants, computed values) |
+
+The buttons on the right are undo and redo, **Form settings** (the gear: width, navigation, buttons, custom CSS, AI access), **Translations**, and **Save**.
 
 Developers can add more tabs through plugins. If you see extra tabs, they come from plugins installed in your application.
 
 ## Undo and history
 
-The builder tracks your edits. Use undo/redo in the header to step through recent changes before saving.
+The builder tracks your edits. Use undo and redo in the header, or Ctrl+Z and Ctrl+Y (Cmd on a Mac), to step through recent changes before saving; Ctrl+S saves. Inside a text field these keys undo the typing in that field. A change an AI client made in one go, even when it arrived in several parts, undoes in one step.
 
 ---
 
@@ -14736,7 +15338,7 @@ Source: https://ngxviewbuilder.io/privacy
 
 *Last updated: 18 July 2026*
 
-This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by NGX View Builder ("we", "us"). For questions, contact **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**.
+This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
 ## What we collect
 
@@ -14768,7 +15370,7 @@ Analytics data is retained according to our Google Analytics account settings. E
 
 ## Your rights
 
-Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**. You may also lodge a complaint with your local data protection authority: in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
+Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[info@heydelabs.com](mailto:info@heydelabs.com)**. You may also lodge a complaint with your local data protection authority: in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
 
 ## Children
 

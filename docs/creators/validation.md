@@ -39,7 +39,7 @@ The list can be longer in your application: developers can register named rules 
 
 ## Custom validators
 
-A `custom` rule is a true/false [expression](./expressions) that describes the **error**: the message shows while the condition is true. You can write it directly or assemble it in the visual rule builder (field + operator + value, joined with and/or).
+A `custom` rule is a true/false [expression](./expressions) that describes the **error**: the message shows while the condition is true. You can write it directly or put it together on the **Visual builder** tab (field, rule and value per row, matching all or any of them); see [Building a rule without writing it](./conditional-logic#building-a-rule-without-writing-it).
 
 ```text
 dateDiffDays({startDate}, {endDate}) < 1        error: end date not after start

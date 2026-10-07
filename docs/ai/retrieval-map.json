@@ -26,6 +26,10 @@
       "maxChars": 1800
     },
     {
+      "path": "docs:ai/good-practices.md",
+      "maxChars": 2400
+    },
+    {
       "path": "docs:ai/properties-reference.md",
       "maxChars": 3000
     },
