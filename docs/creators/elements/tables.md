@@ -29,7 +29,7 @@ A column either prints its value as text, or hosts a real element in every row. 
 
 | Property | What it does |
 | --- | --- |
-| **Data source** | Primary source from the DataSources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
+| **Data source** | Primary source from the Data sources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |

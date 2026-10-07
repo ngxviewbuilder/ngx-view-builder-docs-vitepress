@@ -1,15 +1,15 @@
 ---
 title: Data sources
-description: Every field of the DataSources editor and the element binding panel, for REST, route, and local sources.
+description: Every field of the Data sources editor and the element binding panel, for REST, route, and local sources.
 ---
 
 # Data sources
 
-A data source is a named connection to data, usually an API endpoint. You define sources once per view in the bottom **DataSources** tab, then bind elements to them. Sources are referenced everywhere by **name**.
+A data source is a named connection to data, usually an API endpoint. You define sources once per view in the **Data sources** tab below the canvas, then bind elements to them. Sources are referenced everywhere by **name**.
 
 ## The source editor
 
-Click **Add Source** in the bottom DataSources tab. Every source has:
+Click **New data source** in the **Data sources** tab below the canvas. Every source has:
 
 | Field | What it does |
 | --- | --- |
@@ -22,7 +22,7 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | Field | What it does |
 | --- | --- |
 | **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required: actions using a URL-less REST source warn in the editor. |
-| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST`, a special method for a **Table**'s data source that sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
+| **Method** | `GET`, `POST`, `PUT`, `PATCH` or `DELETE`, picked in the request bar next to the URL. When a **Table** loads from a `POST` source, a switch **Send the table's paging, sorting and filters** appears: turned on, the request still goes out as a `POST`, with the current page, sort and search state added to the body. Ask your developer to read [Table: server-side paging & filtering](../developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 

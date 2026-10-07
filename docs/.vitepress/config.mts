@@ -294,6 +294,7 @@ export default defineConfig({
               link: "/developers/runtime-integration",
             },
             { text: "Headless validation", link: "/developers/validator" },
+            { text: "E2E testing", link: "/developers/e2e-testing" },
             { text: "Structure JSON", link: "/developers/structure-json" },
             {
               text: "Schema versioning",

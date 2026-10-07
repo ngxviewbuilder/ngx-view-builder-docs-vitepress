@@ -68,7 +68,7 @@ shapes, which are the same either way.
 
 Hard rules:
 
-1. **An array is atomic.** If one command fails, none are applied. Prefer one batch over a sequence of single calls, so a partial build cannot happen.
+1. **An array is atomic.** If one command fails, none are applied. Group commands into batches by section rather than sending single calls: a change goes in one batch, a new view of more than about eight elements in one batch per section, all with the same `group`.
 2. **Use `{ dryRun: true }` first** for anything large or destructive. It runs every check and reports `changed` without touching the view.
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
@@ -185,7 +185,9 @@ Note that a mutation rebuilds the view, which clears working data. Set data afte
 
 ## Your changes are one undo step
 
-Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. Batches that share a `group` option (MCP: `group` on `nvb_execute`) fold into one undo step as long as the person edits nothing in between, so a view built section by section still undoes whole. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+
+While you build, the canvas shows the person what you are doing (reading, checking, building with a count) and plays the elements a batch adds in one by one, top to bottom.
 
 ## What gets checked
 
@@ -3708,7 +3710,7 @@ Read it before the first change. Over MCP, `nvb_execute` does not accept a batch
 ## How to work
 
 1. **Look before you build.** Call `getTree()` (MCP: `nvb_get_tree`) first. Extend what is there; never rebuild a view the user only asked to change.
-2. **One request, one batch.** Send everything a request needs in one `execute()` call. It is atomic, so a failure leaves nothing half built, and the person can undo it in one step.
+2. **Build in sections the person can watch.** A change to an existing view goes in one `execute()` call. A new view of more than about eight elements goes in a few batches, one per section from the top (header and first fields, each further group, then the buttons), each sent as soon as it is ready. The first section shows up right away and the canvas plays the new elements in one by one, instead of the whole form landing after a long wait. Give every batch of that build the same `group` option, for example `"build-contact-form"`, so the person still undoes the whole build in one step. Each batch is atomic on its own, so a failure never leaves a half applied section.
 3. **Dry run large batches** with `dryRun: true`, fix what it reports, then send it for real.
 4. **Check the result.** After a batch, read the returned tree (or `getTree()`) and confirm the elements are where you meant them: in the right container, in the right order, side by side where you wanted a row.
 5. **Do not save.** Saving is the person's decision. Build, check, then stop and describe what you did.
@@ -7499,7 +7501,7 @@ The key is forgiving to type: case, spaces and missing dashes are ignored, and `
 
 ### Keys from your backend
 
-If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with `https://<your server>/mcp?key=<the key>` (or an `x-nvb-session-key` header). Such a connection starts out paired and nobody types anything. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
+If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with an `x-nvb-session-key: <the key>` header on `https://<your server>/mcp`. Such a connection starts out paired and nobody types anything. The server does not read the key from the URL, because a query string ends up in proxy logs and browser history. Make the key random, at least 128 bits, 16 to 128 characters of letters, digits and `. _ ~ -`. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
 
 ### The bridge keeps itself up
 
@@ -7564,8 +7566,19 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_MCP_DEMO_MAX_TABS` | `30` | Tabs from exempt origins that may be connected at once, all of them together. |
 | `NVB_MCP_DEMO_MAX_CALLS_PER_SESSION` | `150` | Calls per window for a tab from an exempt origin. |
 | `NVB_MCP_DEMO_KEY_TTL_MS` | `7200000` | How long a pairing key from an exempt origin is valid. |
+| `NVB_MCP_DEMO_MAX_TABS_PER_IP` | `5` | Tabs from exempt origins one address may hold, so one network cannot take the whole demo pool. |
+| `NVB_MCP_MAX_CONNECTIONS` | `5000` | Open MCP sessions in total. When it is reached, a new session pushes out the unpaired one idle the longest, never a working pairing. |
+| `NVB_MCP_UNPAIRED_IDLE_TIMEOUT_MS` | `900000` | An MCP session that never paired is closed after this long without a request. |
+| `NVB_MCP_MAX_SOCKETS` | `10000` | Builder tabs connected in total. |
+| `NVB_MCP_MAX_SOCKETS_PER_IP` | `500` | Builder tabs connected from one address. An office behind one address fits easily. |
+| `NVB_MCP_HELLO_TIMEOUT_MS` | `15000` | A tab that does not introduce itself by then is closed. |
+| `NVB_MCP_TRUST_PROXY` | `loopback, linklocal, uniquelocal` | Which proxies may name the client address in `X-Forwarded-For` (Express `trust proxy`). The default takes it only from a proxy on the same machine or a private network. |
+| `NVB_MCP_ALLOWED_HOSTS` | empty | `Host` values `/mcp` answers to, comma separated. Set it to turn on DNS rebinding protection. |
+| `NVB_MCP_MAX_CONNECTIONS_PER_IP` | `0` (off) | Open MCP sessions per address. Leave it off when AI clients are hosted (claude.ai, ChatGPT): they reach the server from their provider's addresses, shared by everyone. |
+| `NVB_MCP_NEW_SESSIONS_PER_IP_PER_MINUTE` | `0` (off) | New MCP sessions per address per minute. Same caveat. |
+| `NVB_MCP_MAX_FAILED_PAIRS_PER_IP` | `0` (off) | Wrong pairing keys per address per 15 minutes. Same caveat. |
 
-The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set.
+The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set. Seats are counted per license and per browser, never per address, so twenty people behind one office address with their own licenses each get their own seat.
 
 ### Seats
 
@@ -8945,7 +8958,7 @@ An `apiPrefix` interceptor also lets creators use short relative URLs (`/clients
 
 This only applies to a **`table`** element with **Lazy load** on (creator-side property, `tableDataSourceName`). With Lazy load off, the table's data source is a plain source that must return every row in one response. The table paginates/sorts/filters in the browser and none of the contract below applies.
 
-With Lazy load on, set the source's **Method** to the literal string **`TABLE-POST`** in the DataSources tab. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
+With Lazy load on, give the source the **POST** method in the Data sources tab and turn on **Send the table's paging, sorting and filters**. The switch shows up on a POST source as soon as a table or list grid loads from it, and names the tables that do. The view stores this as the method `TABLE-POST`, which is also what you write when you author the JSON yourself, and views saved with it keep working. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
 
 - If the source's **Request body** is left empty, the body sent to your endpoint is exactly the object below.
 - If you *do* configure a body template (e.g. `{"tenantId":"{el1}"}`), your fields are kept and `pagingParams`/`params`/`extendedParams` are added on top.
@@ -9143,7 +9156,7 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 
 ## WebSocket sources
 
-A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [DataSources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
+A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [Data sources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
 
 Enable the type in the builder UI first, otherwise creators cannot pick it:
 
@@ -9224,6 +9237,129 @@ Sockets die for reasons that have nothing to do with your code. Load balancers a
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.
+
+---
+
+## E2E testing
+
+Source: https://ngxviewbuilder.io/developers/e2e-testing
+
+# E2E testing
+
+Every interactive control NGX View Builder renders has a `data-testid`: inputs, select triggers and their options, date pickers, table menus and dialogs, rich text toolbars, dynamic panel rows, and in the builder every property editor and canvas action. You never have to reach for CSS classes or text in a test.
+
+The ids are built from the element's **data path**, so they stay the same when you restyle a view, change a label or translate it. Two fields of the same type never share an id, which matters because Playwright's locators are strict: if `getByTestId()` matches two nodes, the test fails instead of picking one.
+
+## How an id is built
+
+```
+nvb-<element type>-<part>-<data path>
+```
+
+| Piece | What it is | Example |
+| --- | --- | --- |
+| `nvb-<element type>` | the element that owns the control | `nvb-select` |
+| `<part>` | which control inside it | `trigger`, `search`, `option` |
+| `<data path>` | where the value lives in the data, written as one token | `country`, `orders-0-status` |
+
+The data path is the element's `dataPath`, or its `name` when it has none. Dots, brackets and any other characters that are not letters, digits or `_` become a single dash, and the case is kept, so `orders[0].status` becomes `orders-0-status` and `billing.city` becomes `billing-city`. Nothing is shortened.
+
+A field called `firstName` and a select called `country` render, among others:
+
+```
+nvb-element-firstName          the element's wrapper
+nvb-label-firstName            its label
+nvb-text-input-firstName       the input itself
+nvb-select-trigger-country     the select's button
+nvb-select-search-country      its search box
+nvb-country-option-LT          the option whose value is LT
+nvb-button-trigger-save        a button named save
+```
+
+Option ids end with the option's **value**, not its label, so they do not change when the labels are translated.
+
+## Repeaters
+
+Inside a dynamic panel or a dynamic table the data path already carries the row, so the ids do too. For a dynamic panel called `orders` with a text field `sku` in it:
+
+```
+nvb-dynamic-panel-row-orders-0          the first row
+nvb-text-input-orders-0-sku             the sku field in the first row
+nvb-text-input-orders-1-sku             the same field in the second row
+nvb-dynamic-panel-delete-row-orders-1   delete button of the second row
+```
+
+Fields in an object panel work the same way through their path: `address.city` gives `nvb-text-input-address-city`.
+
+## Playwright
+
+`data-testid` is Playwright's default test id attribute, so `getByTestId()` works without any configuration.
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test('new order', async ({ page }) => {
+  await page.goto('/orders/new');
+
+  await page.getByTestId('nvb-text-input-firstName').fill('Ada');
+
+  // A select: open it, then pick the option by its value.
+  await page.getByTestId('nvb-select-trigger-country').click();
+  await page.getByTestId('nvb-country-option-LT').click();
+
+  // A repeater row.
+  await page.getByTestId('nvb-text-input-orders-0-sku').fill('A-100');
+
+  await page.getByTestId('nvb-button-trigger-save').click();
+  await expect(page.getByTestId('nvb-element-firstName')).toBeVisible();
+});
+```
+
+With Cypress, use the attribute selector: `cy.get('[data-testid="nvb-text-input-firstName"]')`.
+
+The fastest way to find an id is the browser's element inspector: select the control and read its `data-testid`. Every id you see there is stable as long as the element keeps its name.
+
+## Testing a page with the builder in it
+
+The builder's own controls use the `builder-` prefix (and `sidebar-` for the element library), followed by the area and, where there are several, the element or property they belong to:
+
+```
+sidebar-element-search              the library search box
+sidebar-element-text                the Text input tile in the library
+builder-canvas                      the canvas
+builder-column-firstName            the firstName element on the canvas
+builder-element-duplicate-firstName its Duplicate action
+builder-element-delete-firstName    its Delete action
+builder-ai-status                   what a connected AI client is doing
+```
+
+Library tiles add an element on double click or Enter, and dragging works like any HTML5 drag and drop.
+
+## Your own elements
+
+A [custom element](https://ngxviewbuilder.io/developers/custom-elements) gets the same scheme from `createElementTestId()`:
+
+```ts
+import { createElementTestId } from '@ngxviewbuilder/runtime';
+
+export class RatingElement {
+  readonly model = input.required<RatingModel>();
+
+  protected readonly tid = createElementTestId(this.model, 'nvb-rating', 'rating');
+}
+```
+
+```html
+@for (star of stars; track star) {
+  <button [attr.data-testid]="tid('star', star)">…</button>
+}
+```
+
+`tid('star', 3)` on an element named `score` gives `nvb-rating-star-score-3`. The extra arguments are for parts that repeat inside one element, like the stars here or the options of a list. `toTestIdToken()` is exported too, for building a token from your own values.
+
+## Upgrading from 0.11 or earlier
+
+Before 0.12.0 a data path kept its dots and brackets (`nvb-text-input-orders[0].sku`), option ids were lower case and cut at 50 characters, and dynamic panel rows were not namespaced by the panel. Selectors written against those ids need the new form shown above.
 
 ---
 
@@ -12057,11 +12193,11 @@ Source: https://ngxviewbuilder.io/creators/data-sources
 
 # Data sources
 
-A data source is a named connection to data, usually an API endpoint. You define sources once per view in the bottom **DataSources** tab, then bind elements to them. Sources are referenced everywhere by **name**.
+A data source is a named connection to data, usually an API endpoint. You define sources once per view in the **Data sources** tab below the canvas, then bind elements to them. Sources are referenced everywhere by **name**.
 
 ## The source editor
 
-Click **Add Source** in the bottom DataSources tab. Every source has:
+Click **New data source** in the **Data sources** tab below the canvas. Every source has:
 
 | Field | What it does |
 | --- | --- |
@@ -12074,7 +12210,7 @@ Click **Add Source** in the bottom DataSources tab. Every source has:
 | Field | What it does |
 | --- | --- |
 | **Url** | The endpoint, with optional `{placeholders}`: `https://api.example.com/clients/{clientId}`. Required: actions using a URL-less REST source warn in the editor. |
-| **Method** | `GET`, `POST`, `PUT`, `DELETE`… or `TABLE-POST`, a special method for a **Table**'s data source that sends a real `POST` but automatically adds the current page, sort, and search state to the request body. Ask your developer to read [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
+| **Method** | `GET`, `POST`, `PUT`, `PATCH` or `DELETE`, picked in the request bar next to the URL. When a **Table** loads from a `POST` source, a switch **Send the table's paging, sorting and filters** appears: turned on, the request still goes out as a `POST`, with the current page, sort and search state added to the body. Ask your developer to read [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 
@@ -12326,7 +12462,7 @@ These live in the **Search source** section of the properties sidebar.
 
 | Property | What it does |
 | --- | --- |
-| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the DataSources tab. |
+| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the Data sources tab. |
 | **Items path** | Where the array sits in the response, e.g. `data.items`. Leave it empty if the response is the array itself, or wraps it in a common key such as `items`, `data`, `results`, `rows` or `content`. |
 | **Label key** | Which field of each record the user sees, e.g. `name`. Nested fields work too: `address.city`. Left empty, the element tries `label`, `name`, `title` and `text` in that order. |
 | **Value key** | Which field gets stored, e.g. `id`. Leave it empty to store the **whole record** the user picked. |
@@ -13165,7 +13301,7 @@ A column either prints its value as text, or hosts a real element in every row. 
 
 | Property | What it does |
 | --- | --- |
-| **Data source** | Primary source from the DataSources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
+| **Data source** | Primary source from the Data sources tab, e.g. `loadUsers`, together with its *Use as*, *React to change*, and *Listen fields* settings. The same picker is used whether Lazy load is on or off. |
 | **Items path (optional)** | Path to the array in the response, e.g. `data.items`. Empty = auto-detection. |
 | **Request params** | Additional TABLE-POST params (up to 5 rows): **Param name** + **Value / `{path}`**. |
 | **Lazy load** | Load per page/sort from the server instead of everything upfront. |
@@ -13598,7 +13734,7 @@ Calls a [data source](https://ngxviewbuilder.io/creators/data-sources). This is 
 
 | Field                                         | JSON key                           | What it does                                                                                                                                                                                                                 |
 | --------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Data source**                               | `dataSourceName`                   | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the DataSources tab.                                                                               |
+| **Data source**                               | `dataSourceName`                   | Which source to call. Example: `saveOrder` or `loadPersons`. If a REST source has no URL, the editor warns you; set it in the Data sources tab.                                                                               |
 | **Placeholder mapping (URL/body)**            | `params`                           | Maps each `{placeholder}` in the source URL/body to a context path or plain value. Example: body `{selectedRows}` → `__table.el1.selectedRows`, URL `{id}` → `row.id`. Shown only when the source actually has placeholders. |
 | **Response action**                           | `responseMode`                     | What to do with the response: `none` (do nothing), `download` (save response as a file), `setValue` (write response into an element).                                                                                        |
 | **Response data path (optional)**             | `responseDataPath`                 | Which part of the response to use. Example: `data`, `result.item`, `payload.items`.                                                                                                                                          |
@@ -13950,7 +14086,7 @@ This walkthrough builds a small **client registration form**: name, email, clien
 
 ## 1. Place the fields
 
-From the **Single line inputs** group, drag onto the canvas:
+From the **Single line inputs** group, drag onto the canvas (or double click a tile to add it after the selected element):
 
 - **Text**: set *Label* to `First name`, *Name* to `firstName`.
 - **Text**: set *Label* to `Email`, *Name* to `email`.
@@ -13960,7 +14096,7 @@ From the **Choice inputs** group:
 - **Radio**: set *Label* to `Client type`, *Name* to `clientType`. In the **Options** category add two options: `Private person` (value `person`) and `Company` (value `company`).
 
 ::: tip
-Drag two elements next to each other to place them side by side in one row. Set their *Width* in the **Design** category, for example `50%` each.
+Drag two elements next to each other to place them side by side in one row. They share the row evenly without any width. Set a *Width* in the **Design** category only for an uneven split, and only on one of them: `50%` on both makes the second one wrap, because a percentage does not count the gap between them.
 :::
 
 ## 2. Make fields required
@@ -14493,7 +14629,7 @@ Source: https://ngxviewbuilder.io/creators/pages
 
 # Pages & navigation
 
-A view can have one page or many. Pages appear in the footer strip under the canvas: click to switch, use **+** to add, drag to reorder.
+A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
 
 ## When to use multiple pages
 
@@ -15061,20 +15197,21 @@ Source: https://ngxviewbuilder.io/creators/workspace
 
 # The builder workspace
 
-The builder screen has four working areas:
+The builder screen has five working areas:
 
 | Area | Location | Purpose |
 | --- | --- | --- |
-| Elements sidebar | Left | Drag elements onto the canvas |
+| Elements sidebar | Left | Add elements, or find them in the Layers tab |
 | Canvas | Center | The page you are building |
+| Footer | Below the canvas | Pages, data sources and variables |
 | Properties sidebar | Right | Configure the selected element |
-| Header tabs | Top | Switch between builder modes |
+| Header | Top | Switch between builder modes, settings, undo and save |
 
 ![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
 
 ## Elements sidebar
 
-Elements are grouped so you can scan them quickly:
+The sidebar has two tabs. **Add** is the element library, grouped so you can scan it quickly:
 
 - **Single line inputs**: text, number, date, phone, and other typed fields.
 - **Choice inputs**: dropdowns, checkboxes, radios, toggles.
@@ -15083,15 +15220,38 @@ Elements are grouped so you can scan them quickly:
 - **Content**: text, images, video, icons, badges, cards.
 - **Tables**: data tables, dynamic tables, list grids.
 
-Use the search box at the top of the sidebar to filter by name. Drag any element into a row on the canvas or into a container.
+Use the search box at the top to filter by name. **Double click** a tile (or select it and press Enter) to add the element right after the selected one, inside the selected container, or at the end of the page. You can also drag a tile to exactly where you want it. A single click does nothing, so a stray click never adds anything.
 
 You can also save your own configured elements (or whole groups of elements) back into the sidebar as reusable library items.
 
+**Layers** lists every element of the view as a tree, including the ones inside panels, tabs and other containers. Search it by label or name; clicking a row selects the element on the canvas, and hovering a row highlights it there.
+
 ## Canvas
 
-The canvas shows the current page. Elements are placed in **rows**; each row holds one or more **columns**, and each column holds one element. Drag elements to reorder them, drop them next to each other to share a row, or drop them inside containers.
+The canvas shows the current page. Elements are placed in **rows**; each row holds one or more **columns**, and each column holds one element. Drag elements to reorder them, drop them next to each other to share a row, or drop them inside containers. While you drag, a thin line with the element's name shows where it will land, and the container it goes into gets a dashed outline. The gap between two fields is a drop target too.
 
-Selecting an element highlights it and opens its settings on the right. The footer below the canvas lists all pages of the view: click to switch, add, or reorder pages.
+Selecting an element opens its settings on the right and marks it with a small tag that shows its type and name, for example *Text input · email*. Next to the tag sit two quick actions:
+
+| Action | Shortcut | What it does |
+| --- | --- | --- |
+| Duplicate | Ctrl+D | Copies the element right after it. The copy keeps the label and gets the next free name (`email` becomes `email2`). |
+| Delete | Del | Removes the element. Undo brings it back. |
+
+An element inside a panel or another container also gets a **Select parent** button there. Right click an element for the full menu. A selected **page** has the same tag, and its Duplicate copies the page with all of its elements.
+
+A view with no pages yet starts with a short start screen: begin from a blank page or from one of the quick start elements.
+
+New elements are named after their type (`text1`, `dynamicTable2`). As long as you have not changed the name yourself, it follows the label: type *First name* as the label and the name becomes `firstName`.
+
+When an AI client works on the view through [AI access](https://ngxviewbuilder.io/ai/), its new elements come onto the canvas one by one, and a small status chip at the bottom of the canvas says what it is doing: reading the view, checking changes, or building with a count.
+
+## Footer
+
+The footer below the canvas has three tabs:
+
+- **Pages**: every page of the view as a card with its number, name, element count and code. Click a card to open the page, drag it to reorder (a line shows where it will land), and use Duplicate or Delete when you hover it. **New page** adds one. See [Pages](https://ngxviewbuilder.io/creators/pages).
+- **Data sources**: where the view loads data from. See [Data sources](https://ngxviewbuilder.io/creators/data-sources).
+- **Variables**: values the view keeps while it runs. See [Variables](https://ngxviewbuilder.io/creators/variables).
 
 ## Properties sidebar
 
@@ -15107,27 +15267,28 @@ Every property of the selected element lives here, organised into categories:
 | Validators | Required message and extra validation rules |
 | Logic | `visibleIf`, `disableIf`, `requireIf`, expressions, default value |
 | Actions | Events that run actions (navigate, load data, toast…) |
-| Design | Width, responsive widths, colors, padding |
+| Design | Width, responsive widths, colors, spacing |
 
-Only the categories relevant to the selected element are shown. See [Common properties](https://ngxviewbuilder.io/creators/properties) for the full reference.
+Only the categories relevant to the selected element are shown. On/off properties are switches, and padding and margin use one compact control: a horizontal and a vertical value, or each side on its own when you turn on **Each side**. See [Common properties](https://ngxviewbuilder.io/creators/properties) for the full reference.
 
-## Header tabs
+With nothing selected, the sidebar shows how to add, find and edit elements.
+
+## Header
 
 | Tab | Purpose |
 | --- | --- |
 | Builder | The visual editor (default) |
 | Preview | Run the view exactly as end users will see it |
-| JSON | Edit the raw view definition |
+| JSON Editor | Edit the raw view definition |
 | Templates | Manage reusable HTML templates *(plugin)* |
-| Form settings | View-wide settings: width, navigation, buttons, custom CSS |
-| Translations | Translate labels and texts into other languages |
-| Variables | Define runtime variables (route params, constants, computed values) |
+
+The buttons on the right are undo and redo, **Form settings** (the gear: width, navigation, buttons, custom CSS, AI access), **Translations**, and **Save**.
 
 Developers can add more tabs through plugins. If you see extra tabs, they come from plugins installed in your application.
 
 ## Undo and history
 
-The builder tracks your edits. Use undo/redo in the header to step through recent changes before saving.
+The builder tracks your edits. Use undo and redo in the header to step through recent changes before saving; Ctrl+S saves. A change an AI client made in one go, even when it arrived in several parts, undoes in one step.
 
 ---
 

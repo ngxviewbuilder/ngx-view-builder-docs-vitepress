@@ -21,7 +21,7 @@ This walkthrough builds a small **client registration form**: name, email, clien
 
 ## 1. Place the fields
 
-From the **Single line inputs** group, drag onto the canvas:
+From the **Single line inputs** group, drag onto the canvas (or double click a tile to add it after the selected element):
 
 - **Text**: set *Label* to `First name`, *Name* to `firstName`.
 - **Text**: set *Label* to `Email`, *Name* to `email`.
@@ -31,7 +31,7 @@ From the **Choice inputs** group:
 - **Radio**: set *Label* to `Client type`, *Name* to `clientType`. In the **Options** category add two options: `Private person` (value `person`) and `Company` (value `company`).
 
 ::: tip
-Drag two elements next to each other to place them side by side in one row. Set their *Width* in the **Design** category, for example `50%` each.
+Drag two elements next to each other to place them side by side in one row. They share the row evenly without any width. Set a *Width* in the **Design** category only for an uneven split, and only on one of them: `50%` on both makes the second one wrap, because a percentage does not count the gap between them.
 :::
 
 ## 2. Make fields required

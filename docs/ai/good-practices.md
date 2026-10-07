@@ -12,7 +12,7 @@ Read it before the first change. Over MCP, `nvb_execute` does not accept a batch
 ## How to work
 
 1. **Look before you build.** Call `getTree()` (MCP: `nvb_get_tree`) first. Extend what is there; never rebuild a view the user only asked to change.
-2. **One request, one batch.** Send everything a request needs in one `execute()` call. It is atomic, so a failure leaves nothing half built, and the person can undo it in one step.
+2. **Build in sections the person can watch.** A change to an existing view goes in one `execute()` call. A new view of more than about eight elements goes in a few batches, one per section from the top (header and first fields, each further group, then the buttons), each sent as soon as it is ready. The first section shows up right away and the canvas plays the new elements in one by one, instead of the whole form landing after a long wait. Give every batch of that build the same `group` option, for example `"build-contact-form"`, so the person still undoes the whole build in one step. Each batch is atomic on its own, so a failure never leaves a half applied section.
 3. **Dry run large batches** with `dryRun: true`, fix what it reports, then send it for real.
 4. **Check the result.** After a batch, read the returned tree (or `getTree()`) and confirm the elements are where you meant them: in the right container, in the right order, side by side where you wanted a row.
 5. **Do not save.** Saving is the person's decision. Build, check, then stop and describe what you did.

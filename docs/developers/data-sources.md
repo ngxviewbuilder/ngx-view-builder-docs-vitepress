@@ -22,7 +22,7 @@ An `apiPrefix` interceptor also lets creators use short relative URLs (`/clients
 
 This only applies to a **`table`** element with **Lazy load** on (creator-side property, `tableDataSourceName`). With Lazy load off, the table's data source is a plain source that must return every row in one response. The table paginates/sorts/filters in the browser and none of the contract below applies.
 
-With Lazy load on, set the source's **Method** to the literal string **`TABLE-POST`** in the DataSources tab. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
+With Lazy load on, give the source the **POST** method in the Data sources tab and turn on **Send the table's paging, sorting and filters**. The switch shows up on a POST source as soon as a table or list grid loads from it, and names the tables that do. The view stores this as the method `TABLE-POST`, which is also what you write when you author the JSON yourself, and views saved with it keep working. NGX View Builder sends a real `POST` over the wire, but first merges the current page/sort/search state into the request body automatically, so you don't write this merging logic yourself.
 
 - If the source's **Request body** is left empty, the body sent to your endpoint is exactly the object below.
 - If you *do* configure a body template (e.g. `{"tenantId":"{el1}"}`), your fields are kept and `pagingParams`/`params`/`extendedParams` are added on top.
@@ -220,7 +220,7 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 
 ## WebSocket sources
 
-A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [DataSources tab](../creators/data-sources#websocket); this section is about what the host controls.
+A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [Data sources tab](../creators/data-sources#websocket); this section is about what the host controls.
 
 Enable the type in the builder UI first, otherwise creators cannot pick it:
 

@@ -31,6 +31,7 @@
 - [Custom properties](https://ngxviewbuilder.io/developers/custom-properties): Add or override properties in the sidebar, per element type or globally.
 - [Custom validator types](https://ngxviewbuilder.io/developers/custom-validators): Register your own named validation rules so creators pick them from the Type list instead of writing regular expressions.
 - [Data source integration](https://ngxviewbuilder.io/developers/data-sources): Host-side concerns, including defaults, auth, interceptors, and observability.
+- [E2E testing](https://ngxviewbuilder.io/developers/e2e-testing): Every control in a view and in the builder has a stable data-testid. How the ids are built, how they work in repeaters, and how to use them from Playwright or Cypress.
 - [Events reference](https://ngxviewbuilder.io/developers/events): Every event exposed by NgxViewBuilderApiService.
 - [Extensions overview](https://ngxviewbuilder.io/developers/extensions): One config object registers everything custom, from elements and functions to properties, icons, and tabs.
 - [Custom SVG icons](https://ngxviewbuilder.io/developers/icons): Register icons by name for elements, buttons, and the builder UI.
@@ -55,7 +56,7 @@
 - [Calculated values](https://ngxviewbuilder.io/creators/calculated-values): Expression and Default value, for computing field values from other fields.
 - [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): The most common expression patterns, copy-paste ready.
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.
-- [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the DataSources editor and the element binding panel, for REST, route, and local sources.
+- [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the Data sources editor and the element binding panel, for REST, route, and local sources.
 - [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element and how it triggers actions.
 - [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices): Select, Multi-select, Autocomplete, Checkbox, Radio, Select button, Toggles, and List box, with full property tables.
 - [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
