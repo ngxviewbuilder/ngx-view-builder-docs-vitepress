@@ -319,8 +319,22 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "API service reference", link: "/developers/api-service" },
-            { text: "AI command API", link: "/developers/ai-command-api" },
+            {
+              text: "API by area",
+              collapsed: true,
+              items: [
+                { text: "Structure & pages", link: "/developers/api/structure" },
+                { text: "Values & data", link: "/developers/api/data" },
+                { text: "Elements", link: "/developers/api/elements" },
+                { text: "Validation", link: "/developers/api/validation" },
+                { text: "Data sources & variables", link: "/developers/api/data-sources" },
+                { text: "Language & theme", link: "/developers/api/language-theme" },
+                { text: "Extensions", link: "/developers/api/extensions" },
+                { text: "Builder, templates & tables", link: "/developers/api/builder" },
+              ],
+            },
             { text: "Events reference", link: "/developers/events" },
+            { text: "AI command API", link: "/developers/ai-command-api" },
             {
               text: "Runtime variables",
               link: "/developers/runtime-variables",

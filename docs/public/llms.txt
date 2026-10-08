@@ -22,7 +22,15 @@
 
 - [Angular form & view builder for developers](https://ngxviewbuilder.io/developers/): Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
 - [AI command API](https://ngxviewbuilder.io/developers/ai-command-api): A JSON command surface that lets an external agent read and edit a view while the builder is open.
-- [API service reference](https://ngxviewbuilder.io/developers/api-service): Every public method of NgxViewBuilderApiService, area by area.
+- [API service reference](https://ngxviewbuilder.io/developers/api-service): NgxViewBuilderApiService, the one service a host application talks to. How calls reach the view, and every method by area with arguments, return values and examples.
+- [API: builder, templates & tables](https://ngxviewbuilder.io/developers/api/builder): Persist the template library and the element library through the host, store per-user table settings and filters, and control the builder's tabs.
+- [API: data sources & variables](https://ngxviewbuilder.io/developers/api/data-sources): Reload data sources, add host sources to every view, authorize websockets, and feed runtime variables and external context from the host.
+- [API: data & values](https://ngxviewbuilder.io/developers/api/data): Read and write form data and single values, attach server errors and track unsaved changes through NgxViewBuilderApiService.
+- [API: elements](https://ngxviewbuilder.io/developers/api/elements): Find elements, read and write their properties, use the element handle, control rows of dynamic tables and panels, and set defaults per element type.
+- [API: extensions](https://ngxviewbuilder.io/developers/api/extensions): Register expression functions, validator types, custom elements and properties, SVG icons and table cell types at runtime, with what each call returns.
+- [API: language & theme](https://ngxviewbuilder.io/developers/api/language-theme): Switch language and locale, add content translations and UI dictionaries, follow the host's language, and set theme modes, design tokens and custom CSS.
+- [API: structure & settings](https://ngxviewbuilder.io/developers/api/structure): Read, replace and patch the view definition and its settings through NgxViewBuilderApiService, with return values and examples.
+- [API: validation & lifecycle](https://ngxviewbuilder.io/developers/api/validation): Validate the view on screen or any structure headlessly, show toasts, and fire the render, completion and interaction notifications.
 - [Architecture](https://ngxviewbuilder.io/developers/architecture): How the runtime and designer packages, the shared core, and plugins fit together.
 - [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration): Host the visual builder, persist structures, and customize the header.
 - [Custom CSS](https://ngxviewbuilder.io/developers/custom-css): Per-view and host-injected CSS on top of the theme system.
@@ -32,7 +40,7 @@
 - [Custom validator types](https://ngxviewbuilder.io/developers/custom-validators): Register your own named validation rules so creators pick them from the Type list instead of writing regular expressions.
 - [Data source integration](https://ngxviewbuilder.io/developers/data-sources): Host-side concerns, including defaults, auth, interceptors, and observability.
 - [E2E testing](https://ngxviewbuilder.io/developers/e2e-testing): Every control in a view and in the builder has a stable data-testid. How the ids are built, how they work in repeaters, and how to use them from Playwright or Cypress.
-- [Events reference](https://ngxviewbuilder.io/developers/events): Every event exposed by NgxViewBuilderApiService.
+- [Events reference](https://ngxviewbuilder.io/developers/events): Every event of NgxViewBuilderApiService, when it fires and what its payload holds.
 - [Extensions overview](https://ngxviewbuilder.io/developers/extensions): One config object registers everything custom, from elements and functions to properties, icons, and tabs.
 - [Custom SVG icons](https://ngxviewbuilder.io/developers/icons): Register icons by name for elements, buttons, and the builder UI.
 - [Installation](https://ngxviewbuilder.io/developers/installation): Install the package, register providers, and initialize the runtime.
