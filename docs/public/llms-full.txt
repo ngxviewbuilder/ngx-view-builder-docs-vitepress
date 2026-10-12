@@ -8488,7 +8488,7 @@ The data of a view is one object: every element stores its value under its `name
 
 | Method | Returns | In short |
 | --- | --- | --- |
-| [`getData()`](https://ngxviewbuilder.io/developers/api/data#getdata) | `Record<string, unknown>` | The whole data object |
+| [`getData(options?)`](https://ngxviewbuilder.io/developers/api/data#getdata) | `Record<string, unknown>` | The whole data object, without the library's `__` keys |
 | [`setData(data)`](https://ngxviewbuilder.io/developers/api/data#setdata) | `void` | Replace all data |
 | [`setElementsData(data)`](https://ngxviewbuilder.io/developers/api/data#setelementsdata) | `Promise<void>` | Merge several values |
 | [`setValue(path, value)`](https://ngxviewbuilder.io/developers/api/data#setvalue) | `Promise<void>` | Set one value like a person would |
@@ -8510,10 +8510,10 @@ The data of a view is one object: every element stores its value under its `name
 ### `getData()`
 
 ```ts
-getData(): Record<string, unknown>
+getData(options?: { includeInternal?: boolean }): Record<string, unknown>
 ```
 
-A copy of the current data. Keys starting with `__` belong to the library (route, external context, variables); leave them out when you save.
+A copy of the current data, ready to save. The library keeps some state of its own next to it under keys starting with `__` (variables, route, external context, the selected tab or step). Those are left out, so you can send the result to your server as it is.
 
 ```ts
 const data = api.getData();
@@ -8521,15 +8521,23 @@ const data = api.getData();
 //   firstName: 'Ada',
 //   clientType: 'company',
 //   address: { city: 'Vilnius', street: 'Gedimino pr. 1' },
-//   orders: [{ sku: 'A-100', amount: 2 }],
-//   __variables: { route: {...}, picked: 'V21' },
-//   __external: { userRole: 'admin' }
+//   orders: [{ sku: 'A-100', amount: 2 }]
 // }
 
-const toSave = Object.fromEntries(Object.entries(data).filter(([key]) => !key.startsWith('__')));
+await firstValueFrom(http.put(`/api/clients/${id}`, data));
 ```
 
-The runtime component also has `getDataSnapshot()`, which returns the same object.
+Pass `includeInternal: true` when you need the library's keys as well, for example to read a variable an action stored:
+
+```ts
+const all = api.getData({ includeInternal: true });
+all.__variables?.picked; // 'V21'
+all.__progressFlow?.checkout?.selectedStep; // 'payment'
+```
+
+Before 0.12.4 `getData()` always returned the `__` keys and you had to filter them out yourself. The filter does no harm if you keep it.
+
+The runtime component also has `getDataSnapshot()`, which returns the same object as `getData()`.
 
 ### `setData()`
 
@@ -9414,6 +9422,8 @@ Source: https://ngxviewbuilder.io/developers/api/language-theme
 | [`setApplicationLocale` / `getApplicationLocale`](https://ngxviewbuilder.io/developers/api/language-theme#setapplicationlocale-getapplicationlocale) | `void` / `string` | Number and date formatting |
 | [`setLocale(locale)`](https://ngxviewbuilder.io/developers/api/language-theme#setlocale) | `void` | Locale in the formatter and in the view's settings |
 | [`setContentTranslations(translations, merge?)`](https://ngxviewbuilder.io/developers/api/language-theme#setcontenttranslations) | `void` | Translate labels, options, messages |
+| [`getContentTranslationKeys()`](https://ngxviewbuilder.io/developers/api/language-theme#getcontenttranslationkeys) | list | Every translatable text and what is still missing |
+| [`getContentTranslations()`](https://ngxviewbuilder.io/developers/api/language-theme#getcontenttranslations) | map | The translations in effect, per language |
 | [`setUiDictionaries` / `setUiTranslations`](https://ngxviewbuilder.io/developers/api/language-theme#setuidictionaries-setuitranslations) | `void` | Translate the library's own texts |
 | [`translateUi(key, fallback?)`](https://ngxviewbuilder.io/developers/api/language-theme#translateui) | `string` | Read a UI text |
 | [`setPropertyHints` / `setPropertyTypeHints`](https://ngxviewbuilder.io/developers/api/language-theme#setpropertyhints-setpropertytypehints) | `void` | Help texts in the builder's property panel |
@@ -9443,6 +9453,16 @@ api.getLanguage(); // 'lt'
 ```
 
 A bound `[language]` input on the component sets the language when it changes; a later `setLanguage()` call stays in effect until the input changes again.
+
+You can call it before any view is on screen, for example right after login when you already know the person's language. Every view loaded afterwards opens in that language. A view's own `settings.language` is only its default: it is used while the host has not picked a language, and loading a view never switches the host's choice back.
+
+```ts
+// app start, no view yet
+api.setLanguage(this.user.language); // 'lt'
+
+// later the router opens a view saved with settings.language: 'en'
+// it shows in Lithuanian
+```
 
 ### `resolveHostLanguage()` / `applyHostLanguage()`
 
@@ -9515,6 +9535,42 @@ api.setContentTranslations({
   lt: { 'elements.firstName.label': 'Vardas', 'elements.email.label': 'El. paštas' },
   de: { 'elements.firstName.label': 'Vorname' },
 });
+```
+
+Like `setLanguage()`, it works before a view exists, and the texts stay for every view loaded later. This suits translations kept in your own system: load them once and every view picks up the ones that match its keys. When the view has its own translation for the same key, yours wins.
+
+Pass `merge = false` to replace everything you supplied before instead of adding to it.
+
+### `getContentTranslationKeys()`
+
+```ts
+getContentTranslationKeys(): INgxViewBuilderContentTranslationKey[]
+```
+
+Every text of the current view that can be translated, which is handy when the translations live in your own system and you want to know what to send to translators. Each item has the `key` to translate it under, a readable `label`, the `source` text in the view's default language, the `translations` each language has so far (the view's own with yours on top) and the languages still `missing`.
+
+```ts
+api.getContentTranslationKeys();
+// [
+//   { key: 'elements.firstName.label', label: 'Element firstName - label',
+//     source: 'First name', translations: { lt: 'Vardas' }, missing: ['de'] },
+//   { key: 'elements.orders.columnsConfig[0].label', label: 'Element orders - column 1 - label',
+//     source: 'Product', translations: {}, missing: ['lt', 'de'] },
+// ]
+
+const todo = api.getContentTranslationKeys().filter((item) => item.missing.length > 0);
+```
+
+### `getContentTranslations()`
+
+```ts
+getContentTranslations(): Record<string, Record<string, string>>
+```
+
+The translations in effect for the current view, per language: the view's own with the ones you supplied through `setContentTranslations()` on top.
+
+```ts
+api.getContentTranslations().lt['elements.firstName.label']; // 'Vardas'
 ```
 
 ### `setUiDictionaries()` / `setUiTranslations()`
@@ -11275,6 +11331,8 @@ For one element only, the [element handle](https://ngxviewbuilder.io/developers/
 | `onValueChanging` / `onValueChanged` | a value is about to change / changed, by a person, an expression, an action or `setValue()` | `{ dataPath, newValue, oldValue, sender, trigger }` |
 | `onElementValueChanging` / `onElementValueChanged` | the same, with the element resolved | `{ elementDataPath, newValue, oldValue, trigger, element, host, api }` |
 | `onElementPropertyChanging` / `onElementPropertyChanged` | a property (label, hidden, disabled...) is written | `{ propertyKey, newValue, oldValue, elementName, elementDataPath, elementType, element, elementDom }` |
+
+Each change fires once, also when you subscribe on the root service your app injects while the view runs inside `<ngx-view-builder-runtime>`. Before 0.12.4 those subscribers got every value and table event twice.
 
 `trigger` is `'input'`, `'change'` or `'blur'` for a person, `'programmatic'` for code and expressions, `'load'` while the view opens. `api` is the [element handle](https://ngxviewbuilder.io/developers/api/elements#element-getelementapi).
 
@@ -15012,6 +15070,8 @@ The current step is readable in expressions:
 
 Example: `visibleIf: {approvalFlow.selectedStep} == "Approved"` on a download button.
 
+Conditions that read the step run again every time a person picks another step, so `disableIf: {approvalFlow.selectedStep} == "draft"` locks a field on the draft step and unlocks it on the next one. The same goes for `{myTabs.selectedTab}` on tabs.
+
 ---
 
 ## Elements overview
@@ -16917,6 +16977,8 @@ A view can serve several languages from one definition. Content texts (labels, d
 3. Pick a language at the top. The table lists every translatable text: the field it belongs to, the source text, and its translation in that language. Fill in the empty cells.
 4. At runtime, the host application (or the language switcher) selects which language renders.
 
+Every source text is shown in full, so you can select it and copy it. Long texts and HTML templates get a bigger box that grows with the text instead of a single line. The copy button next to a source text puts it on the clipboard, and when the translation is still empty it also fills the cell with it. For an HTML template that means you keep the markup and only change the words.
+
 On a large view, the bar above the table helps you find things. The search box matches field names, source texts and translations, and ignores accents, so `zinute` finds *Žinutė*. **All**, **Missing** and **Translated** narrow the list, each with its count; **Missing** is the quickest way to finish a language. A row you are translating stays in the list until you change the filter, so it does not vanish after the first letter.
 
 The texts live in the view definition under `localization`:
@@ -16935,10 +16997,24 @@ The texts live in the view definition under `localization`:
 
 - Element labels, descriptions, placeholders, tooltips
 - Option labels of choice elements
+- Tabs, accordion sections, stepper and timeline steps, splitter panel titles
+- Column headers of tables and dynamic tables, and the table's own texts (empty message, paging, selection)
+- Chart titles and point labels, message card titles and text, HTML templates
+- Fields inside an object panel or a dynamic panel
 - Validation and required messages
 - Page names, dialog titles, button texts
 
+Texts an element starts with also count. A new tabs element shows *Tab 1* and *Tab 2* until you rename them, and those two are in the table like any other text, ready to translate.
+
 Untranslated texts fall back to the default language, so the view never shows blanks.
+
+## When the view changes
+
+Translations stay attached to what they translate, so you can keep working on a view after you started translating it.
+
+- **Deleting an element** removes its translations in every language. They no longer linger in the table.
+- **Renaming an element** moves its translations to the new name.
+- **Reordering a list** (table columns, options, tabs, steps) keeps each translation on its own item. Removing an item removes its translations.
 
 ## Translating values that come from data
 
@@ -16969,7 +17045,7 @@ For a Select or Radio you usually want [`getLabel()`](https://ngxviewbuilder.io/
 
 ## Tips
 
-- Finish the structure first, translate last. Renaming elements after translating creates orphaned texts.
+- Translating early is fine: deletes, renames and reordering keep the texts in step. Still, settle the wording of the source language first, since a changed source text does not tell you which translations need a second look.
 - Keep messages short; translated German/Lithuanian text is often longer than the English draft and can break tight layouts.
 - Test each language in [Preview](https://ngxviewbuilder.io/creators/preview) with the language switcher.
 

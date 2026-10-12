@@ -26,6 +26,8 @@ For one element only, the [element handle](./api/elements#element-getelementapi)
 | `onElementValueChanging` / `onElementValueChanged` | the same, with the element resolved | `{ elementDataPath, newValue, oldValue, trigger, element, host, api }` |
 | `onElementPropertyChanging` / `onElementPropertyChanged` | a property (label, hidden, disabled...) is written | `{ propertyKey, newValue, oldValue, elementName, elementDataPath, elementType, element, elementDom }` |
 
+Each change fires once, also when you subscribe on the root service your app injects while the view runs inside `<ngx-view-builder-runtime>`. Before 0.12.4 those subscribers got every value and table event twice.
+
 `trigger` is `'input'`, `'change'` or `'blur'` for a person, `'programmatic'` for code and expressions, `'load'` while the view opens. `api` is the [element handle](./api/elements#element-getelementapi).
 
 ```ts
