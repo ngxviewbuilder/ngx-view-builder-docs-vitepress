@@ -103,3 +103,5 @@ The current step is readable in expressions:
 ```
 
 Example: `visibleIf: {approvalFlow.selectedStep} == "Approved"` on a download button.
+
+Conditions that read the step run again every time a person picks another step, so `disableIf: {approvalFlow.selectedStep} == "draft"` locks a field on the draft step and unlocks it on the next one. The same goes for `{myTabs.selectedTab}` on tabs.

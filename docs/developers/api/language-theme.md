@@ -13,6 +13,8 @@ description: Switch language and locale, add content translations and UI diction
 | [`setApplicationLocale` / `getApplicationLocale`](#setapplicationlocale-getapplicationlocale) | `void` / `string` | Number and date formatting |
 | [`setLocale(locale)`](#setlocale) | `void` | Locale in the formatter and in the view's settings |
 | [`setContentTranslations(translations, merge?)`](#setcontenttranslations) | `void` | Translate labels, options, messages |
+| [`getContentTranslationKeys()`](#getcontenttranslationkeys) | list | Every translatable text and what is still missing |
+| [`getContentTranslations()`](#getcontenttranslations) | map | The translations in effect, per language |
 | [`setUiDictionaries` / `setUiTranslations`](#setuidictionaries-setuitranslations) | `void` | Translate the library's own texts |
 | [`translateUi(key, fallback?)`](#translateui) | `string` | Read a UI text |
 | [`setPropertyHints` / `setPropertyTypeHints`](#setpropertyhints-setpropertytypehints) | `void` | Help texts in the builder's property panel |
@@ -42,6 +44,16 @@ api.getLanguage(); // 'lt'
 ```
 
 A bound `[language]` input on the component sets the language when it changes; a later `setLanguage()` call stays in effect until the input changes again.
+
+You can call it before any view is on screen, for example right after login when you already know the person's language. Every view loaded afterwards opens in that language. A view's own `settings.language` is only its default: it is used while the host has not picked a language, and loading a view never switches the host's choice back.
+
+```ts
+// app start, no view yet
+api.setLanguage(this.user.language); // 'lt'
+
+// later the router opens a view saved with settings.language: 'en'
+// it shows in Lithuanian
+```
 
 ### `resolveHostLanguage()` / `applyHostLanguage()`
 
@@ -114,6 +126,42 @@ api.setContentTranslations({
   lt: { 'elements.firstName.label': 'Vardas', 'elements.email.label': 'El. paštas' },
   de: { 'elements.firstName.label': 'Vorname' },
 });
+```
+
+Like `setLanguage()`, it works before a view exists, and the texts stay for every view loaded later. This suits translations kept in your own system: load them once and every view picks up the ones that match its keys. When the view has its own translation for the same key, yours wins.
+
+Pass `merge = false` to replace everything you supplied before instead of adding to it.
+
+### `getContentTranslationKeys()`
+
+```ts
+getContentTranslationKeys(): INgxViewBuilderContentTranslationKey[]
+```
+
+Every text of the current view that can be translated, which is handy when the translations live in your own system and you want to know what to send to translators. Each item has the `key` to translate it under, a readable `label`, the `source` text in the view's default language, the `translations` each language has so far (the view's own with yours on top) and the languages still `missing`.
+
+```ts
+api.getContentTranslationKeys();
+// [
+//   { key: 'elements.firstName.label', label: 'Element firstName - label',
+//     source: 'First name', translations: { lt: 'Vardas' }, missing: ['de'] },
+//   { key: 'elements.orders.columnsConfig[0].label', label: 'Element orders - column 1 - label',
+//     source: 'Product', translations: {}, missing: ['lt', 'de'] },
+// ]
+
+const todo = api.getContentTranslationKeys().filter((item) => item.missing.length > 0);
+```
+
+### `getContentTranslations()`
+
+```ts
+getContentTranslations(): Record<string, Record<string, string>>
+```
+
+The translations in effect for the current view, per language: the view's own with the ones you supplied through `setContentTranslations()` on top.
+
+```ts
+api.getContentTranslations().lt['elements.firstName.label']; // 'Vardas'
 ```
 
 ### `setUiDictionaries()` / `setUiTranslations()`

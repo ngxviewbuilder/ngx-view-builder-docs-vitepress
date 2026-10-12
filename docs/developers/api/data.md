@@ -9,7 +9,7 @@ The data of a view is one object: every element stores its value under its `name
 
 | Method | Returns | In short |
 | --- | --- | --- |
-| [`getData()`](#getdata) | `Record<string, unknown>` | The whole data object |
+| [`getData(options?)`](#getdata) | `Record<string, unknown>` | The whole data object, without the library's `__` keys |
 | [`setData(data)`](#setdata) | `void` | Replace all data |
 | [`setElementsData(data)`](#setelementsdata) | `Promise<void>` | Merge several values |
 | [`setValue(path, value)`](#setvalue) | `Promise<void>` | Set one value like a person would |
@@ -31,10 +31,10 @@ The data of a view is one object: every element stores its value under its `name
 ### `getData()`
 
 ```ts
-getData(): Record<string, unknown>
+getData(options?: { includeInternal?: boolean }): Record<string, unknown>
 ```
 
-A copy of the current data. Keys starting with `__` belong to the library (route, external context, variables); leave them out when you save.
+A copy of the current data, ready to save. The library keeps some state of its own next to it under keys starting with `__` (variables, route, external context, the selected tab or step). Those are left out, so you can send the result to your server as it is.
 
 ```ts
 const data = api.getData();
@@ -42,15 +42,23 @@ const data = api.getData();
 //   firstName: 'Ada',
 //   clientType: 'company',
 //   address: { city: 'Vilnius', street: 'Gedimino pr. 1' },
-//   orders: [{ sku: 'A-100', amount: 2 }],
-//   __variables: { route: {...}, picked: 'V21' },
-//   __external: { userRole: 'admin' }
+//   orders: [{ sku: 'A-100', amount: 2 }]
 // }
 
-const toSave = Object.fromEntries(Object.entries(data).filter(([key]) => !key.startsWith('__')));
+await firstValueFrom(http.put(`/api/clients/${id}`, data));
 ```
 
-The runtime component also has `getDataSnapshot()`, which returns the same object.
+Pass `includeInternal: true` when you need the library's keys as well, for example to read a variable an action stored:
+
+```ts
+const all = api.getData({ includeInternal: true });
+all.__variables?.picked; // 'V21'
+all.__progressFlow?.checkout?.selectedStep; // 'payment'
+```
+
+Before 0.12.4 `getData()` always returned the `__` keys and you had to filter them out yourself. The filter does no harm if you keep it.
+
+The runtime component also has `getDataSnapshot()`, which returns the same object as `getData()`.
 
 ### `setData()`
 
