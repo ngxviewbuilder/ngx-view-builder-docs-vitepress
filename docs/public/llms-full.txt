@@ -144,6 +144,15 @@ Actions: `switchTab`, `focusElement`, `setData`, `validate`, `setLanguage`, `set
 
 Mutations are applied to a draft in order and committed together. Actions run afterwards, in order. Call `help()` for the parameters of each.
 
+## Plugins: logic map and field documentation
+
+Installed plugins add their own reads and commands, outside `execute()`. Call `listPlugins()` (MCP `nvb_list_plugins`) to see which are there.
+
+- `logicMap`: `readPlugin('logicMap', { element })` (MCP `nvb_read_plugin`) returns a field's rules in plain words with everything it depends on and changes; without a query, the whole view. Read it before explaining or changing how a form behaves. `executePlugin('logicMap', 'show', { element })` (MCP `nvb_plugin_execute`) opens the map on that field for the person.
+- `documentation`: what each field is for, kept outside the view JSON. Write it with `executePlugin('documentation', 'setDescription', { element, text })`, never into element properties such as `labelTooltip` or `hint`. `setRows`, `setSummary` and `setTitle` finish the page.
+
+A plugin that needs a license answers with the reason when the builder has no valid key; tell the person, do not work around it.
+
 ## Reuse before you invent
 
 Two habits save most of the rework.
@@ -7453,6 +7462,9 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
+| `listPlugins()` | `nvb_list_plugins` | the installed plugins an AI client can use, see [Plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins) |
+| `readPlugin(id, query?)` | `nvb_read_plugin` | what a plugin knows, such as the logic map or the field documentation |
+| `executePlugin(id, command, args?)` | `nvb_plugin_execute` | runs one of a plugin's commands |
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
@@ -7832,7 +7844,7 @@ A few details worth knowing:
 
 | Command | What it does |
 | --- | --- |
-| `switchTab` | Moves the builder to another tab, preview included. |
+| `switchTab` | Moves the builder to another tab, preview and plugin tabs (`logicMap`, `documentation`) included. |
 | `focusElement` | Selects an element so its properties open in the sidebar. |
 | `setData` | Sets working data. Values that belong to real elements go through the value pipeline, so expressions and conditions re-evaluate. |
 | `validate` | Validates the current view against data and returns the issues. |
@@ -7845,6 +7857,26 @@ A few details worth knowing:
 | `setRuntimeVariableContext` | External values that runtime variables can map from. |
 | `reloadDataSource` | Re-runs a data source. |
 | `undo`, `redo` | Steps the builder history. Warns when there is nothing to step to. |
+
+## Plugins
+
+Installed plugins can offer AI clients their own reads and commands. `listPlugins()` (`nvb_list_plugins`) lists them with what each is for, the query it takes and its commands; `help()` lists them too, and the system instructions mention them, so a model finds them without being told.
+
+```js
+// nvb_read_plugin
+{ "plugin": "logicMap", "query": { "element": "annualRevenue" } }
+
+// nvb_plugin_execute
+{ "plugin": "documentation", "command": "setDescription",
+  "args": { "element": "vatNumber", "text": "VAT number of the company. Finance checks it against VIES." } }
+```
+
+| Plugin | Read | Commands |
+| --- | --- | --- |
+| `logicMap` ([Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
+| `documentation` ([Documentation](https://ngxviewbuilder.io/developers/plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+
+A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](https://ngxviewbuilder.io/developers/plugin-development#letting-ai-clients-use-your-plugin)).
 
 ## Two languages in one view
 
@@ -11840,6 +11872,7 @@ and `@ngxviewbuilder/designer` are separate npm packages with separate license f
 | `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
 | `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
 | `@ngxviewbuilder/plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/plugin-logic-map`, `@ngxviewbuilder/plugin-docs`, `@ngxviewbuilder/plugin-shared` | Follow the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -11899,6 +11932,10 @@ Every published build embeds its release date. A license covers **all versions r
 ## AI access
 
 Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](https://ngxviewbuilder.io/developers/ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour. It lets as many browsers use AI access at the same time as the license has seats (see [Seats](https://ngxviewbuilder.io/developers/ai-command-api#seats)). The server only relays requests between the AI client and the builder and stores none of your views or data ([what it keeps](https://ngxviewbuilder.io/developers/ai-command-api#what-the-mcp-server-keeps)).
+
+## Licensed plugins
+
+The [Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map) and the [Documentation](https://ngxviewbuilder.io/developers/plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
 
 ## License terms
 
@@ -11980,6 +12017,67 @@ Useful building blocks:
 - `api.translateUi(key, fallback)` + `uiDictionaries` in your extensions config: localise your tab.
 - Tab labels starting with `tab.` resolve through UI dictionaries automatically.
 
+## Tab icon, description and the More menu
+
+A tab can bring an `icon` (a built-in icon name, or SVG markup so it never depends on the host's icon set) and a `description`, a short line shown under its name in the header's **More** menu. Plugin tabs show after the built-in ones while they fit and move into the menu when they do not; `placement: 'menu'` keeps a tab in the menu always, for something people open rarely.
+
+```ts
+builderTabs: [
+  {
+    id: 'acmeAudit',
+    label: 'tab.audit',
+    component: MyStudio,
+    order: 900,
+    icon: '<svg viewBox="0 -960 960 960">…</svg>',
+    description: 'tab.audit.description',
+  },
+],
+```
+
+## A section in the Properties panel
+
+`propertyPanels` adds a category to the Properties panel of the selected element, after the built-in ones. The component gets two inputs, `element` (the selected element's model) and `elementName` (its name, or its path inside a panel):
+
+```ts
+featurePacks: [
+  {
+    id: 'acme-audit',
+    propertyPanels: [
+      { id: 'audit', label: 'propertyCategory.audit', icon: 'history', component: AuditPanel },
+    ],
+  },
+],
+```
+
+`elementTypes` limits it to some element types, `order` places it among the built-in categories (they use 10 to 90; the default is last). The Documentation plugin's panel is built this way.
+
+## Letting AI clients use your plugin
+
+`NgxViewBuilderAiPluginRegistryService` lets a plugin tell AI clients what it offers. A plugin has an `id`, a `description` the model reads, an optional `query` description, a `read(query)` function and a list of `commands`, each with `params`, an `example` and a `run(args)`:
+
+```ts
+inject(NgxViewBuilderAiPluginRegistryService).register({
+  id: 'audit',
+  title: 'Audit notes',
+  description: 'Notes reviewers left on the view. Read them before changing a field someone flagged.',
+  read: () => ({ notes: auditNotes() }),
+  commands: [
+    {
+      name: 'addNote',
+      description: 'Adds a review note to an element.',
+      params: { element: 'Element name or path.', text: 'The note.' },
+      run: (args) => addNote(String(args['element']), String(args['text'])),
+    },
+  ],
+});
+```
+
+Register it from `provideEnvironmentInitializer()` in your provider. The model finds it through `listPlugins()` and uses it with `readPlugin()` and `executePlugin()`, over MCP `nvb_list_plugins`, `nvb_read_plugin` and `nvb_plugin_execute` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)). `available()` and `unavailableReason()` let the plugin say no, with a reason the model can pass on.
+
+## Translating your plugin
+
+Give every text a key and put the English texts in your feature pack's `uiDictionaries`. Packs merge key by key, so your English never replaces another plugin's English. Hosts translate your keys the same way they translate the builder ([UI translations](https://ngxviewbuilder.io/developers/ui-translations)). Text your code builds from words (a status line, a sentence about a rule) needs keys too, with placeholders for the values, so a language with another word order can move them: `'audit.count': '{count} notes'`.
+
 ## Capabilities
 
 `capabilities` are opaque strings other code can require. Property definitions support `requiredFeaturePacks` / `requiredCapabilities`: a property (or other gated UI) shows only when a matching pack is registered. Use this to make core-side features light up when your plugin is installed.
@@ -11993,6 +12091,183 @@ Useful building blocks:
 - [ ] Version-lock releases to the core version you built against.
 - [ ] Keep tab `id` stable, since hosts may persist the active tab.
 - [ ] Style with the design tokens so themes work ([Theming](https://ngxviewbuilder.io/developers/theming)).
+- [ ] Put every text behind a dictionary key, generated sentences included.
+- [ ] Keep your code in your package: everything should leave with `npm uninstall`.
+
+---
+
+## Documentation plugin
+
+Source: https://ngxviewbuilder.io/developers/plugin-docs
+
+# Documentation plugin
+
+`@ngxviewbuilder/plugin-docs` adds field documentation: a **Documentation** section in the Properties panel of every element and a **Documentation** tab with the generated field reference, ready to paste into Confluence. How creators use it is on the [Field documentation](https://ngxviewbuilder.io/creators/documentation) page.
+
+## Install
+
+```bash
+npm install @ngxviewbuilder/plugin-docs
+```
+
+```ts
+import { provideNgxViewBuilderDocs, createHttpDocsStorage } from '@ngxviewbuilder/plugin-docs';
+
+providers: [
+  provideNgxViewBuilderDocs({
+    storage: createHttpDocsStorage('/api/view-docs'),
+  }),
+],
+```
+
+Like the Logic map, it needs a genuine license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)) and brings `@ngxviewbuilder/plugin-shared` along.
+
+## Where the documentation is kept
+
+The text is never written into the view JSON. Each view has its own documentation document, keyed by a **view code**, and the plugin loads and saves it through the storage you give it.
+
+`createHttpDocsStorage(baseUrl)` is a ready REST storage:
+
+| Request | Meaning |
+| --- | --- |
+| `GET {baseUrl}/{viewCode}` | the stored document; `404` (or `204`) means none yet |
+| `PUT {baseUrl}/{viewCode}` | the whole document as JSON |
+
+It takes `headers` (a function, called before every request, for an Authorization header) and `withCredentials` for cookie sessions:
+
+```ts
+createHttpDocsStorage('/api/view-docs', {
+  headers: () => ({ Authorization: `Bearer ${auth.token()}` }),
+});
+```
+
+Or bring your own calls. A function runs in Angular's injection context, so `HttpClient` works and its Observables are accepted as they are:
+
+```ts
+provideNgxViewBuilderDocs({
+  storage: () => {
+    const http = inject(HttpClient);
+    return {
+      load: (viewCode) => http.get<INgxViewBuilderViewDocs | null>(`/api/view-docs/${viewCode}`),
+      save: (docs) => http.put(`/api/view-docs/${docs.viewCode}`, docs),
+      label: 'Confluence sync', // shown as "Saved to Confluence sync"
+    };
+  },
+});
+```
+
+Without a storage the documentation stays in the browser's localStorage, which is fine for trying it out but shared with nobody; the tab says so.
+
+The plugin saves a moment after typing stops (`saveDelayMs`, 800 by default). If a load fails, it does not save over the stored copy until a load succeeds.
+
+### The view code
+
+By default the view code is `settings.viewCode` in the view JSON; the first time something is documented, the plugin writes a new one there, so save the view afterwards. If your database already identifies the view, pass it instead:
+
+```ts
+provideNgxViewBuilderDocs({
+  storage: createHttpDocsStorage('/api/view-docs'),
+  viewCode: (structure) => currentViewId(),
+});
+```
+
+## The document
+
+```json
+{
+  "format": "ngx-view-builder-docs",
+  "version": 1,
+  "viewCode": "loan-application",
+  "title": "Business loan application",
+  "summary": "<p>Filled in by the client, checked by the credit team.</p>",
+  "updatedAt": "2026-10-13T09:12:00.000Z",
+  "elements": {
+    "vatNumber": {
+      "description": "<p>VAT number of the company. Finance checks it against VIES.</p>",
+      "rows": ["required", "prop:placeholder"],
+      "updatedAt": "2026-10-13T09:10:41.000Z"
+    },
+    "billing.city": { "description": "<p>City of the registered office.</p>" }
+  }
+}
+```
+
+Descriptions are keyed by element name, or by path for panel children. `rows` are the rows picked under the description: `required`, `logic`, `validation`, `data`, `events` (written from the view's logic) or `prop:<key>` for one of the element's own properties. Store the document as it is; the plugin only needs it back the same way.
+
+## Translations
+
+The tab, the Properties panel section and the copied or downloaded table follow the builder's language, headings, "Yes"/"No" and rule sentences included. The English texts are in `NGX_VIEW_BUILDER_DOCS_UI_EN` and `NGX_VIEW_BUILDER_SHARED_UI_EN`; property rows use the builder's own `property.<key>` names. See [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## AI clients
+
+The plugin registers itself for AI clients as `documentation` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)):
+
+| | |
+| --- | --- |
+| read | the documented fields with their rules; `{ "element": "vatNumber" }` for one, `{ "missingOnly": true }` for fields without a description, `{ "format": "markdown" }` or `"html"` for the finished table |
+| `setDescription` | writes one element's description (text or simple HTML) |
+| `setRows` | sets the rows under a description, e.g. `["required", "logic", "prop:placeholder"]` |
+| `setSummary` | the summary of the whole form |
+| `setTitle` | the page title |
+
+A model asked to "document this form" writes the descriptions here and never into element properties.
+
+---
+
+## Logic map plugin
+
+Source: https://ngxviewbuilder.io/developers/plugin-logic-map
+
+# Logic map plugin
+
+`@ngxviewbuilder/plugin-logic-map` adds the **Logic map** tab: every condition, calculation, validator, event action, data source, variable and view rule of the open view on one canvas, with what drives what and what needs attention. How creators use it is on the [Logic map](https://ngxviewbuilder.io/creators/logic-map) page.
+
+## Install
+
+```bash
+npm install @ngxviewbuilder/plugin-logic-map
+```
+
+```ts
+import { provideNgxViewBuilderLogicMap } from '@ngxviewbuilder/plugin-logic-map';
+
+providers: [provideNgxViewBuilderLogicMap()],
+```
+
+That is all: the plugin reads the view in the builder and keeps itself current as it changes. It brings `@ngxviewbuilder/plugin-shared` along, which holds the logic analysis it shares with the Documentation plugin.
+
+## License
+
+The tab works with a genuine, unexpired license key in the builder settings, the same rule as [AI access](https://ngxviewbuilder.io/developers/licensing#ai-access). Without one it shows what is missing and how to add the key; nothing else in the designer changes. See [Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins).
+
+## The analysis on its own
+
+The graph behind the map is a plain function of the view JSON, so you can use it in your own tooling, a CI check for broken references for example:
+
+```ts
+import { analyzeViewLogic, traceViewLogic } from '@ngxviewbuilder/plugin-shared';
+
+const graph = analyzeViewLogic(viewJson);
+graph.issues.forEach((issue) => console.log(issue.severity, issue.message));
+
+const trace = traceViewLogic(graph, 'el:annualRevenue');
+// trace.upstream: what it depends on, trace.downstream: what it changes
+```
+
+`graph.nodes` are the elements, data sources, variables, view rules and triggers; `graph.rules` are their rules, each with a `summary` sentence; `graph.edges` link them by kind (`visibility`, `required`, `locked`, `value`, `reset`, `validation`, `data`, `action`). Pass `{ translate }` to get the sentences in another language.
+
+## Translations
+
+Every text of the tab follows the builder's language, the rule sentences included. The English texts are in `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` (the tab) and `NGX_VIEW_BUILDER_SHARED_UI_EN` from `@ngxviewbuilder/plugin-shared` (the sentences about rules, shared with the Documentation plugin). See [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## AI clients
+
+The plugin registers itself for AI clients as `logicMap` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)):
+
+- **read** returns the graph in a compact shape. With `{ "element": "annualRevenue" }` it returns that element with its rules and everything upstream and downstream; with `{ "kind": "visibility" }` only those links.
+- **show** opens the Logic map for the person with one element selected, while the model explains how it works.
+
+Both answer with a clear reason when the license key is missing.
 
 ---
 
@@ -12281,14 +12556,26 @@ providers: [ provideNgxViewBuilderTemplates() ],
 | Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
 | ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
+| `@ngxviewbuilder/plugin-logic-map` | `provideNgxViewBuilderLogicMap()` | The **Logic map** tab: every condition, calculation, event and data source of the view on one canvas, with what drives what and what needs attention ([creators](https://ngxviewbuilder.io/creators/logic-map), [reference](https://ngxviewbuilder.io/developers/plugin-logic-map)) |
+| `@ngxviewbuilder/plugin-docs` | `provideNgxViewBuilderDocs({ storage })` | Field documentation: a **Documentation** section in the Properties panel and a **Documentation** tab with a field reference ready for Confluence, kept apart from the view JSON ([creators](https://ngxviewbuilder.io/creators/documentation), [reference](https://ngxviewbuilder.io/developers/plugin-docs)) |
+
+The Logic map and the Documentation plugin need a license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)); the Templates plugin does not. Both install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
+
+Every plugin text follows the builder's language; see [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## Where plugin tabs go
+
+Builder, Preview and JSON Editor always come first in the header. Plugin tabs follow after a divider, in their `order`, as long as they fit; the rest move into a **More** menu that shows each tab's icon and a line about what it is for. When the open tab sits in the menu, the menu button takes its name. Nothing to configure: install a fourth or a tenth plugin and the header makes room.
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
+A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections).
+
+Removing a plugin removes everything it added: the core holds only the generic places a plugin plugs into, never the plugin's own code. Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
+Keep every `@ngxviewbuilder/plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development).
 
@@ -13737,6 +14024,29 @@ api.setUiDictionaries({ lt: LT_UI_DICTIONARY }, /* merge */ true);
 // or inside extensions config: { uiDictionaries: { lt: {...} } }
 ```
 
+## Translating the plugins
+
+The official plugins use the same dictionaries, so a host translates them like the rest of the builder. Each exports its English texts, every key with its default, to hand to a translator:
+
+| Export | Package | Covers |
+| --- | --- | --- |
+| `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` | `@ngxviewbuilder/plugin-logic-map` | the Logic map tab |
+| `NGX_VIEW_BUILDER_DOCS_UI_EN` | `@ngxviewbuilder/plugin-docs` | the Documentation tab and panel, the copied and downloaded table |
+| `NGX_VIEW_BUILDER_SHARED_UI_EN` | `@ngxviewbuilder/plugin-shared` | the sentences about rules both plugins write, and the license notice |
+
+```ts
+provideNgxViewBuilderUiTranslations({
+  lt: {
+    'logicMap.title': 'Logikos žemėlapis',
+    'logic.visibleIf.when': 'Matomas, kai',
+    'logic.op.isNot': 'nėra',
+    'docs.progress': 'Aprašyta {documented} iš {total} elementų',
+  },
+});
+```
+
+The sentences about rules ("Visible when Country is not US and Revenue > 85000") are put together from these keys, operators included, so they read naturally once the keys are translated. Words in braces are filled in by the plugin: keep them, in whatever place the language needs. Element type names come from the builder's own `element.<type>` keys and property names from `property.<key>`, so they match the rest of the builder. A key you leave out stays in English, and dates follow the language.
+
 ## Using translations in host code
 
 Host UI that lives next to the builder (header actions, toolbars) can reuse the same dictionaries:
@@ -14336,6 +14646,61 @@ Saving goes through [actions](https://ngxviewbuilder.io/creators/events-actions)
 ## Reloading from expressions
 
 `runDataSource("loadUsers")` inside any expression re-runs a source, which is occasionally useful in advanced logic. Prefer element bindings with **React to change** for normal flows.
+
+---
+
+## Field documentation
+
+Source: https://ngxviewbuilder.io/creators/documentation
+
+# Field documentation
+
+Analysts usually keep a separate document that explains each field of a form: what it means, who fills it in, where the value goes. The Documentation plugin lets you write that next to the field itself and turns it into a field reference table you can paste into Confluence.
+
+It needs a license key in the builder settings (see [Licensing](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)).
+
+## Where the text is kept
+
+The descriptions are **not** written into the view JSON. They live in their own document, keyed by the view code and the element names, and your developer decides where it is saved (usually your server, so the whole team shares it). The view stays exactly what the runtime renders. If the save status says **Kept in this browser**, nothing is shared yet; ask your developer to connect a storage.
+
+## Describing a field
+
+Select an element on the canvas and open **Documentation** in the Properties panel. Write what the field means, who fills it in and where the value goes. Bold, italic, lists and links are kept; colours and fonts are left out because they would not survive a paste into Confluence. The text saves a moment after you stop typing.
+
+Leave the text empty to take the element out of the documentation.
+
+## The Documentation tab
+
+The tab shows only the elements you described, each as a small table:
+
+- the element's label, its name and where it sits ("Column of Order lines · Date picker") across the top,
+- the description over both columns,
+- the rows you picked, as name and value.
+
+The counter at the top says how many elements are documented and how many are not yet. **Document an element** picks one of the rest, so you can work through them without leaving the tab.
+
+### Adding rows
+
+The plus button under a description adds a row to that element. There are two kinds:
+
+- **From the logic**: Required, Logic, Validation, Data source and Events, written from the view itself, for example "When Country of registration is not US and Annual revenue (EUR) > 85000". They stay current: change the rule in the builder and the row follows.
+- **Properties**: any of the element's own settings, such as the placeholder, the options or the default value, each shown with its current value.
+
+The rows are picked per element and saved with the documentation. The cross next to a row removes it. A row whose source is gone from the view says **Not set in the view**.
+
+### The page around it
+
+Give the document a title and a summary of the whole form at the top. **A heading for each page** groups the elements by page.
+
+If an element was renamed or removed, its description moves to **Descriptions without an element** at the bottom. It is not copied or downloaded; rename the element back to reuse the text, or remove it.
+
+## Copying it out
+
+- **Copy for Confluence** puts the whole reference on the clipboard as formatted tables. Paste it into a Confluence page (Notion, Google Docs and Word take it the same way).
+- **Copy Markdown** gives the same as Markdown for Jira, GitLab or GitHub.
+- The download buttons save it as an HTML page, or as the documentation file itself (JSON).
+
+The documentation follows the builder's language, so a team that works in Lithuanian gets the headings and the rule sentences in Lithuanian too.
 
 ---
 
@@ -16631,6 +16996,63 @@ Elements placed directly on a Canvas page, outside a section, run edge to edge w
 
 ---
 
+## Logic map
+
+Source: https://ngxviewbuilder.io/creators/logic-map
+
+# Logic map
+
+A large form hides its logic in dozens of property panels: this field shows when that one is filled in, that total is calculated from three others, a button calls a data source and puts the answer somewhere else. The **Logic map** tab puts all of it on one canvas, so you can see how the form works without opening every element.
+
+It comes with the Logic map plugin and needs a license key in the builder settings (see [Licensing](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)). Without one, the tab says what is missing.
+
+## Reading the map
+
+Each card is something with logic: a field, a data source, a variable, a view rule or a trigger. A card shows the element's label, its type and the page it sits on. A field inside a dynamic table or a panel says so on top of the card, such as "Column of Order lines" or "In Billing address", so two fields called `city` never look alike. The number on the right is how many rules the element has.
+
+The links run left to right, from what drives a value to what it changes. Each link type has its own colour and line style:
+
+| Link | Means |
+| --- | --- |
+| Shows or hides | a `visibleIf` condition reads the field on the left |
+| Makes required | a `requireIf` condition |
+| Disables or locks | `disableIf` or `readonlyIf` |
+| Calculates or sets a value | a calculation, or an event that sets a value |
+| Clears a value | a `resetIf` condition |
+| Validates | a validator that reads another field |
+| Loads data | a data source call, its parameters, options that reload |
+| Runs an action | dialogs, navigation, messages, submit |
+
+The list of link types on the left doubles as a filter: untick one to hide those links. **Elements without logic** adds the plain fields back, and **Page** narrows the map to one page.
+
+## Tracing one field
+
+Click a card. The map highlights everything the field depends on and everything it changes, through any number of steps, and dims the rest. The panel on the right lists:
+
+- **Rules on this element**, each read back in words, for example "Required when Country of registration is not US and Annual revenue (EUR) > 85000".
+- **Depends on** and **Affects**, each with how far away it is ("Direct", "2 steps away").
+
+Tick **Highlight direct links only** to keep just the first step. **Edit in builder** (or a double click on the card) opens the element in the Builder tab with its properties ready.
+
+## Needs attention
+
+The map also checks the logic. Under **Needs attention** it lists:
+
+- a condition or calculation that refers to a field, data source or variable the view does not have,
+- an event that changes an element that is not there,
+- a data source that is used but not defined,
+- values that calculate each other in a loop, which never settle.
+
+Click an item to jump to the card.
+
+## Moving around
+
+Drag the canvas to move it, Ctrl + scroll to zoom, or use `+`, `-`, `0` (100%) and `F` (fit) on the keyboard. The minimap in the corner shows where you are. Search finds a field by its label or name.
+
+The download button saves the map as an SVG with a legend, ready for a wiki page or a ticket.
+
+---
+
 ## Pages & navigation
 
 Source: https://ngxviewbuilder.io/creators/pages
@@ -17305,6 +17727,10 @@ With nothing selected, the sidebar shows how to add, find and edit elements.
 | Preview | Run the view exactly as end users will see it |
 | JSON Editor | Edit the raw view definition |
 | Templates | Manage reusable HTML templates *(plugin)* |
+| Logic map | See how the fields depend on each other, on one canvas *(plugin)*, see [Logic map](https://ngxviewbuilder.io/creators/logic-map) |
+| Documentation | The field reference for Confluence *(plugin)*, see [Field documentation](https://ngxviewbuilder.io/creators/documentation) |
+
+Plugin tabs come after a thin divider. When there are more than fit, the rest go into a **More** menu at the end of the tabs, each with its icon and a line about what it is for; the menu takes the name of the tab you have open from it. It works from the keyboard too: arrows move through it, Home and End jump to the ends, Escape closes it.
 
 The buttons on the right are undo and redo, **Form settings** (the gear: width, navigation, buttons, custom CSS, AI access), **Translations**, and **Save**.
 

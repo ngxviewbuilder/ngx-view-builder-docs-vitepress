@@ -28,6 +28,9 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
+| `listPlugins()` | `nvb_list_plugins` | the installed plugins an AI client can use, see [Plugins](#plugins) |
+| `readPlugin(id, query?)` | `nvb_read_plugin` | what a plugin knows, such as the logic map or the field documentation |
+| `executePlugin(id, command, args?)` | `nvb_plugin_execute` | runs one of a plugin's commands |
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
@@ -407,7 +410,7 @@ A few details worth knowing:
 
 | Command | What it does |
 | --- | --- |
-| `switchTab` | Moves the builder to another tab, preview included. |
+| `switchTab` | Moves the builder to another tab, preview and plugin tabs (`logicMap`, `documentation`) included. |
 | `focusElement` | Selects an element so its properties open in the sidebar. |
 | `setData` | Sets working data. Values that belong to real elements go through the value pipeline, so expressions and conditions re-evaluate. |
 | `validate` | Validates the current view against data and returns the issues. |
@@ -420,6 +423,26 @@ A few details worth knowing:
 | `setRuntimeVariableContext` | External values that runtime variables can map from. |
 | `reloadDataSource` | Re-runs a data source. |
 | `undo`, `redo` | Steps the builder history. Warns when there is nothing to step to. |
+
+## Plugins
+
+Installed plugins can offer AI clients their own reads and commands. `listPlugins()` (`nvb_list_plugins`) lists them with what each is for, the query it takes and its commands; `help()` lists them too, and the system instructions mention them, so a model finds them without being told.
+
+```js
+// nvb_read_plugin
+{ "plugin": "logicMap", "query": { "element": "annualRevenue" } }
+
+// nvb_plugin_execute
+{ "plugin": "documentation", "command": "setDescription",
+  "args": { "element": "vatNumber", "text": "VAT number of the company. Finance checks it against VIES." } }
+```
+
+| Plugin | Read | Commands |
+| --- | --- | --- |
+| `logicMap` ([Logic map](./plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
+| `documentation` ([Documentation](./plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+
+A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](./plugin-development#letting-ai-clients-use-your-plugin)).
 
 ## Two languages in one view
 

@@ -17,6 +17,7 @@ and `@ngxviewbuilder/designer` are separate npm packages with separate license f
 | `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
 | `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
 | `@ngxviewbuilder/plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/plugin-logic-map`, `@ngxviewbuilder/plugin-docs`, `@ngxviewbuilder/plugin-shared` | Follow the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -76,6 +77,10 @@ Every published build embeds its release date. A license covers **all versions r
 ## AI access
 
 Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](./ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour. It lets as many browsers use AI access at the same time as the license has seats (see [Seats](./ai-command-api#seats)). The server only relays requests between the AI client and the builder and stores none of your views or data ([what it keeps](./ai-command-api#what-the-mcp-server-keeps)).
+
+## Licensed plugins
+
+The [Logic map](./plugin-logic-map) and the [Documentation](./plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
 
 ## License terms
 
