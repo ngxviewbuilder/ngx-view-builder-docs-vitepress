@@ -46,8 +46,10 @@
 - [Installation](https://ngxviewbuilder.io/developers/installation): Install the package, register providers, and initialize the runtime.
 - [Licensing](https://ngxviewbuilder.io/developers/licensing): Supplying and validating the license key.
 - [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development): Ship your own builder tab as a reusable package.
+- [Documentation plugin](https://ngxviewbuilder.io/developers/plugin-docs): Field documentation kept apart from the view JSON, its storage on your server, the document format and AI access.
+- [Logic map plugin](https://ngxviewbuilder.io/developers/plugin-logic-map): Install the Logic map tab, its license rule, translations and what AI clients can do with it.
 - [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates): Full syntax reference for the Templates plugin  control flow, translations, click actions  plus how to persist templates to your own database.
-- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official Templates plugin and how the plugin system works.
+- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official plugins (Templates, Logic map, Documentation) and how the plugin system works.
 - [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved view definitions to end users and collect their data.
 - [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Inject route params, user context, and derived values into views.
 - [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning): How stored views survive library upgrades, what schemaVersion means, and how to add your own migrations.
@@ -65,6 +67,7 @@
 - [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): The most common expression patterns, copy-paste ready.
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.
 - [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the Data sources editor and the element binding panel, for REST, route, and local sources.
+- [Field documentation](https://ngxviewbuilder.io/creators/documentation): Describe what each field is for and copy a ready field reference into Confluence.
 - [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element and how it triggers actions.
 - [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices): Select, Multi-select, Autocomplete, Checkbox, Radio, Select button, Toggles, and List box, with full property tables.
 - [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
@@ -82,6 +85,7 @@
 - [Expression functions](https://ngxviewbuilder.io/creators/functions): All built-in expression functions with examples.
 - [JSON editor](https://ngxviewbuilder.io/creators/json-editor): Edit the raw view definition when the visual editor is slower.
 - [Layout & containers](https://ngxviewbuilder.io/creators/layout): Rows, columns, responsive widths, and how containers organise a view.
+- [Logic map](https://ngxviewbuilder.io/creators/logic-map): See how the fields of a view depend on each other, on one canvas.
 - [Pages & navigation](https://ngxviewbuilder.io/creators/pages): Multi-page views, steppers, and page-level states.
 - [Preview & testing](https://ngxviewbuilder.io/creators/preview): Test the view like an end user before handing it off.
 - [Common properties](https://ngxviewbuilder.io/creators/properties): Every property shared by most elements, from identity and state to limits, validation, logic, actions, design, and data.

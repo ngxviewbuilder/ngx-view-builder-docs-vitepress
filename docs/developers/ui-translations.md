@@ -57,6 +57,29 @@ api.setUiDictionaries({ lt: LT_UI_DICTIONARY }, /* merge */ true);
 // or inside extensions config: { uiDictionaries: { lt: {...} } }
 ```
 
+## Translating the plugins
+
+The official plugins use the same dictionaries, so a host translates them like the rest of the builder. Each exports its English texts, every key with its default, to hand to a translator:
+
+| Export | Package | Covers |
+| --- | --- | --- |
+| `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` | `@ngxviewbuilder/plugin-logic-map` | the Logic map tab |
+| `NGX_VIEW_BUILDER_DOCS_UI_EN` | `@ngxviewbuilder/plugin-docs` | the Documentation tab and panel, the copied and downloaded table |
+| `NGX_VIEW_BUILDER_SHARED_UI_EN` | `@ngxviewbuilder/plugin-shared` | the sentences about rules both plugins write, and the license notice |
+
+```ts
+provideNgxViewBuilderUiTranslations({
+  lt: {
+    'logicMap.title': 'Logikos žemėlapis',
+    'logic.visibleIf.when': 'Matomas, kai',
+    'logic.op.isNot': 'nėra',
+    'docs.progress': 'Aprašyta {documented} iš {total} elementų',
+  },
+});
+```
+
+The sentences about rules ("Visible when Country is not US and Revenue > 85000") are put together from these keys, operators included, so they read naturally once the keys are translated. Words in braces are filled in by the plugin: keep them, in whatever place the language needs. Element type names come from the builder's own `element.<type>` keys and property names from `property.<key>`, so they match the rest of the builder. A key you leave out stays in English, and dates follow the language.
+
 ## Using translations in host code
 
 Host UI that lives next to the builder (header actions, toolbars) can reuse the same dictionaries:

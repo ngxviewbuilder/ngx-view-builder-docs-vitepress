@@ -89,6 +89,10 @@ With nothing selected, the sidebar shows how to add, find and edit elements.
 | Preview | Run the view exactly as end users will see it |
 | JSON Editor | Edit the raw view definition |
 | Templates | Manage reusable HTML templates *(plugin)* |
+| Logic map | See how the fields depend on each other, on one canvas *(plugin)*, see [Logic map](./logic-map) |
+| Documentation | The field reference for Confluence *(plugin)*, see [Field documentation](./documentation) |
+
+Plugin tabs come after a thin divider. When there are more than fit, the rest go into a **More** menu at the end of the tabs, each with its icon and a line about what it is for; the menu takes the name of the tab you have open from it. It works from the keyboard too: arrows move through it, Home and End jump to the ends, Escape closes it.
 
 The buttons on the right are undo and redo, **Form settings** (the gear: width, navigation, buttons, custom CSS, AI access), **Translations**, and **Save**.
 

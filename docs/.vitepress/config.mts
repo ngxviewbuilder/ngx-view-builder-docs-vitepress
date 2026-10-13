@@ -241,6 +241,8 @@ export default defineConfig({
           items: [
             { text: "Preview & testing", link: "/creators/preview" },
             { text: "JSON editor", link: "/creators/json-editor" },
+            { text: "Logic map", link: "/creators/logic-map" },
+            { text: "Field documentation", link: "/creators/documentation" },
           ],
         },
       ],
@@ -384,6 +386,8 @@ export default defineConfig({
               text: "Templates plugin reference",
               link: "/developers/plugin-templates",
             },
+            { text: "Logic map plugin", link: "/developers/plugin-logic-map" },
+            { text: "Documentation plugin", link: "/developers/plugin-docs" },
             {
               text: "Building a plugin",
               link: "/developers/plugin-development",
