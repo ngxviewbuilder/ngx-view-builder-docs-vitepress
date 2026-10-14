@@ -73,13 +73,17 @@ A key is valid for 24 hours. When it runs out the builder generates a new one, a
 
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
+ChatGPT, and Codex with the server added as a custom MCP connector, work a little differently: their calls go through OpenAI's servers, which open a new MCP session for every tool call. To keep those pairings, the server reads the anonymous conversation id OpenAI sends with each call (`openai/session` in the call's `_meta`) and keeps the pairing for the conversation instead. The person pairs once per chat, as with any other client, and the builder lists the conversation as one AI client. A new chat starts unpaired.
+
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
 
 Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
 
-`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
+`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of a tab.
+
+One connection can hold several tabs, so a person with two builders open needs only one AI chat. Pair it with each key in turn: the tabs paired before stay paired, the calls go to the tab paired last, and `nvb_pair` with a key the connection already holds switches back to that tab. `nvb_status` lists every tab it holds and which one is active. `nvb_unpair` with a `session_key` lets go of that tab only, without one of all of them. If the active tab revokes access, the calls stop and the AI is told which tabs it still holds; they never move to another view on their own.
 
 ### Keys from your backend
 
@@ -110,6 +114,7 @@ Nothing of your views or data. The server is a relay between the AI client and t
 What it does hold, in memory only, is what it needs to route calls and enforce limits:
 
 - the open builder tabs and their pairing keys, and which AI connection is paired with which tab;
+- for ChatGPT and Codex, the anonymous conversation and user ids OpenAI sends with each call, so a pairing outlives the single call it was made on;
 - how many calls each tab made in the current hour;
 - how many browsers use each license right now (by license number), for the seat limit;
 - the license service's answer about a key, for ten minutes, so it is not asked on every connection.
