@@ -118,6 +118,28 @@ Other caption rules:
 `firstName` and `lastName` carry no `width`: each takes half the row.
 - **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
 - **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
+- **Line up a row where one field has a description.** The `description` (or a label long enough to wrap) makes that field's header taller, so its input sits lower than its neighbours and the row looks like stairs. Put the row inside an `emptyBlock` with `contentAlign: "flex-end"`. The fields stay side by side in the block's own `rows`, and their inputs line up at the bottom.
+
+```json
+{
+  "rows": [
+    {
+      "columns": [
+        {
+          "elementRef": "amountsBlock",
+          "rows": [
+            { "columns": [{ "elementRef": "netAmount" }, { "elementRef": "vatAmount" }] }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`amountsBlock` is `{ "type": "emptyBlock", "label": "", "contentAlign": "flex-end" }`, and only `vatAmount` has a `description`. Without the block, the VAT input would sit one line lower than the net amount.
+- **A canvas page brings no spacing of its own.** With `settings.renderMode: "canvas"` the gap between rows, between fields in a row and around the page is `0`, because a web page's sections set their own. A form on a canvas therefore goes in an `emptyBlock` that puts the spacing back: `contentGap` (for example `"16px"`) for the space between rows and between the fields in a row, and `panelPadding` for the space around them. Without that block the fields touch each other.
+- **Cards on a canvas need a gap too.** A `messageCard`, `statsCard` or any other element with its own border and rounded corners sticks to its neighbour on a canvas page, edge to edge, and the rounded corners make it look broken. Put the row of cards in an `emptyBlock` with a small `contentGap`, for example `"12px"`. Leave them joined only when the person asks for that.
 - **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
 - A dashboard or display page is not a form: set `showValidateButton: false` and `showSubmitButton: false` in `settings` so the Validate and Submit toolbar does not appear.
 
@@ -194,7 +216,7 @@ Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
 2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
-3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile. A row where one field has a description sits in an `emptyBlock` with `contentAlign: "flex-end"`, and a form on a canvas page sits in an `emptyBlock` with its own `contentGap` and `panelPadding`. Cards side by side on a canvas sit in an `emptyBlock` with a small `contentGap`, so they do not touch.
 4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.
