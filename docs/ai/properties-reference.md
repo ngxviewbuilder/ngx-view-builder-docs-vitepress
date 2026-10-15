@@ -309,9 +309,11 @@ Value shape: `boolean`
 |---|---|---|
 | `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
 | `text` | `string` | Button text (the caption) |
-| `icon` | `string` | Icon name |
+| `icon` | `string` | Icon name from `help().icons` (registered by the host, or built in), or SVG markup for a one-off icon. An unknown name draws a question mark |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
-| `iconOnly` | `boolean` | Show icon only |
+| `iconOnly` | `boolean` | Icon alone in a square button, in any `variant`. Keep the caption in `text`: it becomes the accessible name and the tooltip |
+| `iconSize` | `number` | Icon size in px. Left out it follows `size` (16, 18, 20); an icon-only square grows with a larger icon |
+| `iconColor` | `string` | Icon color when it differs from the caption |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
 | `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |

@@ -79,6 +79,8 @@ Other caption rules:
 - **One primary action per area**: `variant: "solid"`, `tone: "primary"`. Secondary actions next to it are `variant: "outline"` with `tone: "neutral"`. A destructive action is `tone: "risk"`.
 - **A dark fill needs light text.** A solid button with a dark tone (`primary`, `success`, `info`, `risk`) or a dark custom `color` gets `textColor: "var(--nvb-color-neutral-000)"`. Before 0.10.6 some host stylesheets left the caption dark on dark; setting it explicitly is correct on every version. A light fill (`warning`, or a light custom `color`) gets dark text, `"var(--nvb-color-neutral-900)"`.
 - **Button bars go in an `emptyBlock`**, not in a panel row: `contentDisplay: "grid"`, `gridTemplateColumns: "max-content max-content"`, a `contentJustify` and a `contentGap`. Flex does not line them up, because every row inside the block is full width.
+- **An icon button is `iconOnly: true`, not a variant.** It works with every `variant` and `tone`. The caption stays in `text` ("Delete row"): screen readers read it and it shows as a tooltip, while the button shows only the icon. Without `iconSize` the icon follows the button `size` (16, 18 or 20 px); with a larger `iconSize` the square grows so the icon never touches the edge. `iconColor` colors the icon alone, for example a red bin on a neutral outline button.
+- **Never guess an icon name.** An `icon` is a name from `help().icons` (the system instructions list them: the host's registered icons first, then the built-in ones) or SVG markup such as `"<svg viewBox=\"0 0 24 24\">...</svg>"` for a one-off icon. A name that does not exist draws a question mark, and `execute()` warns about it. The same goes for `icon` on cards, page titles and toasts and `iconName` on the icon element.
 - A button does something. Give it `events` (a `submit`, a `validate`, a data source call, a toast), or leave it out.
 
 ```json
@@ -215,7 +217,7 @@ Other caption rules:
 Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
-2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
+2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill. Icon buttons use `iconOnly: true` with the caption still in `text`, and every icon name exists (no question marks).
 3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile. A row where one field has a description sits in an `emptyBlock` with `contentAlign: "flex-end"`, and a form on a canvas page sits in an `emptyBlock` with its own `contentGap` and `panelPadding`. Cards side by side on a canvas sit in an `emptyBlock` with a small `contentGap`, so they do not touch.
 4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
