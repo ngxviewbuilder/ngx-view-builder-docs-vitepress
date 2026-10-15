@@ -188,6 +188,12 @@ await api.execute([
 
 `setData` pushes values through the same pipeline as typing, so `visibleIf`, `requireIf` and computed expressions re-evaluate. `validate` returns the issues.
 
+`setData` replaces the test data. Every field the `data` object does not name is emptied, just as if a person cleared it, so totals and summaries count only the answers you sent. To change a few fields and keep the rest, add `merge: true`:
+
+```js
+{ op: 'setData', data: { age: 30 }, merge: true }
+```
+
 **Do not use `validate` to test whether a section is visible.** It runs on a fresh copy and does not apply container visibility to children, so a field inside a hidden panel is still reported as required. Read the preview instead.
 
 Note that a mutation rebuilds the view, which clears working data. Set data after your last structural change, not before.
@@ -2347,6 +2353,14 @@ These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 **All logic fields must contain valid JEXL expressions only.**
 
+**Braces always read a field, so an expression cannot hold an object literal.** `{qty}` is the value of the field called `qty`, which means `[{label: 'A', value: 1}]` looks for a field named `label: 'A', value: 1` and comes out as `[null]`. `nvb_execute` refuses such an expression with `badExpression`. Build objects with `obj()` instead, which takes key and value pairs:
+
+```js
+"[obj('label', 'Yes', 'value', {yesCount}), obj('label', 'No', 'value', {noCount})]"
+```
+
+Arrays of plain values such as `[1, 2, 3]` work as they are.
+
 **There is no `hideIf`, and no `readOnlyIf` with a capital O.** These six keys are the entire list and they are matched exactly. Anything else is an ordinary property as far as the runtime is concerned: it is stored, it is never evaluated, and no dependency is registered for it. What you get is a form that looks correct in the JSON and does nothing at all, with no error anywhere to point at. Write the visible condition rather than the hidden one, because `visibleIf` states when the element **is** shown, so a hide condition has to be inverted, not renamed.
 
 ### Execution mode
@@ -2594,9 +2608,11 @@ Value shape: `boolean`
 |---|---|---|
 | `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
 | `text` | `string` | Button text (the caption) |
-| `icon` | `string` | Icon name |
+| `icon` | `string` | Icon name from `help().icons` (registered by the host, or built in), or SVG markup for a one-off icon. An unknown name draws a question mark |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
-| `iconOnly` | `boolean` | Show icon only |
+| `iconOnly` | `boolean` | Icon alone in a square button, in any `variant`. Keep the caption in `text`: it becomes the accessible name and the tooltip |
+| `iconSize` | `number` | Icon size in px. Left out it follows `size` (16, 18, 20); an icon-only square grows with a larger icon |
+| `iconColor` | `string` | Icon color when it differs from the caption |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
 | `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |
@@ -3788,6 +3804,8 @@ Other caption rules:
 - **One primary action per area**: `variant: "solid"`, `tone: "primary"`. Secondary actions next to it are `variant: "outline"` with `tone: "neutral"`. A destructive action is `tone: "risk"`.
 - **A dark fill needs light text.** A solid button with a dark tone (`primary`, `success`, `info`, `risk`) or a dark custom `color` gets `textColor: "var(--nvb-color-neutral-000)"`. Before 0.10.6 some host stylesheets left the caption dark on dark; setting it explicitly is correct on every version. A light fill (`warning`, or a light custom `color`) gets dark text, `"var(--nvb-color-neutral-900)"`.
 - **Button bars go in an `emptyBlock`**, not in a panel row: `contentDisplay: "grid"`, `gridTemplateColumns: "max-content max-content"`, a `contentJustify` and a `contentGap`. Flex does not line them up, because every row inside the block is full width.
+- **An icon button is `iconOnly: true`, not a variant.** It works with every `variant` and `tone`. The caption stays in `text` ("Delete row"): screen readers read it and it shows as a tooltip, while the button shows only the icon. Without `iconSize` the icon follows the button `size` (16, 18 or 20 px); with a larger `iconSize` the square grows so the icon never touches the edge. `iconColor` colors the icon alone, for example a red bin on a neutral outline button.
+- **Never guess an icon name.** An `icon` is a name from `help().icons` (the system instructions list them: the host's registered icons first, then the built-in ones) or SVG markup such as `"<svg viewBox=\"0 0 24 24\">...</svg>"` for a one-off icon. A name that does not exist draws a question mark, and `execute()` warns about it. The same goes for `icon` on cards, page titles and toasts and `iconName` on the icon element.
 - A button does something. Give it `events` (a `submit`, a `validate`, a data source call, a toast), or leave it out.
 
 ```json
@@ -3827,6 +3845,28 @@ Other caption rules:
 `firstName` and `lastName` carry no `width`: each takes half the row.
 - **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
 - **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
+- **Line up a row where one field has a description.** The `description` (or a label long enough to wrap) makes that field's header taller, so its input sits lower than its neighbours and the row looks like stairs. Put the row inside an `emptyBlock` with `contentAlign: "flex-end"`. The fields stay side by side in the block's own `rows`, and their inputs line up at the bottom.
+
+```json
+{
+  "rows": [
+    {
+      "columns": [
+        {
+          "elementRef": "amountsBlock",
+          "rows": [
+            { "columns": [{ "elementRef": "netAmount" }, { "elementRef": "vatAmount" }] }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`amountsBlock` is `{ "type": "emptyBlock", "label": "", "contentAlign": "flex-end" }`, and only `vatAmount` has a `description`. Without the block, the VAT input would sit one line lower than the net amount.
+- **A canvas page brings no spacing of its own.** With `settings.renderMode: "canvas"` the gap between rows, between fields in a row and around the page is `0`, because a web page's sections set their own. A form on a canvas therefore goes in an `emptyBlock` that puts the spacing back: `contentGap` (for example `"16px"`) for the space between rows and between the fields in a row, and `panelPadding` for the space around them. Without that block the fields touch each other.
+- **Cards on a canvas need a gap too.** A `messageCard`, `statsCard` or any other element with its own border and rounded corners sticks to its neighbour on a canvas page, edge to edge, and the rounded corners make it look broken. Put the row of cards in an `emptyBlock` with a small `contentGap`, for example `"12px"`. Leave them joined only when the person asks for that.
 - **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
 - A dashboard or display page is not a form: set `showValidateButton: false` and `showSubmitButton: false` in `settings` so the Validate and Submit toolbar does not appear.
 
@@ -3902,8 +3942,8 @@ Other caption rules:
 Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
-2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
-3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
+2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill. Icon buttons use `iconOnly: true` with the caption still in `text`, and every icon name exists (no question marks).
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile. A row where one field has a description sits in an `emptyBlock` with `contentAlign: "flex-end"`, and a form on a canvas page sits in an `emptyBlock` with its own `contentGap` and `panelPadding`. Cards side by side on a canvas sit in an `emptyBlock` with a small `contentGap`, so they do not touch.
 4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.
@@ -7510,6 +7550,8 @@ A pairing belongs to the MCP session and points at the key, not at the socket. W
 ChatGPT, and Codex with the server added as a custom MCP connector, work a little differently: their calls go through OpenAI's servers, which open a new MCP session for every tool call. To keep those pairings, the server reads the anonymous conversation id OpenAI sends with each call (`openai/session` in the call's `_meta`) and keeps the pairing for the conversation instead. The person pairs once per chat, as with any other client, and the builder lists the conversation as one AI client. A new chat starts unpaired.
 
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+**Disconnect** sends the same revoke before it closes the connection, so every AI client paired to the tab loses access too. The key stays the same, so a client the person gives it to again can pair again. A reload or leaving the page does not revoke anything, which is why the AI carries on after a reload.
 
 Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
@@ -11662,7 +11704,9 @@ Multiple folders via `svgIconDirectories: [...]`. Runtime loading (`await api.re
 
 ## Using icons
 
-- **Creators**: type the icon name into any `Icon` property (button icon, Icon element, sidebar group…).
+- **Creators**: pick an icon in any `Icon` property (button, card, page title, toast, Icon element). The picker lists your registered icons first, under *This application*, then the built-in ones, and flags a name that does not exist. A one-off icon can also be pasted as SVG markup: the value then holds the markup itself, sanitised the same way as a registered icon.
+- **AI clients** get the same list: the system instructions name every registered and built-in icon, `help().icons` returns them, and `execute()` warns about an icon name nothing draws.
+- **In code**: `IconSvgService.listIconNames()` returns `{ builtIn, registered }`, `isKnownIcon(value)` tells whether a value draws a real icon, and `isInlineSvgIcon(value)` whether it is markup.
 - **In your components**: the exported `NvbIcon` component renders any registered icon:
 
 ```html
@@ -11671,7 +11715,7 @@ Multiple folders via `svgIconDirectories: [...]`. Runtime loading (`await api.re
 
 ## SVG guidelines
 
-- Use `viewBox` and no fixed `width`/`height`; the host sizes the icon.
+- Use `viewBox` and no fixed `width`/`height`; the host sizes the icon. An SVG with only `width` and `height` gets a matching `viewBox` added when it is sanitised, so it still scales.
 - Use `currentColor` for strokes/fills so icons follow text color and theme.
 - Keep markup minimal; icons are inlined into the DOM.
 - Registered SVG is sanitised, so keep icons to plain vector markup (no scripts or foreignObject).
@@ -14753,11 +14797,17 @@ A button does nothing by itself. Its behaviour comes from the **actions** you at
 | **Variant** | `solid`, `outline`, `text` |
 | **Size** | `small`, `normal`, `large` |
 | **Tone** | `primary`, `neutral`, `success`, `info`, `warning`, `risk` |
-| **Icon** | Material Symbol or registered SVG icon code |
+| **Icon only** | Shows the icon alone in a square button. Works with every variant: a solid, an outline or a text icon button |
+| **Icon** | Click the preview to pick an icon: search, your application's own icons first, then the built-in ones. You can also type a name, or paste SVG markup under **Custom SVG** for a one-off icon. A name that does not exist is flagged, because it would show a question mark |
 | **Icon position** | `left`, `right`, `top`, `bottom` |
-| **Icon only** | Show only the icon, no text |
+| **Icon size** | In px. Left empty, the icon follows the button size: 16, 18 or 20 px. An icon-only button grows with a larger icon |
+| **Icon color** | Colors the icon alone, for example a red bin on a neutral button |
 | **Color / Text color** | Manual color overrides (text color is handy on light backgrounds) |
 | **Width / Mobile width / Fit content** | Sizing per breakpoint |
+
+### Icon buttons
+
+For a toolbar of small actions (edit, copy, delete), turn on **Icon only** and keep the caption in **Text**, for example *Delete row*. The caption is not drawn, but screen readers read it and it shows as a tooltip when the mouse rests on the button. Leaving **Text** empty works too, but then the button has no name people can hear.
 
 ### Dropdown actions
 

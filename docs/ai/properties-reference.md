@@ -54,6 +54,14 @@ These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 **All logic fields must contain valid JEXL expressions only.**
 
+**Braces always read a field, so an expression cannot hold an object literal.** `{qty}` is the value of the field called `qty`, which means `[{label: 'A', value: 1}]` looks for a field named `label: 'A', value: 1` and comes out as `[null]`. `nvb_execute` refuses such an expression with `badExpression`. Build objects with `obj()` instead, which takes key and value pairs:
+
+```js
+"[obj('label', 'Yes', 'value', {yesCount}), obj('label', 'No', 'value', {noCount})]"
+```
+
+Arrays of plain values such as `[1, 2, 3]` work as they are.
+
 **There is no `hideIf`, and no `readOnlyIf` with a capital O.** These six keys are the entire list and they are matched exactly. Anything else is an ordinary property as far as the runtime is concerned: it is stored, it is never evaluated, and no dependency is registered for it. What you get is a form that looks correct in the JSON and does nothing at all, with no error anywhere to point at. Write the visible condition rather than the hidden one, because `visibleIf` states when the element **is** shown, so a hide condition has to be inverted, not renamed.
 
 ### Execution mode
@@ -301,9 +309,11 @@ Value shape: `boolean`
 |---|---|---|
 | `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
 | `text` | `string` | Button text (the caption) |
-| `icon` | `string` | Icon name |
+| `icon` | `string` | Icon name from `help().icons` (registered by the host, or built in), or SVG markup for a one-off icon. An unknown name draws a question mark |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
-| `iconOnly` | `boolean` | Show icon only |
+| `iconOnly` | `boolean` | Icon alone in a square button, in any `variant`. Keep the caption in `text`: it becomes the accessible name and the tooltip |
+| `iconSize` | `number` | Icon size in px. Left out it follows `size` (16, 18, 20); an icon-only square grows with a larger icon |
+| `iconColor` | `string` | Icon color when it differs from the caption |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
 | `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |

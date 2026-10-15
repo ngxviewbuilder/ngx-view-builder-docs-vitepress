@@ -181,6 +181,12 @@ await api.execute([
 
 `setData` pushes values through the same pipeline as typing, so `visibleIf`, `requireIf` and computed expressions re-evaluate. `validate` returns the issues.
 
+`setData` replaces the test data. Every field the `data` object does not name is emptied, just as if a person cleared it, so totals and summaries count only the answers you sent. To change a few fields and keep the rest, add `merge: true`:
+
+```js
+{ op: 'setData', data: { age: 30 }, merge: true }
+```
+
 **Do not use `validate` to test whether a section is visible.** It runs on a fresh copy and does not apply container visibility to children, so a field inside a hidden panel is still reported as required. Read the preview instead.
 
 Note that a mutation rebuilds the view, which clears working data. Set data after your last structural change, not before.
