@@ -32,19 +32,17 @@ Simple logic is supported in template blocks:
 
 The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
-A template has:
+Pick a template in the list on the left, or add one with **Add template**. The editor has the markup and the styles side by side, and **Template settings** next to them:
 
-| Field                      | What it is                                                                                                                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
-| **Title**                  | Human-friendly display title.                                                                                                                 |
-| **Description**            | What the template is for.                                                                                                                     |
-| **Tags (comma separated)** | For finding it later.                                                                                                                         |
-| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
-| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
-| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+| Field | What it is |
+| --- | --- |
+| **Template (Angular syntax)** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The **Format template** button tidies the HTML. |
+| **CSS classes** | Styles scoped to the template, with its own **Format CSS** button. |
+| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
+| **Title** | Human-friendly display title. |
+| **Preview data (JSON)** | The object the preview renders the template with. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`, and the preview fills the placeholders from it. It must be a valid JSON object. |
 
-The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
+The **Preview** panel renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save**; the editor shows *Unsaved changes* in the meantime.
 
 ### Storage settings
 

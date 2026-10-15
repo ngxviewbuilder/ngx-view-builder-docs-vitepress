@@ -15227,11 +15227,12 @@ Content written in a Custom HTML element renders the same way here. Both element
 
 Raw HTML for layouts the rich text editor can't produce. HTML is sanitised at runtime, so scripts are stripped.
 
+Both fields are in the **General** category, under the name. **Edit content** opens the markup in the code editor.
+
 | Property | What it does |
 | --- | --- |
-| **HTML template** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
-| **Template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. |
-| **HTML source path** | Take the markup from a data path or source response instead of a static property. |
+| **HTML template (inline)** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
+| **HTML template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. Shown when the Templates plugin is installed. |
 
 ## Image (`image`)
 
@@ -15776,7 +15777,9 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 
 ### Columns
 
-**Columns** holds the column schema. Each column has:
+**Columns** holds the column schema, in the **Columns** category of the table's properties. The list there adds, reorders (drag the handle) and removes columns. To change a column's own settings, click its name in the list or the gear button next to it; clicking the column's header on the canvas does the same. The sidebar then shows that column, and the table's own properties come back when you select the table again.
+
+Each column has:
 
 | Column field | What it does |
 | --- | --- |
@@ -16617,19 +16620,32 @@ Source: https://ngxviewbuilder.io/creators/form-settings
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has five groups: **General**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has seven groups: **Layout**, **Language and formats**, **Behaviour**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**. The list on the left jumps to each one.
 
-## General
+## Layout
 
 | Setting | What it does |
 | --- | --- |
-| **Status** | `Default` (editable) or `Read only`. A read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
-| **Current language** | The content language shown right now in the builder and preview. |
-| **Default language** | The language the view starts in at runtime. |
-| **Supported languages (comma separated)** | Languages the view offers, e.g. `en, lt, de`. Texts for them are managed in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
-| **Locale** | Number/date formatting locale (e.g. `lt-LT`, `en-US`). Used by number formatting, date pickers, and table totals. |
 | **Form width** + **Form width unit** | Maximum content width of the rendered view (`px` or `%`). |
-| **Element spacing** | Vertical gap between element rows. |
+| **Element spacing** | The gap between fields, in px. |
+| **Content padding** | The space inside the form frame, in px. |
+| **No content padding** | The form touches the edges of the page it sits in. |
+| **Breakpoints** (*Tablet*, *Mobile*) | Below these widths the view switches to the tablet and the mobile layout, so fields use their *Tablet width* and *Mobile width*. |
+
+## Language and formats
+
+| Setting | What it does |
+| --- | --- |
+| **Languages** | The languages the view can be shown in. Pick one from **Add a language…** and press **Add language**; remove one with the × next to it. The language marked *source* cannot be removed. Texts for the others are translated in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
+| **Source language** | The language you type the texts in here, in the builder. |
+| **Shown in** | The language the canvas and Preview show right now, so you can check a translation without leaving the builder. |
+| **Number and date format** | The locale for numbers, dates and currency: the decimal separator, the date order and so on. Number fields, date pickers and table totals follow it. |
+
+## Behaviour
+
+| Setting | What it does |
+| --- | --- |
+| **Editing** | `Editable`: people fill in the form, and single fields can still be locked. `Read only`: every field shows its value but cannot be changed. Individual elements can opt out with *Inherit parent state*. |
 
 ## Form header
 
@@ -16648,15 +16664,15 @@ The optional header block rendered above the first page.
 
 | Setting | What it does |
 | --- | --- |
-| **Page navigation mode** | `Default` (Prev/Next buttons) or `Stepper` (numbered steps). |
-| **Page navigation position** | Where the Prev/Next controls render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Stepper position** | Where the stepper renders when stepper mode is on. |
-| **Action buttons position** | Where Validate/Submit render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Allow step without validation** | Users may move between steps/pages even when the current page is invalid. |
+| **Moving between pages** | `Steps`: numbered steps, and a step is checked before the next one opens. `Previous / Next buttons`: pages in any order. |
+| **Page buttons** | Where the Previous and Next buttons render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Steps** | Where the numbered steps render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Validate and Submit buttons** | Where Validate and Submit render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Allow step without validation** | People may move to the next step even when the current one has errors. |
+| **Show validate button** | The built-in Validate button: checks the whole form without submitting. |
 | **Show submit button** | The built-in Submit button (fires completion with data + validation result). |
-| **Show validate button** | The built-in Validate button (checks without submitting). |
+| **Show validation issues modal** | After a failed check, a dialog lists every validation issue with links to the fields. |
 | **Show table of contents** | Renders a contents panel for long views. |
-| **Show validation issues modal** | After a failed submit, shows a dialog listing every validation issue with links to the fields. |
 
 See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
@@ -16664,7 +16680,7 @@ See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
+| **Shown as** | `Page`: a framed form inside the host page. `Dialog`: a window over the host page, with its own header and buttons. `Canvas (full width, no frame)`: for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
 | **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
@@ -17143,22 +17159,24 @@ A view can have one page or many. Pages appear as cards in the **Pages** tab und
 
 ## Navigation modes
 
-Set in **Form settings → Page navigation mode**:
+Set in **Form settings → Navigation and actions → Moving between pages**:
 
 | Mode | Behaviour |
 | --- | --- |
-| `default` | Previous / Next buttons between pages |
-| `stepper` | A visual stepper shows all pages; users move step by step |
+| `Previous / Next buttons` | Previous and Next buttons between pages, in any order. |
+| `Steps` | A numbered stepper shows all pages; people move step by step. |
 
-By default a page must pass validation before the user can continue. Turn on **Allow step without validation** in Form settings to let users move freely.
+With steps, a page must pass validation before the person can continue. **Next checks the page being left only**: a required field or a rule on a later step does not hold anyone on the first one, and its errors show up when they get there. **Submit** still checks the whole form, and **Validate** checks it too without submitting. Turn on **Allow step without validation** in Form settings to let people move freely.
+
+On a phone, a stepper with more than three steps shows only the numbered markers, with *Step 2 of 5* and the current step's name below them, so the steps and the buttons under them stay on the screen. Screen readers still hear the name of every step.
 
 ## Positions
 
-Form settings let you place navigation chrome where it suits the layout:
+Form settings let you place navigation chrome where it suits the layout, each `Top`, `Bottom`, `Both`, or `Hidden`:
 
-- **Page navigation position**: `top`, `bottom`, `both`, or `none`.
-- **Stepper position**: where the step indicator renders.
-- **Action buttons position**: where Validate/Submit buttons render.
+- **Page buttons**: the Previous and Next buttons.
+- **Steps**: the numbered stepper.
+- **Validate and Submit buttons**.
 
 ## Page states
 
@@ -17240,38 +17258,25 @@ The properties sidebar has a **search box** (*Search in property list*): type pa
 
 ## How the sidebar is organised
 
-Properties are grouped into sections. Only sections relevant to the selected element appear:
+The properties sidebar groups an element's properties into collapsible categories. Only the categories the selected element has appear, in this order:
 
-| Section | What it holds |
+| Category | What it holds |
 | --- | --- |
-| **Identity** | Name, label, and basic identifiers |
-| **Content** | Visible texts, titles, placeholders, and content fields |
-| **Input** | Input modes, autocomplete, and user input UX |
-| **Formatting** | Masks, locale, and value formatting settings |
-| **Primary source** | Data source binding and response paths |
-| **Request** | Request params, lazy load, and backend request settings |
-| **Search** | Quick or detailed search and their extra settings |
-| **Saved filters** | Saved filters data source and payload schema |
-| **Options schema** | Option lists, filtering, and selection modes |
-| **Selection** | Table selection and selected item configuration |
-| **Details** | Expanded rows, details panel, and nested views |
-| **Pagination** | Paginator and footer control |
-| **Header controls** | Header bar, export, and search controls |
-| **Columns schema** | Main and expanded table columns |
-| **Trigger button** | Button that opens a dialog or another action |
-| **State** | Hidden, disabled, and readonly states |
-| **Limits** | Min/max, lengths, counts, and other restrictions |
-| **Deletion** | Delete flow and confirm settings |
-| **Validation** | Required, validators, and strict options |
-| **Visibility logic** | Visible-if and open conditions |
-| **Interaction logic** | Disable, require, and readonly conditions |
-| **Value logic** | Expression, default value, and reset conditions |
-| **Execution modes** | Logic and validation execution mode settings |
-| **Actions** | Events and action collections |
-| **Layout** | Width, padding, orientation, gap, and overall layout |
-| **Surface** | Borders, backgrounds, shadows, and page or panel surfaces |
-| **Appearance** | Variants, colors, icons, and visual accents |
-| **Advanced** | Rare or specialized properties |
+| **General** | Name, label, description, placeholder, field help tooltip, and the element's own content: a button's text, a card's title, an HTML element's markup. |
+| **Restrictions** | Hidden, disabled, read only, required, and limits such as min and max, lengths, counts, and accepted files. |
+| **Validators** | Validation rules, the required message, and strict options. |
+| **Logic** | Visible if, disable if, require if, reset if, calculated values (expression), and the default value. |
+| **Data** | Data source binding, response paths, and lazy loading. |
+| **Options** | Option lists and how they are filtered and selected. |
+| **Columns** | A table's columns and expanded-row columns. |
+| **Events** | Actions run on clicks, value changes, and other triggers. |
+| **Design** | Width per screen size, colors, icons, variants, padding, borders, backgrounds, and shadows. |
+| **Behavior** | How an element works at runtime: paging, quick search, loading mode, initially visible, dismissible, and other element-specific switches. |
+| **Texts** | The fixed texts an element shows besides its label, such as *Add row* and the delete confirmation. |
+
+Plugins can add their own categories after these, such as **Documentation**.
+
+The sections below go through the properties most elements share, grouped by what they do rather than by category. The category each one sits in is given in the tables above, and the search box finds any of them by name.
 
 ## Identity & content
 
@@ -17284,7 +17289,7 @@ Properties are grouped into sections. Only sections relevant to the selected ele
 | **Placeholder text** | Text shown while the field is empty. Use as an example or short hint, not as the only explanation. |
 | **Title** / **Subtitle** | Main heading text and secondary text for elements with their own header (cards, page titles, panels). |
 | **Text** | Main text for content-style elements (button caption, badge text…). |
-| **Icon** | Material Symbol or registered SVG icon code, used as a visual accent or a shorter way to present an action. |
+| **Icon** | Picked from a list (your application's icons first, then the built-in ones), typed by name, or pasted as SVG markup. Used as a visual accent or a shorter way to present an action. |
 | **Type** | Switches the element to a closely related type without recreating it (e.g. `text` → `number`), preserving shared properties. |
 
 ## State
@@ -17401,19 +17406,17 @@ Simple logic is supported in template blocks:
 
 The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
-A template has:
+Pick a template in the list on the left, or add one with **Add template**. The editor has the markup and the styles side by side, and **Template settings** next to them:
 
-| Field                      | What it is                                                                                                                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
-| **Title**                  | Human-friendly display title.                                                                                                                 |
-| **Description**            | What the template is for.                                                                                                                     |
-| **Tags (comma separated)** | For finding it later.                                                                                                                         |
-| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
-| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
-| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+| Field | What it is |
+| --- | --- |
+| **Template (Angular syntax)** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The **Format template** button tidies the HTML. |
+| **CSS classes** | Styles scoped to the template, with its own **Format CSS** button. |
+| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
+| **Title** | Human-friendly display title. |
+| **Preview data (JSON)** | The object the preview renders the template with. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`, and the preview fills the placeholders from it. It must be a valid JSON object. |
 
-The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
+The **Preview** panel renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save**; the editor shows *Unsaved changes* in the meantime.
 
 ### Storage settings
 

@@ -25,11 +25,12 @@ Content written in a Custom HTML element renders the same way here. Both element
 
 Raw HTML for layouts the rich text editor can't produce. HTML is sanitised at runtime, so scripts are stripped.
 
+Both fields are in the **General** category, under the name. **Edit content** opens the markup in the code editor.
+
 | Property | What it does |
 | --- | --- |
-| **HTML template** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
-| **Template ref** | Reference to a [Templates-tab](../templates) template. Wins over the inline HTML. |
-| **HTML source path** | Take the markup from a data path or source response instead of a static property. |
+| **HTML template (inline)** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
+| **HTML template ref** | Reference to a [Templates-tab](../templates) template. Wins over the inline HTML. Shown when the Templates plugin is installed. |
 
 ## Image (`image`)
 

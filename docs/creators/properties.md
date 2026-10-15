@@ -13,38 +13,25 @@ The properties sidebar has a **search box** (*Search in property list*): type pa
 
 ## How the sidebar is organised
 
-Properties are grouped into sections. Only sections relevant to the selected element appear:
+The properties sidebar groups an element's properties into collapsible categories. Only the categories the selected element has appear, in this order:
 
-| Section | What it holds |
+| Category | What it holds |
 | --- | --- |
-| **Identity** | Name, label, and basic identifiers |
-| **Content** | Visible texts, titles, placeholders, and content fields |
-| **Input** | Input modes, autocomplete, and user input UX |
-| **Formatting** | Masks, locale, and value formatting settings |
-| **Primary source** | Data source binding and response paths |
-| **Request** | Request params, lazy load, and backend request settings |
-| **Search** | Quick or detailed search and their extra settings |
-| **Saved filters** | Saved filters data source and payload schema |
-| **Options schema** | Option lists, filtering, and selection modes |
-| **Selection** | Table selection and selected item configuration |
-| **Details** | Expanded rows, details panel, and nested views |
-| **Pagination** | Paginator and footer control |
-| **Header controls** | Header bar, export, and search controls |
-| **Columns schema** | Main and expanded table columns |
-| **Trigger button** | Button that opens a dialog or another action |
-| **State** | Hidden, disabled, and readonly states |
-| **Limits** | Min/max, lengths, counts, and other restrictions |
-| **Deletion** | Delete flow and confirm settings |
-| **Validation** | Required, validators, and strict options |
-| **Visibility logic** | Visible-if and open conditions |
-| **Interaction logic** | Disable, require, and readonly conditions |
-| **Value logic** | Expression, default value, and reset conditions |
-| **Execution modes** | Logic and validation execution mode settings |
-| **Actions** | Events and action collections |
-| **Layout** | Width, padding, orientation, gap, and overall layout |
-| **Surface** | Borders, backgrounds, shadows, and page or panel surfaces |
-| **Appearance** | Variants, colors, icons, and visual accents |
-| **Advanced** | Rare or specialized properties |
+| **General** | Name, label, description, placeholder, field help tooltip, and the element's own content: a button's text, a card's title, an HTML element's markup. |
+| **Restrictions** | Hidden, disabled, read only, required, and limits such as min and max, lengths, counts, and accepted files. |
+| **Validators** | Validation rules, the required message, and strict options. |
+| **Logic** | Visible if, disable if, require if, reset if, calculated values (expression), and the default value. |
+| **Data** | Data source binding, response paths, and lazy loading. |
+| **Options** | Option lists and how they are filtered and selected. |
+| **Columns** | A table's columns and expanded-row columns. |
+| **Events** | Actions run on clicks, value changes, and other triggers. |
+| **Design** | Width per screen size, colors, icons, variants, padding, borders, backgrounds, and shadows. |
+| **Behavior** | How an element works at runtime: paging, quick search, loading mode, initially visible, dismissible, and other element-specific switches. |
+| **Texts** | The fixed texts an element shows besides its label, such as *Add row* and the delete confirmation. |
+
+Plugins can add their own categories after these, such as **Documentation**.
+
+The sections below go through the properties most elements share, grouped by what they do rather than by category. The category each one sits in is given in the tables above, and the search box finds any of them by name.
 
 ## Identity & content
 
@@ -57,7 +44,7 @@ Properties are grouped into sections. Only sections relevant to the selected ele
 | **Placeholder text** | Text shown while the field is empty. Use as an example or short hint, not as the only explanation. |
 | **Title** / **Subtitle** | Main heading text and secondary text for elements with their own header (cards, page titles, panels). |
 | **Text** | Main text for content-style elements (button caption, badge text…). |
-| **Icon** | Material Symbol or registered SVG icon code, used as a visual accent or a shorter way to present an action. |
+| **Icon** | Picked from a list (your application's icons first, then the built-in ones), typed by name, or pasted as SVG markup. Used as a visual accent or a shorter way to present an action. |
 | **Type** | Switches the element to a closely related type without recreating it (e.g. `text` → `number`), preserving shared properties. |
 
 ## State
