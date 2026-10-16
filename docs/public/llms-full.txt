@@ -16542,20 +16542,6 @@ Source: https://ngxviewbuilder.io/creators/first-form
 
 This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
-<figure class="doc-video">
-  <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
-  <img
-    src="/first-form/first-form.webp"
-    width="1024"
-    height="611"
-    alt="The whole walkthrough in the builder: First name and Email are dragged side by side and named from their labels, a Client type radio gets the options Private person and Company, the email is made required with an email validator, a Company details panel and its Company code field get Visible if and Require if rules from the visual rule builder, a Register button gets a success toast that validates the form first, and the Preview tab tests an empty submit, the Company choice and a valid registration."
-  />
-  </a>
-  <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
-</figure>
-
-The same form, narrated step by step:
-
 **Video lesson 1 (4:36):** [Your first form](https://www.youtube.com/watch?v=q2sRLHZfM1w). Build your first form from scratch in NGX View Builder: place and name fields, set up options, make fields required, add validators, show a section only for companies, add a submit button with a toast, and test it in Preview. Chapters: 0:00 Intro, 0:18 Page title, 0:50 Fields side by side, 1:02 Radio input, 1:32 Required fields, 1:59 Conditional section, 2:21 Visible if, 2:46 Require if, 3:04 Submit button, 3:18 Toast action, 3:34 Validate before action, 3:51 Testing in Preview, 4:17 Recap.
 
 ## 1. Place the fields
