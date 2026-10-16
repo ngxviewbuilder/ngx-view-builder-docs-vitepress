@@ -1,6 +1,6 @@
 ---
 title: Dynamic text & templates
-description: Placeholders in text, and the reusable HTML template library.
+description: "Dynamic text with placeholders, and the reusable HTML template library in NGX View Builder: where templates are stored and how actions work."
 ---
 
 # Dynamic text & templates

@@ -1,6 +1,6 @@
 ---
 title: The builder workspace
-description: The main areas of the NGX View Builder screen and what each one does.
+description: "A tour of the NGX View Builder designer: the elements sidebar, canvas, properties panel, footer tabs, header actions and undo history."
 ---
 
 # The builder workspace
@@ -16,6 +16,10 @@ The builder screen has five working areas:
 | Header | Top | Switch between builder modes, settings, undo and save |
 
 ![Builder workspace](/first-look/builder.png)
+
+The same tour as a short video:
+
+<YouTubeVideo id="oWwWsfP-BLY" />
 
 ## Elements sidebar
 

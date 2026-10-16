@@ -1,6 +1,6 @@
 ---
 title: Expression functions
-description: All built-in expression functions with examples.
+description: "Every built-in expression function in NGX View Builder with examples: text, numbers, arrays and table rows, dates, data loading and writing values."
 ---
 
 # Function reference

@@ -1,6 +1,6 @@
 ---
 title: "AI: Good practices for building views"
-description: How an AI agent builds NGX View Builder views that look finished and behave right. Captions and labels per element, buttons and contrast, layout, names, fields, logic, tables and a final checklist.
+description: "How an AI agent builds NGX View Builder views that look finished: labels per element, buttons and contrast, layout, names, logic, tables and a final checklist."
 ---
 
 # AI: Good practices for building views

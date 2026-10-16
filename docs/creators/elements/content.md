@@ -7,6 +7,10 @@ description: Rich text, Custom HTML, Image, Video, Iframe, Icon, Avatar, Page ti
 
 Presentational elements. They display information and add nothing to the form data.
 
+This lesson covers buttons, message cards and the other elements that only show something:
+
+<YouTubeVideo id="14FR8gc8DoQ" />
+
 ## Rich text (`richText` / `richTextViewer`)
 
 Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images, video. Use it for instructions, section intros, and legal text. The viewer variant renders content read-only at runtime.

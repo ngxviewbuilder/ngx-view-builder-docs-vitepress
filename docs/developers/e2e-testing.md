@@ -1,6 +1,6 @@
 ---
 title: E2E testing
-description: Every control in a view and in the builder has a stable data-testid. How the ids are built, how they work in repeaters, and how to use them from Playwright or Cypress.
+description: "Every control in a view and in the builder has a stable data-testid: how the ids are built, how repeaters number them, and using them from Playwright or Cypress."
 ---
 
 # E2E testing

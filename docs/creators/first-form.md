@@ -1,6 +1,6 @@
 ---
 title: Your first form
-description: Build a working client registration form in ten minutes.
+description: "Step by step: build a client registration form with required fields, a conditional section and a submit button in the NGX View Builder designer."
 ---
 
 # Your first form
@@ -18,6 +18,10 @@ This walkthrough builds a small **client registration form**: name, email, clien
   </a>
   <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
 </figure>
+
+The same form, narrated step by step:
+
+<YouTubeVideo id="q2sRLHZfM1w" />
 
 ## 1. Place the fields
 

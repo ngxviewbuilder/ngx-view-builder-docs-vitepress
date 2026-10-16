@@ -14469,6 +14469,8 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+**Video lesson 9 (2:27):** [Conditional logic](https://www.youtube.com/watch?v=RqYkX5_ruKw). Make forms smart with five logic rules: Visible if, Disable if, Require if, Read only if and Reset if, built visually with Match all or Match any, and tested in Preview. Chapters: 0:00 Intro, 0:16 Disable if, 0:34 Match any, 0:55 Reset if, 1:21 Number conditions, 1:43 Read only if, 2:13 Recap.
+
 ## Building a rule without writing it
 
 Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.
@@ -14778,6 +14780,8 @@ Source: https://ngxviewbuilder.io/creators/elements/buttons
 
 # Buttons & actions
 
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
+
 ## Button (`button`)
 
 A button does nothing by itself. Its behaviour comes from the **actions** you attach in the **Actions** category. One button can run several actions in order.
@@ -14855,6 +14859,8 @@ All choice elements share the same two ways of getting their options:
 2. **Data source**, in the **Primary source** section: load options from an API and map which response fields become the value and label. See [Data sources](https://ngxviewbuilder.io/creators/data-sources).
 
 The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
+
+**Video lesson 6 (2:10):** [Choice inputs](https://www.youtube.com/watch?v=qYdVIdZMkE8). Dropdowns, radio and select buttons, multi-choice, autocomplete, checkboxes and toggles: option labels and values, option conditions, switching choice types, and when to pick which. Chapters: 0:00 Intro, 0:28 Select button, 0:40 Dropdown, 1:06 Search in dropdowns, 1:31 Toggle switch, 1:52 Recap.
 
 ## Options: shared fields
 
@@ -15209,6 +15215,10 @@ Source: https://ngxviewbuilder.io/creators/elements/content
 
 Presentational elements. They display information and add nothing to the form data.
 
+This lesson covers buttons, message cards and the other elements that only show something:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
+
 ## Rich text (`richText` / `richTextViewer`)
 
 Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images, video. Use it for instructions, section intros, and legal text. The viewer variant renders content read-only at runtime.
@@ -15348,6 +15358,10 @@ Source: https://ngxviewbuilder.io/creators/elements/date-time
 
 # Date & time inputs
 
+The inputs lesson shows the date picker, date range and time picker. This player starts at that part:
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M&t=54s). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
+
 ## Date picker (`datepicker`)
 
 A calendar picker that stores a single date, a date-time, or a time.
@@ -15410,6 +15424,10 @@ with the message `End date must be after start date`.
 Source: https://ngxviewbuilder.io/creators/elements/feedback
 
 # Feedback & status
+
+Message cards, their variants and appearances are shown in this lesson:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
 
 ## Badge (`badge`)
 
@@ -15567,6 +15585,8 @@ Regardless of type, elements share the [common properties](https://ngxviewbuilde
 Source: https://ngxviewbuilder.io/creators/elements/inputs
 
 # Text & number inputs
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
 
 ## Text (`text`)
 
@@ -16534,6 +16554,10 @@ This walkthrough builds a small **client registration form**: name, email, clien
   <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
 </figure>
 
+The same form, narrated step by step:
+
+**Video lesson 1 (4:36):** [Your first form](https://www.youtube.com/watch?v=q2sRLHZfM1w). Build your first form from scratch in NGX View Builder: place and name fields, set up options, make fields required, add validators, show a section only for companies, add a submit button with a toast, and test it in Preview. Chapters: 0:00 Intro, 0:18 Page title, 0:50 Fields side by side, 1:02 Radio input, 1:32 Required fields, 1:59 Conditional section, 2:21 Visible if, 2:46 Require if, 3:04 Submit button, 3:18 Toast action, 3:34 Validate before action, 3:51 Testing in Preview, 4:17 Recap.
+
 ## 1. Place the fields
 
 From the **Single line inputs** group, drag onto the canvas (or double click a tile to add it after the selected element):
@@ -17018,6 +17042,8 @@ Source: https://ngxviewbuilder.io/creators/layout
 
 # Layout & containers
 
+**Video lesson 3 (2:55):** [Layout & containers](https://www.youtube.com/watch?v=rrYSBcpJcZE). Shape your form layout in NGX View Builder: rows and columns, side-by-side fields, uneven widths, mobile widths, panels, tabs and accordions, element spacing, and the Canvas mode for web pages. Chapters: 0:00 Intro, 0:31 Moving a field to a new row, 0:48 Containers, 1:04 Tabs, 1:30 Uneven widths, 1:49 Mobile widths, 2:06 Element spacing, 2:28 Desktop and phone preview.
+
 ## Rows and columns
 
 The canvas is a stack of **rows**. Each row holds one or more **columns**, and each column holds exactly one element. You create layout by dragging:
@@ -17151,6 +17177,8 @@ Source: https://ngxviewbuilder.io/creators/pages
 
 A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
 
+**Video lesson 2 (2:56):** [Pages & navigation](https://www.youtube.com/watch?v=KLdQYH4y5m8). Split a long form into pages and turn it into a multi-step wizard: the pages strip, new pages, duplicate and delete, Steps navigation, button positions, and the validation issues dialog. Chapters: 0:00 Intro, 0:16 The pages strip, 0:28 Renaming a page, 0:46 Adding pages, 1:25 Page cards, 1:43 Steps navigation, 1:58 Button positions, 2:40 Recap.
+
 ## When to use multiple pages
 
 - Long forms that would otherwise scroll forever.
@@ -17251,6 +17279,8 @@ Source: https://ngxviewbuilder.io/creators/properties
 # Common properties
 
 Most elements share the same core properties. Element-specific properties are covered on each [element page](https://ngxviewbuilder.io/creators/elements/).
+
+**Video lesson 4 (2:24):** [Common properties](https://www.youtube.com/watch?v=TrCpk9M5Ofo). The properties every element shares: finding a property, label vs name, placeholder, description, help tooltip, switching types, field states, length limits, autocomplete and input mode. Chapters: 0:00 Intro, 0:13 Finding properties, 0:28 Label and name, 0:47 Placeholder, description, tooltip, 1:07 Switching type, 1:21 Hidden, disabled, read only, 1:35 Limits, 2:02 Preview.
 
 ::: tip Finding a property
 The properties sidebar has a **search box** (*Search in property list*): type part of a property name to filter. Every field also has a **help icon**: hover it for a short explanation with an example.
@@ -17558,6 +17588,8 @@ Source: https://ngxviewbuilder.io/creators/validation
 
 Validation runs when the user submits, when a page changes in stepper mode, and (depending on settings) while editing. Failing elements show their error message and block submission.
 
+**Video lesson 8 (1:44):** [Validation](https://www.youtube.com/watch?v=ZPpFMkTfjkw). Keep bad data out: pattern validators, clear error messages, input masks, and custom validation rules with expressions like dateDiffDays. Chapters: 0:00 Intro, 0:15 Pattern validator, 0:36 Input masks, 0:49 Custom rules, 1:18 Testing validation, 1:30 Recap.
+
 ## Required
 
 Turn on **Required** in the Validation section, or use **Require if** for conditional requirement. Set the error text in **Required field message**.
@@ -17732,6 +17764,10 @@ The builder screen has five working areas:
 
 ![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
 
+The same tour as a short video:
+
+**Video lesson 0 (2:53):** [The builder workspace](https://www.youtube.com/watch?v=oWwWsfP-BLY). A quick tour of the NGX View Builder workspace: the elements library, the canvas, the Layers tree, the properties panel, the pages footer, the header tabs, and undo and redo. Chapters: 0:00 Intro, 0:27 Elements library and search, 0:40 Adding elements, 0:55 Layers tree, 1:08 Moving elements on the canvas, 1:33 Right-click menu, 1:56 Pages, data sources, variables, 2:09 Header tabs and plugins, 2:24 Undo, redo, settings and save, 2:44 Next lesson.
+
 ## Elements sidebar
 
 The sidebar has two tabs. **Add** is the element library, grouped so you can scan it quickly:
@@ -17845,7 +17881,7 @@ Source: https://ngxviewbuilder.io/privacy
 
 # Privacy Policy
 
-*Last updated: 18 July 2026*
+*Last updated: 16 October 2026*
 
 This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
@@ -17871,7 +17907,7 @@ Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you c
 
 ## Third parties
 
-We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). We do not sell your data or share it with any other third party.
+We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). Video lessons in the documentation are hosted on **YouTube** (Google Ireland Limited). A page with a lesson shows only a picture stored on this site; the YouTube player loads from youtube-nocookie.com when you press play, and from then on YouTube's privacy policy applies to that video. We do not sell your data or share it with any other third party.
 
 ## Retention
 

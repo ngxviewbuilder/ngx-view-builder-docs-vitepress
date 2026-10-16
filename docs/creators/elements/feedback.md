@@ -5,6 +5,10 @@ description: Badge, Message card, Toast, Stats card, Progress bar, and Stepper/T
 
 # Feedback & status
 
+Message cards, their variants and appearances are shown in this lesson:
+
+<YouTubeVideo id="14FR8gc8DoQ" />
+
 ## Badge (`badge`)
 
 A small colored label: `Active`, `Draft`, `Overdue`.

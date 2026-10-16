@@ -12,6 +12,8 @@ All choice elements share the same two ways of getting their options:
 
 The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
 
+<YouTubeVideo id="qYdVIdZMkE8" />
+
 ## Options: shared fields
 
 Each manual option row has:

@@ -7,6 +7,8 @@ description: Every property shared by most elements, from identity and state to 
 
 Most elements share the same core properties. Element-specific properties are covered on each [element page](./elements/).
 
+<YouTubeVideo id="TrCpk9M5Ofo" />
+
 ::: tip Finding a property
 The properties sidebar has a **search box** (*Search in property list*): type part of a property name to filter. Every field also has a **help icon**: hover it for a short explanation with an example.
 :::
