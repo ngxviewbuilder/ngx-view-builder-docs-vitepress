@@ -17748,10 +17748,6 @@ The builder screen has five working areas:
 | Properties sidebar | Right | Configure the selected element |
 | Header | Top | Switch between builder modes, settings, undo and save |
 
-![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
-
-The same tour as a short video:
-
 **Video lesson 0 (2:53):** [The builder workspace](https://www.youtube.com/watch?v=oWwWsfP-BLY). A quick tour of the NGX View Builder workspace: the elements library, the canvas, the Layers tree, the properties panel, the pages footer, the header tabs, and undo and redo. Chapters: 0:00 Intro, 0:27 Elements library and search, 0:40 Adding elements, 0:55 Layers tree, 1:08 Moving elements on the canvas, 1:33 Right-click menu, 1:56 Pages, data sources, variables, 2:09 Header tabs and plugins, 2:24 Undo, redo, settings and save, 2:44 Next lesson.
 
 ## Elements sidebar

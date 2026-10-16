@@ -15,10 +15,6 @@ The builder screen has five working areas:
 | Properties sidebar | Right | Configure the selected element |
 | Header | Top | Switch between builder modes, settings, undo and save |
 
-![Builder workspace](/first-look/builder.png)
-
-The same tour as a short video:
-
 <YouTubeVideo id="oWwWsfP-BLY" />
 
 ## Elements sidebar
