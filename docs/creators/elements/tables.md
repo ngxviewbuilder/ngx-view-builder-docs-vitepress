@@ -57,7 +57,9 @@ Per-column filter settings live on each column; see [Columns](#columns) below.
 
 ### Columns
 
-**Columns** holds the column schema. Each column has:
+**Columns** holds the column schema, in the **Columns** category of the table's properties. The list there adds, reorders (drag the handle) and removes columns. To change a column's own settings, click its name in the list or the gear button next to it; clicking the column's header on the canvas does the same. The sidebar then shows that column, and the table's own properties come back when you select the table again.
+
+Each column has:
 
 | Column field | What it does |
 | --- | --- |

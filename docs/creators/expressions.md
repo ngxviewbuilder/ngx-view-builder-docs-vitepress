@@ -1,6 +1,6 @@
 ---
 title: Expressions basics
-description: How to reference fields and write conditions in NGX View Builder.
+description: "How NGX View Builder expressions work: referencing fields, operators, functions, context tokens, when expressions run and how to debug them."
 ---
 
 # Expressions basics

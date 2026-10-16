@@ -1,6 +1,6 @@
 ---
 title: Preview & testing
-description: Test the view like an end user before handing it off.
+description: "Test a view in the NGX View Builder preview before you ship it: desktop, tablet and phone sizes, live data inspection and expression debugging."
 ---
 
 # Preview & testing

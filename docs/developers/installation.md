@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install the package, register providers, and initialize the runtime.
+description: "Install NGX View Builder in an Angular app: the runtime and designer packages, providers, the global stylesheet, initialization and plugins."
 ---
 
 # Installation

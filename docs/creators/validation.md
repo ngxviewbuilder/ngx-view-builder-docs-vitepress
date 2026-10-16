@@ -7,6 +7,8 @@ description: Required fields, validator rules, custom conditions, and error mess
 
 Validation runs when the user submits, when a page changes in stepper mode, and (depending on settings) while editing. Failing elements show their error message and block submission.
 
+<YouTubeVideo id="ZPpFMkTfjkw" />
+
 ## Required
 
 Turn on **Required** in the Validation section, or use **Require if** for conditional requirement. Set the error text in **Required field message**.

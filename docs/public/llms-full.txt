@@ -14469,6 +14469,8 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+**Video lesson 9 (2:27):** [Conditional logic](https://www.youtube.com/watch?v=RqYkX5_ruKw). Make forms smart with five logic rules: Visible if, Disable if, Require if, Read only if and Reset if, built visually with Match all or Match any, and tested in Preview. Chapters: 0:00 Intro, 0:16 Disable if, 0:34 Match any, 0:55 Reset if, 1:21 Number conditions, 1:43 Read only if, 2:13 Recap.
+
 ## Building a rule without writing it
 
 Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.
@@ -14778,6 +14780,8 @@ Source: https://ngxviewbuilder.io/creators/elements/buttons
 
 # Buttons & actions
 
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
+
 ## Button (`button`)
 
 A button does nothing by itself. Its behaviour comes from the **actions** you attach in the **Actions** category. One button can run several actions in order.
@@ -14855,6 +14859,8 @@ All choice elements share the same two ways of getting their options:
 2. **Data source**, in the **Primary source** section: load options from an API and map which response fields become the value and label. See [Data sources](https://ngxviewbuilder.io/creators/data-sources).
 
 The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
+
+**Video lesson 6 (2:10):** [Choice inputs](https://www.youtube.com/watch?v=qYdVIdZMkE8). Dropdowns, radio and select buttons, multi-choice, autocomplete, checkboxes and toggles: option labels and values, option conditions, switching choice types, and when to pick which. Chapters: 0:00 Intro, 0:28 Select button, 0:40 Dropdown, 1:06 Search in dropdowns, 1:31 Toggle switch, 1:52 Recap.
 
 ## Options: shared fields
 
@@ -15209,6 +15215,10 @@ Source: https://ngxviewbuilder.io/creators/elements/content
 
 Presentational elements. They display information and add nothing to the form data.
 
+This lesson covers buttons, message cards and the other elements that only show something:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
+
 ## Rich text (`richText` / `richTextViewer`)
 
 Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images, video. Use it for instructions, section intros, and legal text. The viewer variant renders content read-only at runtime.
@@ -15227,11 +15237,12 @@ Content written in a Custom HTML element renders the same way here. Both element
 
 Raw HTML for layouts the rich text editor can't produce. HTML is sanitised at runtime, so scripts are stripped.
 
+Both fields are in the **General** category, under the name. **Edit content** opens the markup in the code editor.
+
 | Property | What it does |
 | --- | --- |
-| **HTML template** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
-| **Template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. |
-| **HTML source path** | Take the markup from a data path or source response instead of a static property. |
+| **HTML template (inline)** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
+| **HTML template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. Shown when the Templates plugin is installed. |
 
 ## Image (`image`)
 
@@ -15347,6 +15358,10 @@ Source: https://ngxviewbuilder.io/creators/elements/date-time
 
 # Date & time inputs
 
+The inputs lesson shows the date picker, date range and time picker. This player starts at that part:
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M&t=54s). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
+
 ## Date picker (`datepicker`)
 
 A calendar picker that stores a single date, a date-time, or a time.
@@ -15409,6 +15424,10 @@ with the message `End date must be after start date`.
 Source: https://ngxviewbuilder.io/creators/elements/feedback
 
 # Feedback & status
+
+Message cards, their variants and appearances are shown in this lesson:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
 
 ## Badge (`badge`)
 
@@ -15566,6 +15585,8 @@ Regardless of type, elements share the [common properties](https://ngxviewbuilde
 Source: https://ngxviewbuilder.io/creators/elements/inputs
 
 # Text & number inputs
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
 
 ## Text (`text`)
 
@@ -15776,7 +15797,9 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 
 ### Columns
 
-**Columns** holds the column schema. Each column has:
+**Columns** holds the column schema, in the **Columns** category of the table's properties. The list there adds, reorders (drag the handle) and removes columns. To change a column's own settings, click its name in the list or the gear button next to it; clicking the column's header on the canvas does the same. The sidebar then shows that column, and the table's own properties come back when you select the table again.
+
+Each column has:
 
 | Column field | What it does |
 | --- | --- |
@@ -16519,17 +16542,7 @@ Source: https://ngxviewbuilder.io/creators/first-form
 
 This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
-<figure class="doc-video">
-  <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
-  <img
-    src="/first-form/first-form.webp"
-    width="1024"
-    height="611"
-    alt="The whole walkthrough in the builder: First name and Email are dragged side by side and named from their labels, a Client type radio gets the options Private person and Company, the email is made required with an email validator, a Company details panel and its Company code field get Visible if and Require if rules from the visual rule builder, a Register button gets a success toast that validates the form first, and the Preview tab tests an empty submit, the Company choice and a valid registration."
-  />
-  </a>
-  <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
-</figure>
+**Video lesson 1 (4:36):** [Your first form](https://www.youtube.com/watch?v=q2sRLHZfM1w). Build your first form from scratch in NGX View Builder: place and name fields, set up options, make fields required, add validators, show a section only for companies, add a submit button with a toast, and test it in Preview. Chapters: 0:00 Intro, 0:18 Page title, 0:50 Fields side by side, 1:02 Radio input, 1:32 Required fields, 1:59 Conditional section, 2:21 Visible if, 2:46 Require if, 3:04 Submit button, 3:18 Toast action, 3:34 Validate before action, 3:51 Testing in Preview, 4:17 Recap.
 
 ## 1. Place the fields
 
@@ -16617,19 +16630,32 @@ Source: https://ngxviewbuilder.io/creators/form-settings
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has five groups: **General**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has seven groups: **Layout**, **Language and formats**, **Behaviour**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**. The list on the left jumps to each one.
 
-## General
+## Layout
 
 | Setting | What it does |
 | --- | --- |
-| **Status** | `Default` (editable) or `Read only`. A read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
-| **Current language** | The content language shown right now in the builder and preview. |
-| **Default language** | The language the view starts in at runtime. |
-| **Supported languages (comma separated)** | Languages the view offers, e.g. `en, lt, de`. Texts for them are managed in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
-| **Locale** | Number/date formatting locale (e.g. `lt-LT`, `en-US`). Used by number formatting, date pickers, and table totals. |
 | **Form width** + **Form width unit** | Maximum content width of the rendered view (`px` or `%`). |
-| **Element spacing** | Vertical gap between element rows. |
+| **Element spacing** | The gap between fields, in px. |
+| **Content padding** | The space inside the form frame, in px. |
+| **No content padding** | The form touches the edges of the page it sits in. |
+| **Breakpoints** (*Tablet*, *Mobile*) | Below these widths the view switches to the tablet and the mobile layout, so fields use their *Tablet width* and *Mobile width*. |
+
+## Language and formats
+
+| Setting | What it does |
+| --- | --- |
+| **Languages** | The languages the view can be shown in. Pick one from **Add a language…** and press **Add language**; remove one with the × next to it. The language marked *source* cannot be removed. Texts for the others are translated in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
+| **Source language** | The language you type the texts in here, in the builder. |
+| **Shown in** | The language the canvas and Preview show right now, so you can check a translation without leaving the builder. |
+| **Number and date format** | The locale for numbers, dates and currency: the decimal separator, the date order and so on. Number fields, date pickers and table totals follow it. |
+
+## Behaviour
+
+| Setting | What it does |
+| --- | --- |
+| **Editing** | `Editable`: people fill in the form, and single fields can still be locked. `Read only`: every field shows its value but cannot be changed. Individual elements can opt out with *Inherit parent state*. |
 
 ## Form header
 
@@ -16648,15 +16674,15 @@ The optional header block rendered above the first page.
 
 | Setting | What it does |
 | --- | --- |
-| **Page navigation mode** | `Default` (Prev/Next buttons) or `Stepper` (numbered steps). |
-| **Page navigation position** | Where the Prev/Next controls render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Stepper position** | Where the stepper renders when stepper mode is on. |
-| **Action buttons position** | Where Validate/Submit render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Allow step without validation** | Users may move between steps/pages even when the current page is invalid. |
+| **Moving between pages** | `Steps`: numbered steps, and a step is checked before the next one opens. `Previous / Next buttons`: pages in any order. |
+| **Page buttons** | Where the Previous and Next buttons render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Steps** | Where the numbered steps render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Validate and Submit buttons** | Where Validate and Submit render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Allow step without validation** | People may move to the next step even when the current one has errors. |
+| **Show validate button** | The built-in Validate button: checks the whole form without submitting. |
 | **Show submit button** | The built-in Submit button (fires completion with data + validation result). |
-| **Show validate button** | The built-in Validate button (checks without submitting). |
+| **Show validation issues modal** | After a failed check, a dialog lists every validation issue with links to the fields. |
 | **Show table of contents** | Renders a contents panel for long views. |
-| **Show validation issues modal** | After a failed submit, shows a dialog listing every validation issue with links to the fields. |
 
 See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
@@ -16664,7 +16690,7 @@ See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
+| **Shown as** | `Page`: a framed form inside the host page. `Dialog`: a window over the host page, with its own header and buttons. `Canvas (full width, no frame)`: for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
 | **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
@@ -17002,6 +17028,8 @@ Source: https://ngxviewbuilder.io/creators/layout
 
 # Layout & containers
 
+**Video lesson 3 (2:55):** [Layout & containers](https://www.youtube.com/watch?v=rrYSBcpJcZE). Shape your form layout in NGX View Builder: rows and columns, side-by-side fields, uneven widths, mobile widths, panels, tabs and accordions, element spacing, and the Canvas mode for web pages. Chapters: 0:00 Intro, 0:31 Moving a field to a new row, 0:48 Containers, 1:04 Tabs, 1:30 Uneven widths, 1:49 Mobile widths, 2:06 Element spacing, 2:28 Desktop and phone preview.
+
 ## Rows and columns
 
 The canvas is a stack of **rows**. Each row holds one or more **columns**, and each column holds exactly one element. You create layout by dragging:
@@ -17135,6 +17163,8 @@ Source: https://ngxviewbuilder.io/creators/pages
 
 A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
 
+**Video lesson 2 (2:56):** [Pages & navigation](https://www.youtube.com/watch?v=KLdQYH4y5m8). Split a long form into pages and turn it into a multi-step wizard: the pages strip, new pages, duplicate and delete, Steps navigation, button positions, and the validation issues dialog. Chapters: 0:00 Intro, 0:16 The pages strip, 0:28 Renaming a page, 0:46 Adding pages, 1:25 Page cards, 1:43 Steps navigation, 1:58 Button positions, 2:40 Recap.
+
 ## When to use multiple pages
 
 - Long forms that would otherwise scroll forever.
@@ -17143,22 +17173,24 @@ A view can have one page or many. Pages appear as cards in the **Pages** tab und
 
 ## Navigation modes
 
-Set in **Form settings → Page navigation mode**:
+Set in **Form settings → Navigation and actions → Moving between pages**:
 
 | Mode | Behaviour |
 | --- | --- |
-| `default` | Previous / Next buttons between pages |
-| `stepper` | A visual stepper shows all pages; users move step by step |
+| `Previous / Next buttons` | Previous and Next buttons between pages, in any order. |
+| `Steps` | A numbered stepper shows all pages; people move step by step. |
 
-By default a page must pass validation before the user can continue. Turn on **Allow step without validation** in Form settings to let users move freely.
+With steps, a page must pass validation before the person can continue. **Next checks the page being left only**: a required field or a rule on a later step does not hold anyone on the first one, and its errors show up when they get there. **Submit** still checks the whole form, and **Validate** checks it too without submitting. Turn on **Allow step without validation** in Form settings to let people move freely.
+
+On a phone, a stepper with more than three steps shows only the numbered markers, with *Step 2 of 5* and the current step's name below them, so the steps and the buttons under them stay on the screen. Screen readers still hear the name of every step.
 
 ## Positions
 
-Form settings let you place navigation chrome where it suits the layout:
+Form settings let you place navigation chrome where it suits the layout, each `Top`, `Bottom`, `Both`, or `Hidden`:
 
-- **Page navigation position**: `top`, `bottom`, `both`, or `none`.
-- **Stepper position**: where the step indicator renders.
-- **Action buttons position**: where Validate/Submit buttons render.
+- **Page buttons**: the Previous and Next buttons.
+- **Steps**: the numbered stepper.
+- **Validate and Submit buttons**.
 
 ## Page states
 
@@ -17234,44 +17266,33 @@ Source: https://ngxviewbuilder.io/creators/properties
 
 Most elements share the same core properties. Element-specific properties are covered on each [element page](https://ngxviewbuilder.io/creators/elements/).
 
+**Video lesson 4 (2:24):** [Common properties](https://www.youtube.com/watch?v=TrCpk9M5Ofo). The properties every element shares: finding a property, label vs name, placeholder, description, help tooltip, switching types, field states, length limits, autocomplete and input mode. Chapters: 0:00 Intro, 0:13 Finding properties, 0:28 Label and name, 0:47 Placeholder, description, tooltip, 1:07 Switching type, 1:21 Hidden, disabled, read only, 1:35 Limits, 2:02 Preview.
+
 ::: tip Finding a property
 The properties sidebar has a **search box** (*Search in property list*): type part of a property name to filter. Every field also has a **help icon**: hover it for a short explanation with an example.
 :::
 
 ## How the sidebar is organised
 
-Properties are grouped into sections. Only sections relevant to the selected element appear:
+The properties sidebar groups an element's properties into collapsible categories. Only the categories the selected element has appear, in this order:
 
-| Section | What it holds |
+| Category | What it holds |
 | --- | --- |
-| **Identity** | Name, label, and basic identifiers |
-| **Content** | Visible texts, titles, placeholders, and content fields |
-| **Input** | Input modes, autocomplete, and user input UX |
-| **Formatting** | Masks, locale, and value formatting settings |
-| **Primary source** | Data source binding and response paths |
-| **Request** | Request params, lazy load, and backend request settings |
-| **Search** | Quick or detailed search and their extra settings |
-| **Saved filters** | Saved filters data source and payload schema |
-| **Options schema** | Option lists, filtering, and selection modes |
-| **Selection** | Table selection and selected item configuration |
-| **Details** | Expanded rows, details panel, and nested views |
-| **Pagination** | Paginator and footer control |
-| **Header controls** | Header bar, export, and search controls |
-| **Columns schema** | Main and expanded table columns |
-| **Trigger button** | Button that opens a dialog or another action |
-| **State** | Hidden, disabled, and readonly states |
-| **Limits** | Min/max, lengths, counts, and other restrictions |
-| **Deletion** | Delete flow and confirm settings |
-| **Validation** | Required, validators, and strict options |
-| **Visibility logic** | Visible-if and open conditions |
-| **Interaction logic** | Disable, require, and readonly conditions |
-| **Value logic** | Expression, default value, and reset conditions |
-| **Execution modes** | Logic and validation execution mode settings |
-| **Actions** | Events and action collections |
-| **Layout** | Width, padding, orientation, gap, and overall layout |
-| **Surface** | Borders, backgrounds, shadows, and page or panel surfaces |
-| **Appearance** | Variants, colors, icons, and visual accents |
-| **Advanced** | Rare or specialized properties |
+| **General** | Name, label, description, placeholder, field help tooltip, and the element's own content: a button's text, a card's title, an HTML element's markup. |
+| **Restrictions** | Hidden, disabled, read only, required, and limits such as min and max, lengths, counts, and accepted files. |
+| **Validators** | Validation rules, the required message, and strict options. |
+| **Logic** | Visible if, disable if, require if, reset if, calculated values (expression), and the default value. |
+| **Data** | Data source binding, response paths, and lazy loading. |
+| **Options** | Option lists and how they are filtered and selected. |
+| **Columns** | A table's columns and expanded-row columns. |
+| **Events** | Actions run on clicks, value changes, and other triggers. |
+| **Design** | Width per screen size, colors, icons, variants, padding, borders, backgrounds, and shadows. |
+| **Behavior** | How an element works at runtime: paging, quick search, loading mode, initially visible, dismissible, and other element-specific switches. |
+| **Texts** | The fixed texts an element shows besides its label, such as *Add row* and the delete confirmation. |
+
+Plugins can add their own categories after these, such as **Documentation**.
+
+The sections below go through the properties most elements share, grouped by what they do rather than by category. The category each one sits in is given in the tables above, and the search box finds any of them by name.
 
 ## Identity & content
 
@@ -17284,7 +17305,7 @@ Properties are grouped into sections. Only sections relevant to the selected ele
 | **Placeholder text** | Text shown while the field is empty. Use as an example or short hint, not as the only explanation. |
 | **Title** / **Subtitle** | Main heading text and secondary text for elements with their own header (cards, page titles, panels). |
 | **Text** | Main text for content-style elements (button caption, badge text…). |
-| **Icon** | Material Symbol or registered SVG icon code, used as a visual accent or a shorter way to present an action. |
+| **Icon** | Picked from a list (your application's icons first, then the built-in ones), typed by name, or pasted as SVG markup. Used as a visual accent or a shorter way to present an action. |
 | **Type** | Switches the element to a closely related type without recreating it (e.g. `text` → `number`), preserving shared properties. |
 
 ## State
@@ -17401,19 +17422,17 @@ Simple logic is supported in template blocks:
 
 The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
-A template has:
+Pick a template in the list on the left, or add one with **Add template**. The editor has the markup and the styles side by side, and **Template settings** next to them:
 
-| Field                      | What it is                                                                                                                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
-| **Title**                  | Human-friendly display title.                                                                                                                 |
-| **Description**            | What the template is for.                                                                                                                     |
-| **Tags (comma separated)** | For finding it later.                                                                                                                         |
-| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
-| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
-| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+| Field | What it is |
+| --- | --- |
+| **Template (Angular syntax)** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The **Format template** button tidies the HTML. |
+| **CSS classes** | Styles scoped to the template, with its own **Format CSS** button. |
+| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
+| **Title** | Human-friendly display title. |
+| **Preview data (JSON)** | The object the preview renders the template with. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`, and the preview fills the placeholders from it. It must be a valid JSON object. |
 
-The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
+The **Preview** panel renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save**; the editor shows *Unsaved changes* in the meantime.
 
 ### Storage settings
 
@@ -17554,6 +17573,8 @@ Source: https://ngxviewbuilder.io/creators/validation
 # Validation
 
 Validation runs when the user submits, when a page changes in stepper mode, and (depending on settings) while editing. Failing elements show their error message and block submission.
+
+**Video lesson 8 (1:44):** [Validation](https://www.youtube.com/watch?v=ZPpFMkTfjkw). Keep bad data out: pattern validators, clear error messages, input masks, and custom validation rules with expressions like dateDiffDays. Chapters: 0:00 Intro, 0:15 Pattern validator, 0:36 Input masks, 0:49 Custom rules, 1:18 Testing validation, 1:30 Recap.
 
 ## Required
 
@@ -17727,7 +17748,7 @@ The builder screen has five working areas:
 | Properties sidebar | Right | Configure the selected element |
 | Header | Top | Switch between builder modes, settings, undo and save |
 
-![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
+**Video lesson 0 (2:53):** [The builder workspace](https://www.youtube.com/watch?v=oWwWsfP-BLY). A quick tour of the NGX View Builder workspace: the elements library, the canvas, the Layers tree, the properties panel, the pages footer, the header tabs, and undo and redo. Chapters: 0:00 Intro, 0:27 Elements library and search, 0:40 Adding elements, 0:55 Layers tree, 1:08 Moving elements on the canvas, 1:33 Right-click menu, 1:56 Pages, data sources, variables, 2:09 Header tabs and plugins, 2:24 Undo, redo, settings and save, 2:44 Next lesson.
 
 ## Elements sidebar
 
@@ -17842,7 +17863,7 @@ Source: https://ngxviewbuilder.io/privacy
 
 # Privacy Policy
 
-*Last updated: 18 July 2026*
+*Last updated: 16 October 2026*
 
 This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
@@ -17868,7 +17889,7 @@ Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you c
 
 ## Third parties
 
-We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). We do not sell your data or share it with any other third party.
+We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). Video lessons in the documentation are hosted on **YouTube** (Google Ireland Limited). A page with a lesson shows only a picture stored on this site; the YouTube player loads from youtube-nocookie.com when you press play, and from then on YouTube's privacy policy applies to that video. We do not sell your data or share it with any other third party.
 
 ## Retention
 

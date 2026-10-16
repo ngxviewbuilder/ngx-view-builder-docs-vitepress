@@ -1,6 +1,6 @@
 ---
 title: Licensing
-description: Supplying and validating the license key.
+description: "How NGX View Builder licensing works: what is free, how to supply and validate the license key, perpetual fallback, and what end users see."
 ---
 
 # Licensing

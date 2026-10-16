@@ -1,6 +1,6 @@
 ---
 title: Runtime variables
-description: Inject route params, user context, and derived values into views.
+description: "Pass route parameters, user context and derived values into NGX View Builder views with runtime variables, for example in a route-driven edit form."
 ---
 
 # Runtime variables

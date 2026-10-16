@@ -1,6 +1,6 @@
 ---
 title: Theming & design tokens
-description: Light/dark modes, token overrides, and full custom themes.
+description: "Theme NGX View Builder with design tokens: light and dark mode, overriding tokens to match your Angular app, and theming custom elements."
 ---
 
 # Theming & design tokens

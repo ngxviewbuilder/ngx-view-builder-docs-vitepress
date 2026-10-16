@@ -1,6 +1,6 @@
 ---
 title: JSON editor
-description: Edit the raw view definition when the visual editor is slower.
+description: "Edit the JSON view definition directly in the NGX View Builder designer: when it is faster than the canvas, how the structure looks and what is checked."
 ---
 
 # JSON editor

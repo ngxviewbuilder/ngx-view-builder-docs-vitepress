@@ -1,9 +1,11 @@
 ---
 title: Layout & containers
-description: Rows, columns, responsive widths, and how containers organise a view.
+description: "Rows, columns, responsive widths and containers in NGX View Builder: how a view is laid out on desktop, tablet and phone, and canvas pages for web pages."
 ---
 
 # Layout & containers
+
+<YouTubeVideo id="rrYSBcpJcZE" />
 
 ## Rows and columns
 
