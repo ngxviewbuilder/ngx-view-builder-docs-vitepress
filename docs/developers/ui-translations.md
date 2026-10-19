@@ -65,6 +65,7 @@ The official plugins use the same dictionaries, so a host translates them like t
 | --- | --- | --- |
 | `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` | `@ngxviewbuilder/plugin-logic-map` | the Logic map tab |
 | `NGX_VIEW_BUILDER_DOCS_UI_EN` | `@ngxviewbuilder/plugin-docs` | the Documentation tab and panel, the copied and downloaded table |
+| `NGX_VIEW_BUILDER_OPENAPI_UI_EN` | `@ngxviewbuilder/plugin-openapi` | the API tab and the API row of the data source editor |
 | `NGX_VIEW_BUILDER_SHARED_UI_EN` | `@ngxviewbuilder/plugin-shared` | the sentences about rules both plugins write, and the license notice |
 
 ```ts

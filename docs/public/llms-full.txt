@@ -7922,6 +7922,7 @@ Installed plugins can offer AI clients their own reads and commands. `listPlugin
 | --- | --- | --- |
 | `logicMap` ([Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
 | `documentation` ([Documentation](https://ngxviewbuilder.io/developers/plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+| `openApi` ([OpenAPI](https://ngxviewbuilder.io/developers/plugin-openapi)) | the application's REST endpoints, or one endpoint in full with a ready `dataSource` to add through `execute()` | none |
 
 A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](https://ngxviewbuilder.io/developers/plugin-development#letting-ai-clients-use-your-plugin)).
 
@@ -8525,7 +8526,8 @@ api.setRuntimeVariableDefinitions([
   { name: 'apiBase', sourceType: 'constant', constantValue: '/api/v2' },
 ], false);
 
-api.getData().__variables; // { route: {...}, clientId: '42', isEdit: true, apiBase: '/api/v2', ... }
+// __variables is an internal key, so getData() needs includeInternal to return it
+api.getData({ includeInternal: true }).__variables; // { route: {...}, clientId: '42', isEdit: true, apiBase: '/api/v2', ... }
 ```
 
 ### `getRuntimeVariableDefinitions()`
@@ -11986,7 +11988,7 @@ Letting an AI assistant work in the builder over MCP comes with the license, the
 
 ## Licensed plugins
 
-The [Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map) and the [Documentation](https://ngxviewbuilder.io/developers/plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
+The [Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map), [Documentation](https://ngxviewbuilder.io/developers/plugin-docs) and [OpenAPI](https://ngxviewbuilder.io/developers/plugin-openapi) plugins come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
 
 To know in your own code whether the key unlocks them, read `proAccess` on the designer's `LicenseService`. It is a signal that holds `'ready'` once the key checks out, `'checking'` while the check runs, and `'missing'`, `'invalid'` or `'expired'` otherwise:
 
@@ -12118,6 +12120,36 @@ featurePacks: [
 ```
 
 `elementTypes` limits it to some element types, `order` places it among the built-in categories (they use 10 to 90; the default is last). The Documentation plugin's panel is built this way.
+
+## A row in the data source editor
+
+`dataSourceEditorExtensions` adds a row to the data source editor, above the request fields. The component gets two inputs: `source`, the data source being edited, and `context`, which is how it changes that source:
+
+```ts
+featurePacks: [
+  {
+    id: 'acme-catalog',
+    dataSourceEditorExtensions: [
+      { id: 'catalog', label: 'acme.catalog.row', component: CatalogPicker, sourceTypes: ['rest'] },
+    ],
+  },
+],
+```
+
+```ts
+export class CatalogPicker {
+  source = input<IDataSource | null>(null);
+  context = input<INgxViewBuilderDataSourceEditorContext | null>(null);
+
+  pick(url: string): void {
+    this.context()?.apply({ params: { url, method: 'GET' } });
+  }
+}
+```
+
+`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`. It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
+
+`sourceTypes` limits the row to some source types (`rest`, `route`, `local`, `websocket`); `order` sorts the rows of several plugins. The OpenAPI plugin's endpoint search is built this way.
 
 ## Letting AI clients use your plugin
 
@@ -12336,6 +12368,116 @@ The plugin registers itself for AI clients as `logicMap` ([AI plugins](https://n
 - **show** opens the Logic map for the person with one element selected, while the model explains how it works.
 
 Both answer with a clear reason when the license key is missing.
+
+---
+
+## OpenAPI plugin
+
+Source: https://ngxviewbuilder.io/developers/plugin-openapi
+
+# OpenAPI plugin
+
+`@ngxviewbuilder/plugin-openapi` reads the OpenAPI description of your REST API and puts it where creators need it. It adds two things to the builder:
+
+- an **API** tab that lists every endpoint, grouped by tag, with its parameters, request body, response and an example answer, much like Swagger UI;
+- an **API** row in the data source editor, where a creator searches for an endpoint and the REST source takes its address, method and request body from your description.
+
+Creators no longer have to ask which URL returns the customer list or what a POST expects. How they use it is on the [API](https://ngxviewbuilder.io/creators/api) page.
+
+## Install
+
+```bash
+npm install @ngxviewbuilder/plugin-openapi
+```
+
+```ts
+import { provideNgxViewBuilderOpenApi } from '@ngxviewbuilder/plugin-openapi';
+
+providers: [
+  provideNgxViewBuilderOpenApi({
+    specs: [{ id: 'crm', url: '/api/openapi.json' }],
+  }),
+],
+```
+
+Each entry in `specs` is one API description:
+
+| Option | What it does |
+| --- | --- |
+| `id` | Stable id of the description. It is stored in every data source made from it, so keep it the same across releases. |
+| `url` | Where the OpenAPI document is loaded from. |
+| `document` | The document itself, instead of `url`, if you already have it in memory. |
+| `title` | Shown in the API tab. Defaults to `info.title` of the document. |
+| `baseUrl` | What goes in front of every path in a data source URL, for example `/api` or `https://api.example.com/v2`. Defaults to the first entry of `servers`. |
+
+Several descriptions are fine, one per service for example. The API tab then gets a filter to show one of them, and the search in the data source editor names the API next to each endpoint.
+
+The document is loaded once, when the builder first needs it, through your application's `HttpClient`. Your interceptors run for that request, so a description behind authentication works the same way your other API calls do. Without `HttpClient` the plugin falls back to `fetch`.
+
+A relative `servers` URL is resolved against the document's address. When that ends up on the builder's own origin, the origin is dropped again, so a data source stores `/api/customers` rather than `https://localhost:4200/api/customers` and keeps working wherever the view is deployed.
+
+### What it reads
+
+OpenAPI 3.0 and 3.1 in JSON. `$ref` inside the document is followed, `allOf` is merged into one schema, `oneOf` and `anyOf` are shown as alternatives, and 3.1 types such as `["string", "null"]` are read as a nullable string. A schema that refers to itself is shown once and not expanded further.
+
+Not supported yet: YAML documents, Swagger 2.0 (convert it to OpenAPI 3 first) and `$ref` to other files. The API tab says so when a description cannot be read, with the reason.
+
+## What a data source gets
+
+When a creator picks an endpoint, the source is filled in like this:
+
+| Field | Comes from |
+| --- | --- |
+| **Url** | `baseUrl` plus the path. Path parameters stay as placeholders, `/customers/{id}`, and required query parameters are added the same way, `?status={status}`. |
+| **Method** | The operation's method. |
+| **Request body** | For `POST`, `PUT` and `PATCH`: every field the request schema accepts, with read-only fields left out. A field whose path matches a field of the view is bound to it as `{name}` (`{address.city}` inside an object panel). The others get an empty value of their type, ready to be filled in or removed in the body builder. |
+| **Name** and **Title** | The `operationId` and the `summary`, but only when the source still has the name and title the editor gave it. A name someone typed is kept. |
+
+The source also remembers where it came from:
+
+```json
+"params": {
+  "url": "/api/customers/{id}",
+  "method": "GET",
+  "openApi": { "specId": "crm", "operationId": "getCustomer", "method": "GET", "path": "/customers/{id}" }
+}
+```
+
+The runtime ignores `openApi`: these are plain REST sources, and a view keeps working without the plugin installed. The builder uses the link to show the endpoint next to the source, and to warn when the description no longer has that operation.
+
+The plugin does not change how a response is read. It does tell the creator where the rows are when a list comes wrapped, `{ "items": [...], "total": 120 }` for example, so they can set the element's **Items path**, and which fields suit an option's value and label.
+
+## Try it
+
+The API tab can send a request for a `GET` endpoint, with fields for its path and query parameters, and shows the status, the time it took and the answer. It goes through your `HttpClient` as well. Other methods are only described, never sent from the tab, so browsing the API cannot change data on your server.
+
+## License
+
+The tab and the data source row work with a genuine, unexpired license key in the builder settings, the same rule as the other [licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins). Without one they show what is missing and where the key goes. Data sources made with the plugin keep working at runtime with or without a key, because the runtime does not need the plugin at all.
+
+## Translations
+
+Every text follows the builder's language. The English texts are in `NGX_VIEW_BUILDER_OPENAPI_UI_EN`; give the same keys in another language to translate them. See [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## AI clients
+
+The plugin registers itself for AI clients as `openApi` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)), so a model wires a data source to an endpoint that exists instead of guessing a URL:
+
+- **read** without a query lists the endpoints with method, path, summary and tags. `{ "search": "customer" }` narrows the list.
+- **read** with `{ "operationId": "createCustomer" }` returns that endpoint in full: parameters, request and response fields, an example answer, where the rows are, and a ready `dataSource` object built the same way the data source editor builds one.
+
+The model adds that data source to the view through `execute()`, as it does any other change, so the creator can undo it in one step. The plugin itself never changes the view.
+
+## Your own tooling
+
+The parser is exported, if you want the same view of an API in a script or a test:
+
+```ts
+import { buildOpenApiCatalog } from '@ngxviewbuilder/plugin-openapi';
+
+const catalog = buildOpenApiCatalog(document, { id: 'crm' }, '/api/openapi.json');
+catalog.operations.forEach((operation) => console.log(operation.method, operation.path, operation.operationId));
+```
 
 ---
 
@@ -12638,8 +12780,9 @@ providers: [ provideNgxViewBuilderTemplates() ],
 | `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
 | `@ngxviewbuilder/plugin-logic-map` | `provideNgxViewBuilderLogicMap()` | The **Logic map** tab: every condition, calculation, event and data source of the view on one canvas, with what drives what and what needs attention ([creators](https://ngxviewbuilder.io/creators/logic-map), [reference](https://ngxviewbuilder.io/developers/plugin-logic-map)) |
 | `@ngxviewbuilder/plugin-docs` | `provideNgxViewBuilderDocs({ storage })` | Field documentation: a **Documentation** section in the Properties panel and a **Documentation** tab with a field reference ready for Confluence, kept apart from the view JSON ([creators](https://ngxviewbuilder.io/creators/documentation), [reference](https://ngxviewbuilder.io/developers/plugin-docs)) |
+| `@ngxviewbuilder/plugin-openapi` | `provideNgxViewBuilderOpenApi({ specs })` | Your OpenAPI description in the builder: an **API** tab that lists every endpoint like Swagger UI, and an endpoint search in the data source editor that fills in the URL, method and request body ([creators](https://ngxviewbuilder.io/creators/api), [reference](https://ngxviewbuilder.io/developers/plugin-openapi)) |
 
-The Logic map and the Documentation plugin need a license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)); the Templates plugin does not. Both install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
+The Logic map, Documentation and OpenAPI plugins need a license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)); the Templates plugin does not. They install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
 
 Every plugin text follows the builder's language; see [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
 
@@ -12649,7 +12792,7 @@ Builder, Preview and JSON Editor always come first in the header. Plugin tabs fo
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections).
+A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections and rows in the data source editor).
 
 Removing a plugin removes everything it added: the core holds only the generic places a plugin plugs into, never the plugin's own code. Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 
@@ -12954,6 +13097,8 @@ Deploying the library before the views that depend on it avoids the situation en
 
 Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
 
+The version is the library's schema version, the same number for everyone. Your migrations do not get a counter of their own: a migration with `from: 1` joins the library's own step from 1 to 2 and runs with it. That means it only runs when a view saved at version 1 is opened by a runtime that speaks version 2 or later. The current runtime speaks version 1 (`StructureMigrationService.currentVersion`), so today a migration registered for `from: 1` is accepted but never called. Register it now and it starts working on the release that moves the schema forward.
+
 ```ts
 import { IStructureMigration } from '@ngxviewbuilder/runtime';
 
@@ -12984,6 +13129,26 @@ migrate: (structure) => ({
 ```
 
 Warnings reach you through `onMigrated` and through `StructureMigrationService.inspect()`.
+
+### Changing your own format before the schema moves
+
+When you rename a property of your own element while the library is still on the same schema version, there is no step for a migration to join. Convert the stored JSON yourself on the way in, before it reaches the library:
+
+```ts
+function upgradeSprCards(structure: IStructure): IStructure {
+  Object.values(structure.elements ?? {}).forEach((element: any) => {
+    if (element?.type === 'sprCard' && element.text !== undefined) {
+      element.body = element.text;
+      delete element.text;
+    }
+  });
+  return structure;
+}
+
+const model = new BuilderModel(upgradeSprCards(storedJson));
+```
+
+Do the same before `[pageJson]` and `setStructure()`. Write the function so it can run on JSON that is already converted, as above, because it runs on every load. Saving the view from the builder afterwards stores the new format, after which the function has nothing left to do.
 
 ## Inspecting without loading
 
@@ -13387,6 +13552,8 @@ itself, not on a wrapper around it.
 ```ts
 lang = signal('lt');
 
+emailConfig = { name: 'email', label: 'Email', placeholder: 'jane@company.com' };
+
 texts = {
   lt: {
     'elements.email.label': 'El. paštas',
@@ -13395,8 +13562,10 @@ texts = {
 };
 ```
 
-Keys are structure paths, the same ones the builder exports. Anything without a translation
-keeps the text from the configuration, so a partial dictionary is fine.
+Keys are structure paths, the same ones the builder exports. A translation replaces a text the
+configuration has, so the placeholder above needs a `placeholder` in `emailConfig` to translate.
+Anything without a translation keeps the text from the configuration, so a partial dictionary
+is fine.
 
 ## Two independent forms on one screen
 
@@ -14112,6 +14281,7 @@ The official plugins use the same dictionaries, so a host translates them like t
 | --- | --- | --- |
 | `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` | `@ngxviewbuilder/plugin-logic-map` | the Logic map tab |
 | `NGX_VIEW_BUILDER_DOCS_UI_EN` | `@ngxviewbuilder/plugin-docs` | the Documentation tab and panel, the copied and downloaded table |
+| `NGX_VIEW_BUILDER_OPENAPI_UI_EN` | `@ngxviewbuilder/plugin-openapi` | the API tab and the API row of the data source editor |
 | `NGX_VIEW_BUILDER_SHARED_UI_EN` | `@ngxviewbuilder/plugin-shared` | the sentences about rules both plugins write, and the license notice |
 
 ```ts
@@ -14284,6 +14454,54 @@ Give every value-producing element a short, stable name like `firstName` or `del
 | Validate user input | [Validation](https://ngxviewbuilder.io/creators/validation) |
 
 Or open the [live demo](https://ngxviewbuilder.io/demo) from the **Demo** link in the top menu and explore as you read.
+
+---
+
+## API
+
+Source: https://ngxviewbuilder.io/creators/api
+
+# API
+
+When your developers describe their REST API with OpenAPI, the builder can read that description for you. You see every endpoint the application offers, what it expects and what it answers, and you connect a form to one of them without asking anybody for a URL.
+
+It comes with the OpenAPI plugin and needs a license key in the builder settings (see [Licensing](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)). Without one, the tab says what is missing.
+
+## The API tab
+
+The left side lists the endpoints, grouped the way the API groups them (Customers, Orders, Lookups, and so on). Each line shows the method, the path and a short description. Search finds an endpoint by any word of its path, name or group, and the method buttons above the list hide or show `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
+
+Click an endpoint to see it on the right:
+
+| Section | What it tells you |
+| --- | --- |
+| **Parameters** | The values that go into the address. `{id}` in the path is a path parameter, the others are added after a `?`. A red star marks the required ones. |
+| **Request body** | The fields a `POST`, `PUT` or `PATCH` sends, with their types. A field inside another field is indented under it. |
+| **Response** | What comes back. **Example** shows a made-up answer with the right shape, **Schema** lists every field with its type. |
+| **Try it** | For `GET` endpoints only: fill in the parameters, send the request and see the real answer. Nothing that changes data can be sent from here. |
+
+**Use as data source** adds a data source for the endpoint to the view you are editing. It appears in the **Data sources** tab below the canvas, named after the endpoint, for example `listCustomers`.
+
+## Picking an endpoint in a data source
+
+In the **Data sources** tab, a REST source has an **API** row above the request. Type a few letters, such as `customer` or `orders`, and pick the endpoint from the list. The source takes from it:
+
+- the **Url**, with `{placeholders}` for the values the address needs, such as `/api/customers/{id}`,
+- the **Method**,
+- for `POST`, `PUT` and `PATCH`, a **Request body** with every field the API accepts.
+
+The body is a starting point. Fields named like a field of your form are already bound to it: if the form has an `email` field, the body says `"email": "{email}"`. The rest are empty. Click **Choose body fields** to open the visual builder (the same one as **Build visually**), keep what you need, bind the rest to form fields and remove what you do not send. See [Building JSON without typing it](https://ngxviewbuilder.io/creators/data-sources#building-json-without-typing-it).
+
+Under the endpoint the row also tells you what to do with the answer:
+
+- **The rows are in "items"** means the list comes wrapped in an object. Put `items` in the **Items path** of the table, list or dropdown that shows them.
+- **"id" works as the value and "name" as the label** names the fields to use when a dropdown loads its options from this source.
+
+**Pick another endpoint** replaces it, **Show in API tab** opens the endpoint's description, and **Unlink** forgets which endpoint the source came from while keeping its URL and body.
+
+If the API later drops an endpoint a source was made from, the row says so, and you know that source needs a new endpoint before the form breaks.
+
+A name or title you gave the source yourself is never replaced. Only the automatic ones, such as `source3` and "Source 3", take the endpoint's name.
 
 ---
 
@@ -14611,6 +14829,8 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 | **Method** | `GET`, `POST`, `PUT`, `PATCH` or `DELETE`, picked in the request bar next to the URL. When a **Table** loads from a `POST` source, a switch **Send the table's paging, sorting and filters** appears: turned on, the request still goes out as a `POST`, with the current page, sort and search state added to the body. Ask your developer to read [Table: server-side paging & filtering](https://ngxviewbuilder.io/developers/data-sources#table-server-side-paging-filtering-table-post) for the exact shape. |
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
+
+With the OpenAPI plugin, an **API** row above the request lets you pick the endpoint from your application's API instead of typing it, and fills in the URL, method and body for you. See [API](https://ngxviewbuilder.io/creators/api).
 
 `{placeholders}` are filled from the request params you map on the element or action. If a required placeholder has no value yet, the request is skipped: a city list bound to `{countryId}` stays empty until a country is picked.
 

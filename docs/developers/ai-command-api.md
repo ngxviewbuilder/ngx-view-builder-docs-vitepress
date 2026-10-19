@@ -448,6 +448,7 @@ Installed plugins can offer AI clients their own reads and commands. `listPlugin
 | --- | --- | --- |
 | `logicMap` ([Logic map](./plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
 | `documentation` ([Documentation](./plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+| `openApi` ([OpenAPI](./plugin-openapi)) | the application's REST endpoints, or one endpoint in full with a ready `dataSource` to add through `execute()` | none |
 
 A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](./plugin-development#letting-ai-clients-use-your-plugin)).
 

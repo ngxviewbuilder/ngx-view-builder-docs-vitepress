@@ -26,6 +26,8 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 | **Request body (optional)** | JSON template with `{…}` placeholders. Example: `{"rows":"{__table.el1.selectedRows}"}`. Use `{id}` style tokens for the URL and `{__table.el1.selectedRows}` style paths in the body. |
 | **Data path** | Where the useful data lives in the response (e.g. `data.items`). |
 
+With the OpenAPI plugin, an **API** row above the request lets you pick the endpoint from your application's API instead of typing it, and fills in the URL, method and body for you. See [API](./api).
+
 `{placeholders}` are filled from the request params you map on the element or action. If a required placeholder has no value yet, the request is skipped: a city list bound to `{countryId}` stays empty until a country is picked.
 
 ### Route data

@@ -384,6 +384,8 @@ itself, not on a wrapper around it.
 ```ts
 lang = signal('lt');
 
+emailConfig = { name: 'email', label: 'Email', placeholder: 'jane@company.com' };
+
 texts = {
   lt: {
     'elements.email.label': 'El. paštas',
@@ -392,8 +394,10 @@ texts = {
 };
 ```
 
-Keys are structure paths, the same ones the builder exports. Anything without a translation
-keeps the text from the configuration, so a partial dictionary is fine.
+Keys are structure paths, the same ones the builder exports. A translation replaces a text the
+configuration has, so the placeholder above needs a `placeholder` in `emailConfig` to translate.
+Anything without a translation keeps the text from the configuration, so a partial dictionary
+is fine.
 
 ## Two independent forms on one screen
 
