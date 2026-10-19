@@ -51,6 +51,15 @@ export class BuilderPageComponent {
 
 `BuilderModel` wraps the structure: `setJson(jsonString)`, `getJson(): IStructure`, plus `setDataJson`/`getDataJson` for preview data. An empty model starts with one blank page.
 
+The view does not have to be there when the builder starts. When it comes from your backend, call `setJson()` once it arrives, or hand the builder a new `BuilderModel`; the canvas loads it and undo starts from it:
+
+```ts
+ngOnInit(): void {
+  this.http.get('/api/views/order-form', { responseType: 'text' })
+    .subscribe((json) => this.builderModel.setJson(json));
+}
+```
+
 ## Inputs
 
 | Input | Type | Purpose |

@@ -38,10 +38,12 @@ A component with no visible UI that loads a structure + data, runs the full runt
 | --- | --- | --- |
 | `pageJson` / `dataJson` | - | Structure and data to validate |
 | `autoValidateOnInit` | `true` | Validate immediately |
-| `backendUrl` / `validatePath` | `http://127.0.0.1:8010` / `/validate` | Remote validation endpoint mode |
+| `backendUrl` / `validatePath` | none / `/validate` | Set either one to a full url to post to your own validation endpoint instead |
 | `waitMs` / `timeoutMs` | `300` / `45000` | Stabilisation delay and timeout |
 | `headlessApiKey` | `__NGX_VIEW_BUILDER__` | Global API key for headless drivers |
 | `sessionHeaderName` / `sessionKey` / `requestHeaders` | - | Auth headers for the remote mode |
+
+Without `backendUrl` the component validates in the page with the same rules the runtime uses, which is what you want in almost every case. Before 0.12.3 it posted to `http://127.0.0.1:8010/validate` unless told otherwise; pass `backendUrl` if you relied on that.
 
 You can also call `validate()` on the component instance for on-demand runs.
 
@@ -56,7 +58,15 @@ inject(ForgeInitializerService).load({
 });
 ```
 
-The driver (Playwright, Puppeteer…) can then invoke validation through `window.__NGX_VIEW_BUILDER__`.
+The driver (Playwright, Puppeteer...) can then invoke validation through `window.__NGX_VIEW_BUILDER__`:
+
+```ts
+const result = await page.evaluate(
+  ([structure, data]) => window.__NGX_VIEW_BUILDER__.validateData(structure, data),
+  [structure, data],
+);
+// { isValid, issues: [{ elementName, dataPath, errors }] }
+```
 
 ## Why server-side validation matters
 
