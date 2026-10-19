@@ -2854,7 +2854,7 @@ Prefer one aggregate over repeated accumulation. `setValue({var1}, sumArray({el1
 
 ### 9.1 Every source type
 
-`dataSources[*]` is `{ name, title, type, params }`, where `params` differs per `type`. `type` is `rest`, `local`, `route` or `websocket`.
+`dataSources[*]` is `{ name, title, type, params }`, where `params` differs per `type`. `type` is `rest`, `local`, `route`, `websocket` or `sse` (an event stream).
 
 ```json
 {
