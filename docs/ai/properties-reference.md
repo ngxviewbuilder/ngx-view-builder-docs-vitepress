@@ -756,7 +756,7 @@ Only include settings actually needed by the form.
 
 ## `IDataSource` fields (top-level dataSources array)
 
-`{ name, title, type, params }`. `type` is one of `rest` `local` `route` `websocket`, and `params` is a plain object whose keys depend on that type.
+`{ name, title, type, params }`. `type` is one of `rest` `local` `route` `websocket` `sse`, and `params` is a plain object whose keys depend on that type. `websocket` and `sse` are live: they stay connected and update the view on every message.
 
 ```json
 {
@@ -781,7 +781,11 @@ Only include settings actually needed by the form.
 
     { "name": "ds7", "title": "Live feed", "type": "websocket",
       "params": { "url": "wss://host/feed", "protocols": "", "message": "{}",
-                  "messagePath": "payload", "messageMode": "pushValuesInArray" } }
+                  "messagePath": "payload", "messageMode": "pushValuesInArray" } },
+
+    { "name": "ds8", "title": "Order progress", "type": "sse",
+      "params": { "url": "/api/orders/{orderId}/events", "events": "order.updated",
+                  "messagePath": "", "messageMode": "replaceCurrent" } }
   ]
 }
 ```
@@ -792,6 +796,7 @@ Only include settings actually needed by the form.
 | `local` | `localMode` (`json` or `dataPath`), then `dataJson` (a JSON **string**) and `dataFunction`, or `dataPath` |
 | `route` | `routeDataKey`, `routeDataPath` |
 | `websocket` | `url`, `protocols`, `message`, `messagePath`, `messageMode` (`replaceCurrent` or `pushValuesInArray`) |
+| `sse` | `url` (a text/event-stream endpoint), `events` (comma separated event types, empty for all), `messagePath`, `messageMode` (`replaceCurrent` or `pushValuesInArray`). Listen only: nothing is sent back, so a `sendMessage` action does not apply. |
 
 URL and body templates use **single** braces: `{el1}`, `{row.id}`, `{__variables.tenantId}`.
 

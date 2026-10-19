@@ -126,7 +126,7 @@ export class CatalogPicker {
 }
 ```
 
-`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`. It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
+`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`, and a `type` to switch the source to (ignored when the builder does not offer that type). It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
 
 `sourceTypes` limits the row to some source types (`rest`, `route`, `local`, `websocket`); `order` sorts the rows of several plugins. The OpenAPI plugin's endpoint search is built this way.
 

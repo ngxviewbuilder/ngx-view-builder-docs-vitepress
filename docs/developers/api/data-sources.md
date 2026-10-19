@@ -13,6 +13,7 @@ description: Reload data sources, add host sources to every view, authorize webs
 | [`setDefaultDataSources(sources, overwrite?)`](#setdefaultdatasources) | `void` | Add host sources to every view |
 | [`setDataSourceTypeSettings` / `getDataSourceTypeSettings`](#setdatasourcetypesettings-getdatasourcetypesettings) | `void` / settings | Switch optional source types on |
 | [`setWebsocketAuthorizer(fn)`](#setwebsocketauthorizer) | `void` | Put credentials on websocket connections |
+| [`setEventStreamAuthorizer(fn)`](#seteventstreamauthorizer) | `void` | Put headers or a different url on event streams |
 | [`setRuntimeVariableContext(values, merge?)`](#setruntimevariablecontext) | `void` | The `{__external.*}` context |
 | [`getRuntimeVariableContext` / `clearRuntimeVariableContext`](#getruntimevariablecontext-clearruntimevariablecontext) | object / `void` | Read or clear it |
 | [`setRuntimeVariableDefinitions(defs, replace?)`](#setruntimevariabledefinitions) | `void` | Define `{__variables.*}` |
@@ -85,15 +86,15 @@ api.getStructure()?.dataSources?.map((s) => s.name);
 ### `setDataSourceTypeSettings()` / `getDataSourceTypeSettings()`
 
 ```ts
-setDataSourceTypeSettings(settings: { enableWebsocket?: boolean }): void
-getDataSourceTypeSettings(): { enableWebsocket?: boolean }
+setDataSourceTypeSettings(settings: { enableWebsocket?: boolean; enableEventStream?: boolean }): void
+getDataSourceTypeSettings(): { enableWebsocket?: boolean; enableEventStream?: boolean }
 ```
 
 Optional source types creators may pick in the builder. Fires `onDataSourceTypeSettingsChanged`.
 
 ```ts
-api.setDataSourceTypeSettings({ enableWebsocket: true });
-api.getDataSourceTypeSettings(); // { enableWebsocket: true }
+api.setDataSourceTypeSettings({ enableWebsocket: true, enableEventStream: true });
+api.getDataSourceTypeSettings(); // { enableWebsocket: true, enableEventStream: true }
 ```
 
 ### `setWebsocketAuthorizer()`
@@ -113,6 +114,24 @@ api.setWebsocketAuthorizer(async ({ url }) => {
 ```
 
 See [WebSocket security](../data-sources#security-authorizing-the-connection).
+
+### `setEventStreamAuthorizer()` <Badge type="warning" text="Experimental" /> {#seteventstreamauthorizer}
+
+```ts
+setEventStreamAuthorizer(authorizer: (context: { sourceName: string; url: string }) =>
+  { url?: string; headers?: Record<string, string>; withCredentials?: boolean } | null | undefined
+  | Promise<{ url?: string; headers?: Record<string, string>; withCredentials?: boolean } | null | undefined> | null): void
+```
+
+Runs before every event stream connection and reconnection. Unlike a WebSocket, a stream can carry headers, so this is where a token goes.
+
+```ts
+api.setEventStreamAuthorizer(async () => ({
+  headers: { Authorization: `Bearer ${await this.auth.getFreshToken()}` },
+}));
+```
+
+See [Event stream security](../data-sources#security-authorizing-the-stream).
 
 ## Runtime variables
 

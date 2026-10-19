@@ -46,7 +46,7 @@ A relative `servers` URL is resolved against the document's address. When that e
 
 ### What it reads
 
-OpenAPI 3.0 and 3.1 in JSON. `$ref` inside the document is followed, `allOf` is merged into one schema, `oneOf` and `anyOf` are shown as alternatives, and 3.1 types such as `["string", "null"]` are read as a nullable string. A schema that refers to itself is shown once and not expanded further.
+OpenAPI 3.0, 3.1 and 3.2, and AsyncAPI 3, in JSON. `$ref` inside the document is followed, `allOf` is merged into one schema, `oneOf` and `anyOf` are shown as alternatives, and 3.1 types such as `["string", "null"]` are read as a nullable string. A schema that refers to itself is shown once and not expanded further.
 
 Not supported yet: YAML documents, Swagger 2.0 (convert it to OpenAPI 3 first) and `$ref` to other files. The API tab says so when a description cannot be read, with the reason.
 
@@ -74,6 +74,36 @@ The source also remembers where it came from:
 The runtime ignores `openApi`: these are plain REST sources, and a view keeps working without the plugin installed. The builder uses the link to show the endpoint next to the source, and to warn when the description no longer has that operation.
 
 The plugin does not change how a response is read. It does tell the creator where the rows are when a list comes wrapped, `{ "items": [...], "total": 120 }` for example, so they can set the element's **Items path**, and which fields suit an option's value and label.
+
+## Live endpoints: event streams and WebSockets <Badge type="warning" text="Experimental" /> {#live-endpoints-event-streams-and-websockets}
+
+Built on the [live sources](./data-sources#event-stream-sources-server-sent-events), which are experimental: the parts below may change in a minor release.
+
+
+An operation whose response is `text/event-stream` is listed as an **SSE** endpoint. With OpenAPI 3.2 `itemSchema`, the plugin reads the event names from `event` (`const` or `enum`) and the message from `data` (its `contentSchema`):
+
+```json
+"responses": { "200": { "content": { "text/event-stream": { "itemSchema": {
+  "type": "object",
+  "properties": {
+    "event": { "const": "order.updated" },
+    "data": { "type": "string", "contentMediaType": "application/json", "contentSchema": { "$ref": "#/components/schemas/OrderUpdate" } }
+  }
+} } } } }
+```
+
+OpenAPI cannot describe WebSocket messages, so a WebSocket API comes as an **AsyncAPI 3** document in the same `specs` list. Each channel on a `ws` or `wss` server becomes a **WS** endpoint: the messages your application sends are what the source receives, and a message it receives becomes the source's connect message, built from the schema like a request body.
+
+```ts
+provideNgxViewBuilderOpenApi({
+  specs: [
+    { id: 'crm', url: '/api/openapi.json' },
+    { id: 'crm-live', url: '/api/asyncapi.json' },
+  ],
+});
+```
+
+A server on the builder's own host is stored as a path (`/api/ws/orders`), which the runtime turns into `wss://` on a secure page. Picking a live endpoint switches the data source to the matching type. Live endpoints appear only where the builder enables those types (`enableEventStream`, `enableWebsocket`), and Try it never opens them.
 
 ## Try it
 

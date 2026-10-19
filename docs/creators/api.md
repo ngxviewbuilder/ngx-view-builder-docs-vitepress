@@ -22,6 +22,8 @@ Click an endpoint to see it on the right:
 | **Response** | What comes back. **Example** shows a made-up answer with the right shape, **Schema** lists every field with its type. |
 | **Try it** | For `GET` endpoints only: fill in the parameters, send the request and see the real answer. Nothing that changes data can be sent from here. |
 
+Endpoints marked **SSE** and **WS** are live: the server keeps sending to them. Picking one makes an [event stream or WebSocket source](./data-sources#event-stream), and their **Message** section shows what each update looks like. Try it does not open them; watch them in the Preview.
+
 **Use as data source** adds a data source for the endpoint to the view you are editing. It appears in the **Data sources** tab below the canvas, named after the endpoint, for example `listCustomers`.
 
 ## Picking an endpoint in a data source

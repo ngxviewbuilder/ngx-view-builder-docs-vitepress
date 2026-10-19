@@ -73,6 +73,24 @@ api.setCustomTheme({
 
 `runtimeSettings.customTheme` accepts the same object at bootstrap.
 
+## Motion
+
+The builder and the runtime move a little where it explains a change: an element dropped on the canvas settles into place, dialogs and menus fade in, a validation message or a new table row appears instead of popping, a toast slides in. Everything takes 120 to 180 ms and animates only opacity and position, so large forms are not slowed down.
+
+| Token | Default | Used for |
+| --- | --- | --- |
+| `--nvb-motion-duration-fast` | `120ms` | messages, menus, backdrops |
+| `--nvb-motion-duration` | `180ms` | dialogs, drops, toasts, added rows |
+| `--nvb-motion-easing` | `cubic-bezier(0.2, 0, 0, 1)` | all of them |
+
+Set both durations to `0ms` to turn motion off, for example in end-to-end tests that take screenshots:
+
+```ts
+api.setCssVariables({ '--nvb-motion-duration-fast': '0ms', '--nvb-motion-duration': '0ms' });
+```
+
+A person who asks their system for reduced motion gets it off without anything from you.
+
 ## Custom elements & theming
 
 Write custom element styles against the tokens and they follow every theme automatically:
