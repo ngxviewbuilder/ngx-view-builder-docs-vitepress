@@ -50,8 +50,9 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 - [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development): Build your own NGX View Builder plugin: a designer tab, a properties panel section, AI client access, translations and packaging as an npm library.
 - [Documentation plugin](https://ngxviewbuilder.io/developers/plugin-docs): Field documentation kept apart from the view JSON, its storage on your server, the document format and AI access.
 - [Logic map plugin](https://ngxviewbuilder.io/developers/plugin-logic-map): Install the Logic map tab, its license rule, translations and what AI clients can do with it.
+- [OpenAPI plugin](https://ngxviewbuilder.io/developers/plugin-openapi): Install the OpenAPI plugin: an API tab that browses your REST API like Swagger and an endpoint search that fills in data sources from your OpenAPI description.
 - [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates): Full syntax reference for the Templates plugin  control flow, translations, click actions  plus how to persist templates to your own database.
-- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official plugins (Templates, Logic map, Documentation) and how the plugin system works.
+- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official plugins (Templates, Logic map, Documentation, OpenAPI) and how the plugin system works.
 - [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved NGX View Builder views in your Angular app with the runtime component: inputs, getting data out, programmatic control and render modes.
 - [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Pass route parameters, user context and derived values into NGX View Builder views with runtime variables, for example in a route-driven edit form.
 - [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning): How stored views survive library upgrades, what schemaVersion means, and how to add your own migrations.
@@ -65,6 +66,7 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 ## Creator documentation
 
 - [Angular form builder for creators](https://ngxviewbuilder.io/creators/): Build Angular forms, dashboards, and data views without writing code. Drag elements onto a canvas, set their properties in a sidebar, and save the result as JSON.
+- [API](https://ngxviewbuilder.io/creators/api): Browse your application's REST API in the NGX View Builder API tab and turn an endpoint into a data source with its URL, method and request body filled in.
 - [Calculated values](https://ngxviewbuilder.io/creators/calculated-values): Expression and Default value, for computing field values from other fields.
 - [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): Copy-paste expression patterns for NGX View Builder: conditions, if/else, sums over table rows, dates, writing values and placeholders in text.
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.

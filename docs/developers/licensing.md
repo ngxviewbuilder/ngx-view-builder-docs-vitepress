@@ -82,7 +82,7 @@ Letting an AI assistant work in the builder over MCP comes with the license, the
 
 ## Licensed plugins
 
-The [Logic map](./plugin-logic-map) and the [Documentation](./plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
+The [Logic map](./plugin-logic-map), [Documentation](./plugin-docs) and [OpenAPI](./plugin-openapi) plugins come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
 
 To know in your own code whether the key unlocks them, read `proAccess` on the designer's `LicenseService`. It is a signal that holds `'ready'` once the key checks out, `'checking'` while the check runs, and `'missing'`, `'invalid'` or `'expired'` otherwise:
 

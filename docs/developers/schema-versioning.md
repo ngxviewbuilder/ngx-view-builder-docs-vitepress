@@ -91,6 +91,8 @@ Deploying the library before the views that depend on it avoids the situation en
 
 Custom elements and custom properties are yours, so their format changes are yours to handle. A migration reads one version and always produces the next one.
 
+The version is the library's schema version, the same number for everyone. Your migrations do not get a counter of their own: a migration with `from: 1` joins the library's own step from 1 to 2 and runs with it. That means it only runs when a view saved at version 1 is opened by a runtime that speaks version 2 or later. The current runtime speaks version 1 (`StructureMigrationService.currentVersion`), so today a migration registered for `from: 1` is accepted but never called. Register it now and it starts working on the release that moves the schema forward.
+
 ```ts
 import { IStructureMigration } from '@ngxviewbuilder/runtime';
 
@@ -121,6 +123,26 @@ migrate: (structure) => ({
 ```
 
 Warnings reach you through `onMigrated` and through `StructureMigrationService.inspect()`.
+
+### Changing your own format before the schema moves
+
+When you rename a property of your own element while the library is still on the same schema version, there is no step for a migration to join. Convert the stored JSON yourself on the way in, before it reaches the library:
+
+```ts
+function upgradeSprCards(structure: IStructure): IStructure {
+  Object.values(structure.elements ?? {}).forEach((element: any) => {
+    if (element?.type === 'sprCard' && element.text !== undefined) {
+      element.body = element.text;
+      delete element.text;
+    }
+  });
+  return structure;
+}
+
+const model = new BuilderModel(upgradeSprCards(storedJson));
+```
+
+Do the same before `[pageJson]` and `setStructure()`. Write the function so it can run on JSON that is already converted, as above, because it runs on every load. Saving the view from the builder afterwards stores the new format, after which the function has nothing left to do.
 
 ## Inspecting without loading
 

@@ -157,7 +157,8 @@ api.setRuntimeVariableDefinitions([
   { name: 'apiBase', sourceType: 'constant', constantValue: '/api/v2' },
 ], false);
 
-api.getData().__variables; // { route: {...}, clientId: '42', isEdit: true, apiBase: '/api/v2', ... }
+// __variables is an internal key, so getData() needs includeInternal to return it
+api.getData({ includeInternal: true }).__variables; // { route: {...}, clientId: '42', isEdit: true, apiBase: '/api/v2', ... }
 ```
 
 ### `getRuntimeVariableDefinitions()`

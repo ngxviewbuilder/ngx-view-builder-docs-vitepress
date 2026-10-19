@@ -100,6 +100,36 @@ featurePacks: [
 
 `elementTypes` limits it to some element types, `order` places it among the built-in categories (they use 10 to 90; the default is last). The Documentation plugin's panel is built this way.
 
+## A row in the data source editor
+
+`dataSourceEditorExtensions` adds a row to the data source editor, above the request fields. The component gets two inputs: `source`, the data source being edited, and `context`, which is how it changes that source:
+
+```ts
+featurePacks: [
+  {
+    id: 'acme-catalog',
+    dataSourceEditorExtensions: [
+      { id: 'catalog', label: 'acme.catalog.row', component: CatalogPicker, sourceTypes: ['rest'] },
+    ],
+  },
+],
+```
+
+```ts
+export class CatalogPicker {
+  source = input<IDataSource | null>(null);
+  context = input<INgxViewBuilderDataSourceEditorContext | null>(null);
+
+  pick(url: string): void {
+    this.context()?.apply({ params: { url, method: 'GET' } });
+  }
+}
+```
+
+`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`. It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
+
+`sourceTypes` limits the row to some source types (`rest`, `route`, `local`, `websocket`); `order` sorts the rows of several plugins. The OpenAPI plugin's endpoint search is built this way.
+
 ## Letting AI clients use your plugin
 
 `NgxViewBuilderAiPluginRegistryService` lets a plugin tell AI clients what it offers. A plugin has an `id`, a `description` the model reads, an optional `query` description, a `read(query)` function and a list of `commands`, each with `params`, an `example` and a `run(args)`:

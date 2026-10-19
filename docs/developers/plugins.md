@@ -1,6 +1,6 @@
 ---
 title: Using plugins
-description: The official plugins (Templates, Logic map, Documentation) and how the plugin system works.
+description: The official plugins (Templates, Logic map, Documentation, OpenAPI) and how the plugin system works.
 ---
 
 # Using plugins
@@ -24,8 +24,9 @@ providers: [ provideNgxViewBuilderTemplates() ],
 | `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](../creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](./plugin-templates) |
 | `@ngxviewbuilder/plugin-logic-map` | `provideNgxViewBuilderLogicMap()` | The **Logic map** tab: every condition, calculation, event and data source of the view on one canvas, with what drives what and what needs attention ([creators](../creators/logic-map), [reference](./plugin-logic-map)) |
 | `@ngxviewbuilder/plugin-docs` | `provideNgxViewBuilderDocs({ storage })` | Field documentation: a **Documentation** section in the Properties panel and a **Documentation** tab with a field reference ready for Confluence, kept apart from the view JSON ([creators](../creators/documentation), [reference](./plugin-docs)) |
+| `@ngxviewbuilder/plugin-openapi` | `provideNgxViewBuilderOpenApi({ specs })` | Your OpenAPI description in the builder: an **API** tab that lists every endpoint like Swagger UI, and an endpoint search in the data source editor that fills in the URL, method and request body ([creators](../creators/api), [reference](./plugin-openapi)) |
 
-The Logic map and the Documentation plugin need a license key in the builder settings ([Licensed plugins](./licensing#licensed-plugins)); the Templates plugin does not. Both install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
+The Logic map, Documentation and OpenAPI plugins need a license key in the builder settings ([Licensed plugins](./licensing#licensed-plugins)); the Templates plugin does not. They install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
 
 Every plugin text follows the builder's language; see [Translating the plugins](./ui-translations#translating-the-plugins).
 
@@ -35,7 +36,7 @@ Builder, Preview and JSON Editor always come first in the header. Plugin tabs fo
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections).
+A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections and rows in the data source editor).
 
 Removing a plugin removes everything it added: the core holds only the generic places a plugin plugs into, never the plugin's own code. Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 

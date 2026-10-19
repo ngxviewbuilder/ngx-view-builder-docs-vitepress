@@ -292,6 +292,7 @@ export default defineConfig({
             { text: "JSON editor", link: "/creators/json-editor" },
             { text: "Logic map", link: "/creators/logic-map" },
             { text: "Field documentation", link: "/creators/documentation" },
+            { text: "API", link: "/creators/api" },
           ],
         },
       ],
@@ -437,6 +438,7 @@ export default defineConfig({
             },
             { text: "Logic map plugin", link: "/developers/plugin-logic-map" },
             { text: "Documentation plugin", link: "/developers/plugin-docs" },
+            { text: "OpenAPI plugin", link: "/developers/plugin-openapi" },
             {
               text: "Building a plugin",
               link: "/developers/plugin-development",
