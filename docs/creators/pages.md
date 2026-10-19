@@ -1,11 +1,13 @@
 ---
 title: Pages & navigation
-description: Multi-page views, steppers, and page-level states.
+description: "Multi-page forms in NGX View Builder: Previous and Next buttons or a numbered stepper, step validation, page states, and where Submit and Validate go."
 ---
 
 # Pages & navigation
 
 A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
+
+<YouTubeVideo id="KLdQYH4y5m8" />
 
 ## When to use multiple pages
 
@@ -15,22 +17,24 @@ A view can have one page or many. Pages appear as cards in the **Pages** tab und
 
 ## Navigation modes
 
-Set in **Form settings → Page navigation mode**:
+Set in **Form settings → Navigation and actions → Moving between pages**:
 
 | Mode | Behaviour |
 | --- | --- |
-| `default` | Previous / Next buttons between pages |
-| `stepper` | A visual stepper shows all pages; users move step by step |
+| `Previous / Next buttons` | Previous and Next buttons between pages, in any order. |
+| `Steps` | A numbered stepper shows all pages; people move step by step. |
 
-By default a page must pass validation before the user can continue. Turn on **Allow step without validation** in Form settings to let users move freely.
+With steps, a page must pass validation before the person can continue. **Next checks the page being left only**: a required field or a rule on a later step does not hold anyone on the first one, and its errors show up when they get there. **Submit** still checks the whole form, and **Validate** checks it too without submitting. Turn on **Allow step without validation** in Form settings to let people move freely.
+
+On a phone, a stepper with more than three steps shows only the numbered markers, with *Step 2 of 5* and the current step's name below them, so the steps and the buttons under them stay on the screen. Screen readers still hear the name of every step.
 
 ## Positions
 
-Form settings let you place navigation chrome where it suits the layout:
+Form settings let you place navigation chrome where it suits the layout, each `Top`, `Bottom`, `Both`, or `Hidden`:
 
-- **Page navigation position**: `top`, `bottom`, `both`, or `none`.
-- **Stepper position**: where the step indicator renders.
-- **Action buttons position**: where Validate/Submit buttons render.
+- **Page buttons**: the Previous and Next buttons.
+- **Steps**: the numbered stepper.
+- **Validate and Submit buttons**.
 
 ## Page states
 

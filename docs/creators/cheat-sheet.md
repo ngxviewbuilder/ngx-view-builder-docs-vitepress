@@ -1,6 +1,6 @@
 ---
 title: Expression cheat sheet
-description: The most common expression patterns, copy-paste ready.
+description: "Copy-paste expression patterns for NGX View Builder: conditions, if/else, sums over table rows, dates, writing values and placeholders in text."
 ---
 
 # Cheat sheet

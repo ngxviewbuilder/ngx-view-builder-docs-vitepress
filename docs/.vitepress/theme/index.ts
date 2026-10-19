@@ -3,6 +3,7 @@ import { inBrowser } from 'vitepress';
 import Layout from './Layout.vue';
 import ImageSlider from './components/ImageSlider.vue';
 import DemoEmbed from './components/DemoEmbed.vue';
+import YouTubeVideo from './components/YouTubeVideo.vue';
 import { setupAnalytics, trackPageView } from './analytics';
 import './custom.css';
 
@@ -12,6 +13,7 @@ export default {
   enhanceApp({ app, router }) {
     app.component('ImageSlider', ImageSlider);
     app.component('DemoEmbed', DemoEmbed);
+    app.component('YouTubeVideo', YouTubeVideo);
     if (inBrowser) {
       setupAnalytics();
       router.onAfterRouteChange = (to) => trackPageView(to);

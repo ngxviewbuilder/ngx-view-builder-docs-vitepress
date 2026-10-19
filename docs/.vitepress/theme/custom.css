@@ -78,23 +78,3 @@
   .element-grid { grid-template-columns: 1fr; }
 }
 
-/* A recorded walkthrough (animated WebP) at the top of a guide page. */
-.vp-doc .doc-video {
-  margin: 24px 0 32px;
-}
-
-.vp-doc .doc-video img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(10, 22, 56, 0.12);
-}
-
-.vp-doc .doc-video figcaption {
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--vp-c-text-2);
-}

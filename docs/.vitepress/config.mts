@@ -1,5 +1,8 @@
+import { cpSync, existsSync } from "node:fs";
+import path from "node:path";
 import { defineConfig } from "vitepress";
 import { GA_ID } from "./theme/analytics";
+import videoData from "./videos.json";
 
 const SITE_URL = "https://ngxviewbuilder.io";
 const SITE_DESCRIPTION =
@@ -29,9 +32,40 @@ const STRUCTURED_DATA = {
   sameAs: [
     "https://github.com/ngxviewbuilder/ngx-view-builder-community",
     "https://www.linkedin.com/company/ngx-view-builder/",
+    "https://www.youtube.com/@ngxviewbuilder",
   ],
   publisher: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
 };
+
+/** ISO 8601 duration for schema.org, 173 → "PT2M53S". */
+const isoDuration = (seconds: number) => `PT${Math.floor(seconds / 60)}M${seconds % 60}S`;
+
+/**
+ * A video lesson as schema.org VideoObject. The chapters become Clips, which Google can
+ * show as key moments. The thumbnail is the copy served from docs/public/videos.
+ */
+function videoObject(video: (typeof videoData.videos)[number]) {
+  const watchUrl = `https://www.youtube.com/watch?v=${video.id}`;
+  return {
+    "@type": "VideoObject",
+    name: video.youtubeTitle,
+    description: video.description,
+    thumbnailUrl: [`${SITE_URL}/videos/${video.id}.webp`, `https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg`],
+    uploadDate: video.uploadDate,
+    duration: isoDuration(video.seconds),
+    embedUrl: `https://www.youtube.com/embed/${video.id}`,
+    url: watchUrl,
+    inLanguage: "en",
+    publisher: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
+    hasPart: video.chapters.map((chapter, index) => ({
+      "@type": "Clip",
+      name: chapter.title,
+      startOffset: chapter.at,
+      endOffset: video.chapters[index + 1]?.at ?? video.seconds,
+      url: `${watchUrl}&t=${chapter.at}s`,
+    })),
+  };
+}
 
 /** Section names for breadcrumbs, by the first path segment. */
 const SECTIONS: Record<string, string> = {
@@ -92,6 +126,11 @@ export default defineConfig({
   // every page. Without this, all pages would share the home page's og:url and
   // have no canonical, which weakens indexing of the individual doc pages.
   // The 404 page is built outside transformPageData's reach; keep it out of the index here.
+  // scripts/generate-llms.mjs writes one Markdown file per page; they are published beside the HTML.
+  buildEnd(siteConfig) {
+    const markdownPages = path.join(siteConfig.srcDir, ".vitepress", "markdown-pages");
+    if (existsSync(markdownPages)) cpSync(markdownPages, siteConfig.outDir, { recursive: true });
+  },
   transformHead({ pageData }) {
     if (pageData.isNotFound) return [["meta", { name: "robots", content: "noindex" }]];
   },
@@ -132,9 +171,18 @@ export default defineConfig({
           image: OG_IMAGE,
           inLanguage: "en",
           ...(pageData.lastUpdated ? { dateModified: new Date(pageData.lastUpdated).toISOString() } : {}),
-          about: { "@type": "SoftwareApplication", name: "NGX View Builder", url: SITE_URL },
+          about: {
+            "@type": "SoftwareApplication",
+            name: "NGX View Builder",
+            url: SITE_URL,
+            applicationCategory: "DeveloperApplication",
+            operatingSystem: "Web",
+          },
+          author: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
           publisher: { "@type": "Organization", name: "Heyde Labs, MB", url: SITE_URL },
         },
+        // A lesson is described on the guide page it belongs to.
+        ...videoData.videos.filter((video) => video.page === route).map(videoObject),
         {
           "@type": "BreadcrumbList",
           itemListElement: crumbs.map((crumb, index) => ({ "@type": "ListItem", position: index + 1, ...crumb })),
@@ -146,6 +194,7 @@ export default defineConfig({
       ["meta", { property: "og:type", content: "article" }],
       ["script", { type: "application/ld+json" }, JSON.stringify(pageStructuredData)],
       ["link", { rel: "canonical", href: canonical }],
+      ["link", { rel: "alternate", type: "text/markdown", href: `${canonical}${route.endsWith("/") ? "index.md" : ".md"}` }],
       ["meta", { property: "og:url", content: canonical }],
       ["meta", { property: "og:title", content: title }],
       ["meta", { property: "og:description", content: description }],
@@ -398,7 +447,7 @@ export default defineConfig({
     },
     // GitHub is not listed here: the navbar shows it as GitHubStarBadge (theme/Layout.vue),
     // so the star count is visible too.
-    socialLinks: [{ icon: "linkedin", link: "https://www.linkedin.com/company/ngx-view-builder/", ariaLabel: "LinkedIn" }],
+    socialLinks: [{ icon: "youtube", link: "https://www.youtube.com/@ngxviewbuilder", ariaLabel: "YouTube" }],
     search: { provider: "local" },
     outline: { level: [2, 3], label: "On this page" },
     docFooter: { prev: "Previous", next: "Next" },

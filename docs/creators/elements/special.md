@@ -1,6 +1,6 @@
 ---
 title: Special inputs
-description: File upload and Signature pad.
+description: "File upload and signature pad elements in NGX View Builder: accepted files, size limits, how the value is stored and how to make them required."
 ---
 
 # Special inputs

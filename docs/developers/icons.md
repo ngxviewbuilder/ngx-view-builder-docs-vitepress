@@ -1,6 +1,6 @@
 ---
 title: Custom SVG icons
-description: Register icons by name for elements, buttons, and the builder UI.
+description: "Register custom SVG icons in NGX View Builder by name, inline or from an asset folder, and use them on elements, buttons and in the builder."
 ---
 
 # Custom SVG icons

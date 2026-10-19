@@ -1,9 +1,11 @@
 ---
 title: Buttons & actions
-description: The Button element and how it triggers actions.
+description: "The Button element in NGX View Builder: run actions on click, submit or validate the form, ask for confirmation, and hide or disable a button by rule."
 ---
 
 # Buttons & actions
+
+<YouTubeVideo id="14FR8gc8DoQ" />
 
 ## Button (`button`)
 

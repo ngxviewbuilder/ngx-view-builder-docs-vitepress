@@ -1,6 +1,6 @@
 ---
 title: Headless validation
-description: Validate structure + data without rendering a visible view.
+description: "Validate NGX View Builder view data without showing the view: api.validateData(), the headless validator component and server-side checks."
 ---
 
 # Headless validation

@@ -7,6 +7,10 @@ description: Rich text, Custom HTML, Image, Video, Iframe, Icon, Avatar, Page ti
 
 Presentational elements. They display information and add nothing to the form data.
 
+This lesson covers buttons, message cards and the other elements that only show something:
+
+<YouTubeVideo id="14FR8gc8DoQ" />
+
 ## Rich text (`richText` / `richTextViewer`)
 
 Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images, video. Use it for instructions, section intros, and legal text. The viewer variant renders content read-only at runtime.
@@ -25,11 +29,12 @@ Content written in a Custom HTML element renders the same way here. Both element
 
 Raw HTML for layouts the rich text editor can't produce. HTML is sanitised at runtime, so scripts are stripped.
 
+Both fields are in the **General** category, under the name. **Edit content** opens the markup in the code editor.
+
 | Property | What it does |
 | --- | --- |
-| **HTML template** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
-| **Template ref** | Reference to a [Templates-tab](../templates) template. Wins over the inline HTML. |
-| **HTML source path** | Take the markup from a data path or source response instead of a static property. |
+| **HTML template (inline)** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
+| **HTML template ref** | Reference to a [Templates-tab](../templates) template. Wins over the inline HTML. Shown when the Templates plugin is installed. |
 
 ## Image (`image`)
 
