@@ -85,6 +85,8 @@ An expression re-evaluates automatically whenever any field it references change
 
 ## Debugging
 
+An expression the parser cannot read never runs: `{qty} >= (` is neither true nor false, so a rule written that way silently does nothing. The builder says so as you type. The Logic panel and the code editor show the reason under the expression (*Unexpected end of expression*), and the rule's card keeps the warning after you save, until the expression is fixed.
+
 Wrap any part in `dbg(value, "label")`. It logs the value to the browser console and passes it through unchanged:
 
 ```text

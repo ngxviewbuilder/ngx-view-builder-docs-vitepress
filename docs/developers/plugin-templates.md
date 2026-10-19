@@ -32,7 +32,19 @@ A template's **HTML content** is rendered by a small purpose-built engine, not t
 <span>Row {{ index + 1 }} of {{ $count }}</span>
 ```
 
-The expression runs against the template's runtime context: `item` / `row` / `value` (the bound record all three names point at the same object), `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+The expression runs against the template's runtime context: the bound record, `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+
+What `item`, `row` and `value` hold depends on the element rendering the template:
+
+| Element | `item` / `row` | `value` | Also |
+| --- | --- | --- | --- |
+| List grid card | the record | the record | `index` |
+| Select / Multi select option | the option object (`label`, `value` and any field the data source returned) | the option's value, a plain string or number | `label`, `selected` |
+| Table cell template | the row | the cell value | |
+| Table row template | the row | the row | |
+| Panel / dynamic panel header | `{}` | the panel's value | `rows`, `count`, `label` |
+
+So in an option template <code v-pre>{{ item.info.code }}</code> reads a field of the option, while <code v-pre>{{ value }}</code> is only its value.
 
 ### Legacy single-brace tokens `{path}`
 
@@ -141,7 +153,7 @@ Template HTML goes through a sanitizing pass before rendering, and the rendered 
 
 ## Template field slots
 
-Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced in the editor as **Template fields**, so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
+Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced as **Template fields** in the properties of the element that uses the template (next to its template picker, not in the Templates tab), so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
 
 ## Where templates are read from at runtime
 

@@ -12372,7 +12372,19 @@ A template's **HTML content** is rendered by a small purpose-built engine, not t
 <span>Row {{ index + 1 }} of {{ $count }}</span>
 ```
 
-The expression runs against the template's runtime context: `item` / `row` / `value` (the bound record all three names point at the same object), `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+The expression runs against the template's runtime context: the bound record, `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+
+What `item`, `row` and `value` hold depends on the element rendering the template:
+
+| Element | `item` / `row` | `value` | Also |
+| --- | --- | --- | --- |
+| List grid card | the record | the record | `index` |
+| Select / Multi select option | the option object (`label`, `value` and any field the data source returned) | the option's value, a plain string or number | `label`, `selected` |
+| Table cell template | the row | the cell value | |
+| Table row template | the row | the row | |
+| Panel / dynamic panel header | `{}` | the panel's value | `rows`, `count`, `label` |
+
+So in an option template <code v-pre>{{ item.info.code }}</code> reads a field of the option, while <code v-pre>{{ value }}</code> is only its value.
 
 ### Legacy single-brace tokens `{path}`
 
@@ -12481,7 +12493,7 @@ Template HTML goes through a sanitizing pass before rendering, and the rendered 
 
 ## Template field slots
 
-Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced in the editor as **Template fields**, so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
+Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced as **Template fields** in the properties of the element that uses the template (next to its template picker, not in the Templates tab), so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
 
 ## Where templates are read from at runtime
 
@@ -14587,7 +14599,7 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 
 | Field | What it does |
 | --- | --- |
-| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). |
+| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). Renaming it updates everything bound to the old name: tables and selects loading from it, actions running it, data source variables, and `runDataSource("…")` in expressions. |
 | **Title** | A friendly display title for the list. |
 | **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
 
@@ -14689,7 +14701,7 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | --- | --- |
 | **Data source** | Which source feeds this element. Dependent fields are supported via the param map and refresh paths. |
 | **Use as** | `Option` loads selectable options (select, radio, checkbox); `Value` loads the field's own value. |
-| **Option value key / Option label key** | Which response fields become the stored value and the visible label. |
+| **Option value key / Option label key** | Which response fields become the stored value and the visible label. A path into the item works too: `info.label`, `names[0]`. |
 | **Items path** | Where the array lives in the response (e.g. `data.items`). |
 | **Filter options by** | Legacy conditional filter, leave empty if unused. Prefer the *Filter if equal / not equal* option properties. |
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |
@@ -14890,7 +14902,7 @@ The standard dropdown. Best default for 5+ options.
 | --- | --- |
 | **Show search** | Adds a search box inside the dropdown. |
 | **Placeholder text** | Shown while nothing is selected. |
-| **Option value key / Option label key** | Which response fields become value and label (data-source options). |
+| **Option value key / Option label key** | Which response fields become value and label (data-source options). Nested fields are written as a path, `info.label`. |
 
 ## Multi-choice menu (`multiSelect`)
 
@@ -15825,8 +15837,9 @@ Each column has:
 | **Filter options / JSON / data source (+ items path, label key, value key)** | Where the filter's choices come from: manual list, JSON, or a data source. |
 | **Filter toggle true/false value** | What a detailed-search toggle sends when on/off (`yes`/`no`, `T`/`N`). |
 | **Filter multi-value delimiter** | Joins multiple filter values into one request param (`,` or `;`). |
-| **Use totals (+ fraction digits, locale, grouping, mask, template)** | Show this column's sum in the footer row, with formatting controls and a `{total}` text template. |
 | **Editable / Editor type / Editor options (+ label key, value key, placeholder)** | Inline-edit settings for this column: which control edits it (text, number, select, date) and where its choices come from. |
+
+A data table has no totals row of its own. Column sums with a footer live on the [Dynamic table](https://ngxviewbuilder.io/creators/elements/tables#dynamic-table-dynamictable) (**Use totals**). For a sum over a data table, put a Number next to it with an expression over its rows: `sumArray({__table.el1.allRows}, amount)`.
 
 ### Formatted columns
 
@@ -15878,7 +15891,7 @@ A cell element knows which row it sits in, so anything you write in it resolves 
 | `{index}` | Zero-based index of the row on the current page |
 | `{value}` | The cell's own value |
 
-This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
+This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Badge with no text of its own shows the cell's value, so a `status` column with a Badge cell element reads `OPEN` or `DONE` row by row. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
 
 Editing a value through a cell element writes it back into the row, so a plain `text` column bound to the same key updates with it, and row actions and conditions see the new value.
 
@@ -15956,7 +15969,7 @@ The chevron normally shows only where there is something to open, which is right
 
 **Export** opens a dialog where the person picks, in this order:
 
-- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
+- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted; a `Date & time` column keeps its time, in the reader's time zone), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
 - **Rows**, each with the number of rows it would export: **Selected rows** (only when some are selected), **All rows** (or *All rows matching search and filters* while a search or filter is active), or **Current page only**. On a lazy table, *All rows* loads every page from the server, not only the one on screen.
 - **Columns**, when the column picker is on.
 - **File name**, prefilled and editable; the extension follows the format.
@@ -16524,6 +16537,8 @@ An expression re-evaluates automatically whenever any field it references change
 
 ## Debugging
 
+An expression the parser cannot read never runs: `{qty} >= (` is neither true nor false, so a rule written that way silently does nothing. The builder says so as you type. The Logic panel and the code editor show the reason under the expression (*Unexpected end of expression*), and the rule's card keeps the warning after you save, until the expression is fixed.
+
 Wrap any part in `dbg(value, "label")`. It logs the value to the browser console and passes it through unchanged:
 
 ```text
@@ -16859,7 +16874,7 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | --- | --- | --- |
 | `today()` | today, `YYYY-MM-DD` | `Default value: =today()` |
 | `now()` | current date-time (ISO) | timestamp fields |
-| `date(value, mode)` | normalised date (`iso`, `datetime`, `timestamp`) | `date({created}, "iso")` |
+| `date(value, mode)` | the date as `YYYY-MM-DD`; with `iso` or `datetime` the moment as UTC text, with `timestamp` milliseconds | `date({created}, "iso")` |
 | `day(value)` / `month(value)` / `year(value)` | date parts | `year({birthDate}) < 2000` |
 | `weekDay(value, locale, style)` | weekday name | `weekDay({date}, "en", "long")` |
 | `weekDayIndex(value)` | Monday=1 … Sunday=7 | `weekDayIndex({date}) <= 5` |
@@ -16868,6 +16883,8 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | `dateDiffDays(from, to)` | day difference | `dateDiffDays({start}, {end}) >= 1` |
 | `startOfWeek(value)` / `endOfWeek(value)` | week boundaries | report period defaults |
 | `age(birthDate)` | full years from that date until today | `age({birthDate}) >= 18` |
+
+`date` without a mode keeps the calendar date of the view's time zone: `date("2024-02-29")` is `2024-02-29`. The `iso` and `datetime` modes return the moment in UTC instead, the way a server expects it, and a plain date is midnight in the user's time zone. So in Vilnius (UTC+2 in winter) `date("2024-02-29", "iso")` gives `2024-02-28T22:00:00.000Z`: the same moment, not a different day. Use the default mode when you mean a calendar date, and `iso` when you send a point in time.
 
 `age` counts a year only once the birthday has passed, so someone born on 30 June 2008 is still 17 on 29 June 2026. It gives nothing while the date is empty, which keeps a condition like `age({birthDate}) >= 18` false until the date is filled in.
 
@@ -17397,42 +17414,78 @@ Source: https://ngxviewbuilder.io/creators/templates
 
 ## Dynamic text
 
-Text-bearing properties (rich text, custom HTML, message cards, dialog titles, toast messages, set-value templates…) accept **double-brace placeholders** that render live values:
+Two kinds of text show live values, and they use different braces.
+
+**Text properties** (a label, a description, a placeholder, a tooltip, a button caption, a table's empty message, a tab title, a chart title) take a reference in single braces, the same way an expression does:
 
 ```text
-Hello, {{firstName}} {{lastName}}!
-Your order total is {{orderTotal}} €.
-Application no. {{__variables.route.id}}
+Hello, {firstName} {lastName}!
+Your order total is {orderTotal} €.
+Application no. {__variables.route.id}
 ```
 
-Placeholders re-render when the referenced values change. Inside repeaters, item context is available: <code v-pre>{{ item.name }}</code>, <code v-pre>{{ index }}</code>.
+Double braces work there too, so <code v-pre>{{firstName}}</code> in a label shows the same name. Before 0.13.4 the double form left a stray brace on screen.
 
-Simple logic is supported in template blocks:
+**HTML templates** (Custom HTML, list grid cards, option and header templates, the Templates tab) use double braces, Angular style, and add `@if`, `@for` and the rest:
 
 ```html
+<strong>{{ item.name }}</strong>
 @if (item.status == "Active") {<span class="ok">Active</span>}
 ```
 
+Older templates written with single braces (`{pageTitle}`) still render.
+
 ::: tip Single vs. double braces
-`{name}` (single) is for **expressions**: logic properties, conditions, params.
-<code v-pre>{{name}}</code> (double) is for **text templates**: content that renders on screen.
+`{name}` is for **expressions** (logic properties, conditions, params) and for **text properties**.
+<code v-pre>{{name}}</code> is for **HTML templates**, and is also accepted in text properties.
 :::
+
+### Where references resolve
+
+| Field | Resolves references |
+| --- | --- |
+| Label, description, label tooltip, placeholder | yes |
+| Button text, badge text, page and panel titles | yes |
+| Table and dynamic table empty message, list grid empty message | yes |
+| Tab titles (Tabs, Tabs Pro), chart title, dynamic table caption | yes |
+| Time picker placeholder | yes, since 0.13.4 |
+| Option labels of a Select, Radio, Checkbox group, List box | no, an option label is shown as written. Load the options from a data source when the text has to change. |
+| Custom HTML, cards and other templates | yes, with <code v-pre>{{ }}</code> |
+
+Screen reader names follow the visible text: a table caption, a chart's description and a column's cell names are read with their references filled in.
+
+### Inside repeaters
+
+In a dynamic panel or dynamic table a text belongs to one entry, so it can read that entry:
+
+| Token | In a text | Means |
+| --- | --- | --- |
+| `{panel.fieldName}` / `{row.fieldName}` | dynamic panel / dynamic table | a field of the current entry |
+| `{fieldName}` | both | the same, short form for a sibling field |
+| `{index}`, `{panel.index}`, `{row.index}` | both | zero based position of the entry |
+| `{el1[0].fieldName}` | anywhere | a field of a fixed entry |
+
+A label such as `Contact #{panel.index}: {panel.name}` updates as the entry is filled in and renumbers when an entry above it is removed.
 
 ## The template library
 
 The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
-Pick a template in the list on the left, or add one with **Add template**. The editor has the markup and the styles side by side, and **Template settings** next to them:
+Pick a template in the list on the left, or add one with the **+** button. The editor has three columns: **HTML content** and **CSS** in the middle, and **Template settings** with the preview on the right.
 
 | Field | What it is |
 | --- | --- |
-| **Template (Angular syntax)** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The **Format template** button tidies the HTML. |
-| **CSS classes** | Styles scoped to the template, with its own **Format CSS** button. |
+| **HTML content** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The button in the card's corner tidies the HTML. |
+| **CSS** | Styles scoped to the template, with its own format button. |
 | **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
-| **Title** | Human-friendly display title. |
-| **Preview data (JSON)** | The object the preview renders the template with. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`, and the preview fills the placeholders from it. It must be a valid JSON object. |
+| **Title** | Human-friendly display title, shown in the list and in the template pickers. |
+| **Preview data (JSON)** | The object the preview renders the template with, edited right under the preview. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`. It must be a valid JSON object. |
 
-The **Preview** panel renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save**; the editor shows *Unsaved changes* in the meantime.
+The **Preview** renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save** in **Template settings**; the editor marks unsaved changes in the meantime. Saved changes reach every element that uses the template, on the canvas, in Preview and in the exported view.
+
+### Template fields
+
+A template can leave its fields open with bracket slots, `row[0]`, `item['status']`, `value[2]`, so the same markup fits records with different field names. The mapping is not in this tab: select the element that uses the template (a List grid, a Select), and next to the template picker in its properties a **Template fields** list appears, one line per slot, where you say which field of the element's data fills it. A template without bracket slots has no such list.
 
 ### Storage settings
 

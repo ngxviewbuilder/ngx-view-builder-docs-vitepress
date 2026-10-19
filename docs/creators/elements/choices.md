@@ -42,7 +42,7 @@ The standard dropdown. Best default for 5+ options.
 | --- | --- |
 | **Show search** | Adds a search box inside the dropdown. |
 | **Placeholder text** | Shown while nothing is selected. |
-| **Option value key / Option label key** | Which response fields become value and label (data-source options). |
+| **Option value key / Option label key** | Which response fields become value and label (data-source options). Nested fields are written as a path, `info.label`. |
 
 ## Multi-choice menu (`multiSelect`)
 
