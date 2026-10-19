@@ -1,6 +1,6 @@
 ---
 title: "AI: Layout model (pages, rows, columns, elementRef)"
-description: The exact layout tree an AI agent must produce. How pages, rows, columns and elementRef relate to the flat elements map, how containers nest, and where widths belong.
+description: "The exact layout tree an AI agent must produce: how pages, rows, columns and elementRef relate to the flat elements map, how containers nest, where widths go."
 ---
 
 # AI: Layout model (pages, rows, columns, elementRef)

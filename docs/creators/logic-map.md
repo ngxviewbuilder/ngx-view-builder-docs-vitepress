@@ -1,6 +1,6 @@
 ---
 title: Logic map
-description: See how the fields of a view depend on each other, on one canvas.
+description: "The NGX View Builder logic map shows on one canvas how fields depend on each other through visibility, required and calculated value rules."
 ---
 
 # Logic map

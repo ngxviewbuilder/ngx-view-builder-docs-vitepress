@@ -1,6 +1,6 @@
 ---
 title: Building a plugin
-description: Ship your own builder tab as a reusable package.
+description: "Build your own NGX View Builder plugin: a designer tab, a properties panel section, AI client access, translations and packaging as an npm library."
 ---
 
 # Building a plugin

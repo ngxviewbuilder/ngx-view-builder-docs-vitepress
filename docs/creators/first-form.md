@@ -1,23 +1,13 @@
 ---
 title: Your first form
-description: Build a working client registration form in ten minutes.
+description: "Step by step: build a client registration form with required fields, a conditional section and a submit button in the NGX View Builder designer."
 ---
 
 # Your first form
 
 This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
-<figure class="doc-video">
-  <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
-  <img
-    src="/first-form/first-form.webp"
-    width="1024"
-    height="611"
-    alt="The whole walkthrough in the builder: First name and Email are dragged side by side and named from their labels, a Client type radio gets the options Private person and Company, the email is made required with an email validator, a Company details panel and its Company code field get Visible if and Require if rules from the visual rule builder, a Register button gets a success toast that validates the form first, and the Preview tab tests an empty submit, the Company choice and a valid registration."
-  />
-  </a>
-  <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
-</figure>
+<YouTubeVideo id="q2sRLHZfM1w" />
 
 ## 1. Place the fields
 

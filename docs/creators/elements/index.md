@@ -1,6 +1,6 @@
 ---
 title: Elements overview
-description: The full element catalogue, grouped by purpose.
+description: "Every element you can drag onto an NGX View Builder canvas, grouped by purpose: inputs, choices, dates, tables, charts, layout and content."
 ---
 
 # Elements overview

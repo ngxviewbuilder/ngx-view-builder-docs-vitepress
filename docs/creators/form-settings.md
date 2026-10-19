@@ -5,19 +5,32 @@ description: Every field of the Settings tab, from status and language to width,
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has five groups: **General**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has seven groups: **Layout**, **Language and formats**, **Behaviour**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**. The list on the left jumps to each one.
 
-## General
+## Layout
 
 | Setting | What it does |
 | --- | --- |
-| **Status** | `Default` (editable) or `Read only`. A read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
-| **Current language** | The content language shown right now in the builder and preview. |
-| **Default language** | The language the view starts in at runtime. |
-| **Supported languages (comma separated)** | Languages the view offers, e.g. `en, lt, de`. Texts for them are managed in the [Translations](./translations) tab. |
-| **Locale** | Number/date formatting locale (e.g. `lt-LT`, `en-US`). Used by number formatting, date pickers, and table totals. |
 | **Form width** + **Form width unit** | Maximum content width of the rendered view (`px` or `%`). |
-| **Element spacing** | Vertical gap between element rows. |
+| **Element spacing** | The gap between fields, in px. |
+| **Content padding** | The space inside the form frame, in px. |
+| **No content padding** | The form touches the edges of the page it sits in. |
+| **Breakpoints** (*Tablet*, *Mobile*) | Below these widths the view switches to the tablet and the mobile layout, so fields use their *Tablet width* and *Mobile width*. |
+
+## Language and formats
+
+| Setting | What it does |
+| --- | --- |
+| **Languages** | The languages the view can be shown in. Pick one from **Add a language…** and press **Add language**; remove one with the × next to it. The language marked *source* cannot be removed. Texts for the others are translated in the [Translations](./translations) tab. |
+| **Source language** | The language you type the texts in here, in the builder. |
+| **Shown in** | The language the canvas and Preview show right now, so you can check a translation without leaving the builder. |
+| **Number and date format** | The locale for numbers, dates and currency: the decimal separator, the date order and so on. Number fields, date pickers and table totals follow it. |
+
+## Behaviour
+
+| Setting | What it does |
+| --- | --- |
+| **Editing** | `Editable`: people fill in the form, and single fields can still be locked. `Read only`: every field shows its value but cannot be changed. Individual elements can opt out with *Inherit parent state*. |
 
 ## Form header
 
@@ -36,15 +49,15 @@ The optional header block rendered above the first page.
 
 | Setting | What it does |
 | --- | --- |
-| **Page navigation mode** | `Default` (Prev/Next buttons) or `Stepper` (numbered steps). |
-| **Page navigation position** | Where the Prev/Next controls render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Stepper position** | Where the stepper renders when stepper mode is on. |
-| **Action buttons position** | Where Validate/Submit render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Allow step without validation** | Users may move between steps/pages even when the current page is invalid. |
+| **Moving between pages** | `Steps`: numbered steps, and a step is checked before the next one opens. `Previous / Next buttons`: pages in any order. |
+| **Page buttons** | Where the Previous and Next buttons render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Steps** | Where the numbered steps render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Validate and Submit buttons** | Where Validate and Submit render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Allow step without validation** | People may move to the next step even when the current one has errors. |
+| **Show validate button** | The built-in Validate button: checks the whole form without submitting. |
 | **Show submit button** | The built-in Submit button (fires completion with data + validation result). |
-| **Show validate button** | The built-in Validate button (checks without submitting). |
+| **Show validation issues modal** | After a failed check, a dialog lists every validation issue with links to the fields. |
 | **Show table of contents** | Renders a contents panel for long views. |
-| **Show validation issues modal** | After a failed submit, shows a dialog listing every validation issue with links to the fields. |
 
 See [Pages & navigation](./pages).
 
@@ -52,7 +65,7 @@ See [Pages & navigation](./pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](./layout#web-pages-with-canvas)). |
+| **Shown as** | `Page`: a framed form inside the host page. `Dialog`: a window over the host page, with its own header and buttons. `Canvas (full width, no frame)`: for web pages (see [Web pages with Canvas](./layout#web-pages-with-canvas)). |
 | **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |

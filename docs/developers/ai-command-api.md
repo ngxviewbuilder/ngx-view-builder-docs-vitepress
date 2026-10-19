@@ -77,6 +77,8 @@ ChatGPT, and Codex with the server added as a custom MCP connector, work a littl
 
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
 
+**Disconnect** sends the same revoke before it closes the connection, so every AI client paired to the tab loses access too. The key stays the same, so a client the person gives it to again can pair again. A reload or leaving the page does not revoke anything, which is why the AI carries on after a reload.
+
 Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.

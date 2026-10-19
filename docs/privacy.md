@@ -6,7 +6,7 @@ sidebar: false
 
 # Privacy Policy
 
-*Last updated: 18 July 2026*
+*Last updated: 16 October 2026*
 
 This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
@@ -32,7 +32,7 @@ Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you c
 
 ## Third parties
 
-We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). We do not sell your data or share it with any other third party.
+We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). Video lessons in the documentation are hosted on **YouTube** (Google Ireland Limited). A page with a lesson shows only a picture stored on this site; the YouTube player loads from youtube-nocookie.com when you press play, and from then on YouTube's privacy policy applies to that video. We do not sell your data or share it with any other third party.
 
 ## Retention
 

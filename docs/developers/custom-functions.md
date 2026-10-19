@@ -1,6 +1,6 @@
 ---
 title: Custom expression functions
-description: Add project-specific functions to the expression language.
+description: "Add your own functions to the NGX View Builder expression language from your Angular app, including async functions that call your API."
 ---
 
 # Custom expression functions
