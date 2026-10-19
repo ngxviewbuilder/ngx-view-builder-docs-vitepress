@@ -93,7 +93,7 @@ A person who asks their system for reduced motion gets it off without anything f
 
 ## Component tokens
 
-Below the colour scales, elements read their own variables. Each falls back to the scales, so leaving them alone keeps everything consistent, and setting one changes that part of every element that uses it. Pass them like any other token, through `cssVariables` or `setCssVariables`.
+Below the colour scales, elements read their own variables. Each falls back to the scales, so leaving them alone keeps everything consistent, and setting one changes that part of every element that uses it. Pass them like any other token, through `cssVariables` or `setCssVariables`. Like the scales they are declared on `.nvb-root`, so a variable of the same name in your own stylesheet does not reach into the view or the builder; the API is the way in.
 
 | Family | Tokens | Used by |
 | --- | --- | --- |
@@ -102,9 +102,9 @@ Below the colour scales, elements read their own variables. Each falls back to t
 | Checkbox / radio | `--nvb-checkbox-*`, `--nvb-radio-*` (size, radius, border, checked and disabled colours) | checkboxes, radio groups, toggles |
 | Cards | `--nvb-card-bg`, `--nvb-card-border-color`, `--nvb-card-radius`, `--nvb-card-padding`, `--nvb-card-shadow` | panels, dynamic panels, stats cards, list grid cards, tables, tabs, accordions, dialogs, date pickers |
 | Textarea | `--nvb-textarea-min-height`, `--nvb-textarea-padding-x`, `--nvb-textarea-padding-y` | textareas |
-| Navigation menu | `--nvb-nav-menu-item-height`, `--nvb-nav-menu-item-radius`, `--nvb-nav-menu-item-color`, `--nvb-nav-menu-item-hover-bg`, `--nvb-nav-menu-active-color`, `--nvb-nav-menu-active-bg`, `--nvb-nav-menu-badge-bg`, `--nvb-nav-menu-badge-color`, `--nvb-nav-menu-active-badge-bg`, `--nvb-nav-menu-heading-color`, `--nvb-nav-menu-divider-color`, `--nvb-nav-menu-subitem-indent`, `--nvb-nav-menu-dropdown-bg`, `--nvb-nav-menu-gap`, `--nvb-nav-menu-font-size` | the Navigation menu |
+| Navigation menu | `--nvb-nav-menu-item-height`, `--nvb-nav-menu-item-radius`, `--nvb-nav-menu-item-color`, `--nvb-nav-menu-item-hover-bg`, `--nvb-nav-menu-active-color`, `--nvb-nav-menu-active-bg`, `--nvb-nav-menu-badge-bg`, `--nvb-nav-menu-badge-color`, `--nvb-nav-menu-active-badge-bg`, `--nvb-nav-menu-active-badge-color`, `--nvb-nav-menu-heading-size`, `--nvb-nav-menu-heading-color`, `--nvb-nav-menu-divider-color`, `--nvb-nav-menu-chevron-color`, `--nvb-nav-menu-subitem-height`, `--nvb-nav-menu-subitem-indent` (`-compact` when icons are off), `--nvb-nav-menu-subitem-font-size`, `--nvb-nav-menu-dropdown-bg`, `--nvb-nav-menu-gap`, `--nvb-nav-menu-font-size` | the Navigation menu |
 | Dynamic panel search | `--nvb-dynamic-panel-search-width` (plus the input tokens) | the quick search in a dynamic panel's header |
-| Stats card goal | `--nvb-stats-card-goal-height`, `--nvb-stats-card-goal-track`, `--nvb-stats-card-goal-fill` | the goal bar of a stats card |
+| Stats card goal | `--nvb-stats-card-goal-height`, `--nvb-stats-card-goal-track`, `--nvb-stats-card-goal-fill` (empty by default, so the bar takes the card's variant colour; set it to use one colour for every card) | the goal bar of a stats card |
 
 A green sidebar and flatter cards, for example:
 
