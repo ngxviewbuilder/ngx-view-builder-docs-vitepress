@@ -8382,6 +8382,7 @@ Source: https://ngxviewbuilder.io/developers/api/data-sources
 | [`setDefaultDataSources(sources, overwrite?)`](https://ngxviewbuilder.io/developers/api/data-sources#setdefaultdatasources) | `void` | Add host sources to every view |
 | [`setDataSourceTypeSettings` / `getDataSourceTypeSettings`](https://ngxviewbuilder.io/developers/api/data-sources#setdatasourcetypesettings-getdatasourcetypesettings) | `void` / settings | Switch optional source types on |
 | [`setWebsocketAuthorizer(fn)`](https://ngxviewbuilder.io/developers/api/data-sources#setwebsocketauthorizer) | `void` | Put credentials on websocket connections |
+| [`setEventStreamAuthorizer(fn)`](https://ngxviewbuilder.io/developers/api/data-sources#seteventstreamauthorizer) | `void` | Put headers or a different url on event streams |
 | [`setRuntimeVariableContext(values, merge?)`](https://ngxviewbuilder.io/developers/api/data-sources#setruntimevariablecontext) | `void` | The `{__external.*}` context |
 | [`getRuntimeVariableContext` / `clearRuntimeVariableContext`](https://ngxviewbuilder.io/developers/api/data-sources#getruntimevariablecontext-clearruntimevariablecontext) | object / `void` | Read or clear it |
 | [`setRuntimeVariableDefinitions(defs, replace?)`](https://ngxviewbuilder.io/developers/api/data-sources#setruntimevariabledefinitions) | `void` | Define `{__variables.*}` |
@@ -8454,15 +8455,15 @@ api.getStructure()?.dataSources?.map((s) => s.name);
 ### `setDataSourceTypeSettings()` / `getDataSourceTypeSettings()`
 
 ```ts
-setDataSourceTypeSettings(settings: { enableWebsocket?: boolean }): void
-getDataSourceTypeSettings(): { enableWebsocket?: boolean }
+setDataSourceTypeSettings(settings: { enableWebsocket?: boolean; enableEventStream?: boolean }): void
+getDataSourceTypeSettings(): { enableWebsocket?: boolean; enableEventStream?: boolean }
 ```
 
 Optional source types creators may pick in the builder. Fires `onDataSourceTypeSettingsChanged`.
 
 ```ts
-api.setDataSourceTypeSettings({ enableWebsocket: true });
-api.getDataSourceTypeSettings(); // { enableWebsocket: true }
+api.setDataSourceTypeSettings({ enableWebsocket: true, enableEventStream: true });
+api.getDataSourceTypeSettings(); // { enableWebsocket: true, enableEventStream: true }
 ```
 
 ### `setWebsocketAuthorizer()`
@@ -8482,6 +8483,24 @@ api.setWebsocketAuthorizer(async ({ url }) => {
 ```
 
 See [WebSocket security](https://ngxviewbuilder.io/developers/data-sources#security-authorizing-the-connection).
+
+### `setEventStreamAuthorizer()`
+
+```ts
+setEventStreamAuthorizer(authorizer: (context: { sourceName: string; url: string }) =>
+  { url?: string; headers?: Record<string, string>; withCredentials?: boolean } | null | undefined
+  | Promise<{ url?: string; headers?: Record<string, string>; withCredentials?: boolean } | null | undefined> | null): void
+```
+
+Runs before every event stream connection and reconnection. Unlike a WebSocket, a stream can carry headers, so this is where a token goes.
+
+```ts
+api.setEventStreamAuthorizer(async () => ({
+  headers: { Authorization: `Bearer ${await this.auth.getFreshToken()}` },
+}));
+```
+
+See [Event stream security](https://ngxviewbuilder.io/developers/data-sources#security-authorizing-the-stream).
 
 ## Runtime variables
 
@@ -11251,6 +11270,71 @@ Query strings end up in access logs, proxy logs, and referrer headers. Prefer sh
 
 Sockets die for reasons that have nothing to do with your code. Load balancers and reverse proxies need WebSocket upgrade enabled on the route, and their idle timeout decides how long a quiet connection survives. A server-side heartbeat keeps long-lived views connected instead of relying on the reconnect loop.
 
+### Relative urls and wss
+
+A url without a scheme, such as `/api/ws/orders`, is resolved against the page before the socket opens: `wss://` on a page served over https, `ws://` over http. A view stored with a relative url therefore stays secure wherever it is deployed, and it connects in older browsers too, which accept only absolute WebSocket urls. A page served over https cannot open a plain `ws://` connection at all; the browser blocks it.
+
+## Event stream sources (server-sent events)
+
+An `sse` source is the one-way sibling of a WebSocket: the server answers a GET with `Content-Type: text/event-stream` and keeps writing events to it. Use it when the page only listens, which is most of the time: an order's status, an import's progress, a live log, an AI answer arriving piece by piece. It is plain HTTP, so it passes proxies and firewalls that block WebSocket upgrades, and over HTTP/2 an open stream costs next to nothing.
+
+Enable the type in the builder UI:
+
+```ts
+api.setDataSourceTypeSettings({ enableEventStream: true });
+```
+
+As with WebSocket, the runtime is not gated by the flag: a stored view with an event stream source connects anyway.
+
+### Your server side
+
+The standard [text/event-stream](https://html.spec.whatwg.org/multipage/server-sent-events.html) format:
+
+```
+retry: 3000
+
+event: order.updated
+id: 42
+data: {"id":50001,"status":"shipped","progress":67}
+
+```
+
+- `data:` is the message. JSON is parsed, anything else is delivered as text. Several `data:` lines join with a newline.
+- `event:` names the event type. A source lists the types it wants, or takes every event.
+- `id:` is sent back as `Last-Event-ID` when the stream reconnects, so the server can resume where it stopped.
+- `retry:` sets the reconnect delay. The runtime accepts 1 to 60 seconds; without it, the WebSocket backoff applies.
+- A line starting with `:` is a comment. Send one every 15 to 30 seconds so proxies do not close an idle stream.
+
+When the response ends, the runtime reconnects, so a server may close long streams on purpose and let clients come back.
+
+### Security: authorizing the stream
+
+The stream is read with `fetch`, not `EventSource`, and not through `HttpClient`, so your interceptors do not see it. Unlike a WebSocket it can carry headers, which keeps tokens out of urls:
+
+```ts
+// app.config.ts
+provideNgxViewBuilderProjectLayer({
+  id: 'event-stream-security',
+  authorizeEventStream: async ({ sourceName, url }) => ({
+    headers: { Authorization: `Bearer ${await auth.getFreshToken()}` },
+  }),
+});
+```
+
+The hook runs before every connection and reconnection and may return a promise. Return `{ headers }`, `{ url }`, `{ withCredentials: true }` (cookies to another origin), any mix, or nothing to connect as configured. Cookies go to the page's own origin by default. `NgxViewBuilderApiService.setEventStreamAuthorizer()` sets the hook on one runtime instance and wins over the project layer there.
+
+Limits the runtime enforces against a broken or hostile stream: a `retry` outside 1 to 60 seconds is clamped, a single event or line over 1 MB ends the connection, and `Push values in array` keeps the latest 500 messages. Messages are data: they are parsed as JSON and shown through the same escaping as a REST answer, never run.
+
+What stays yours: authorize the request on the server, allow the stream's origin in your Content-Security-Policy `connect-src`, and keep an eye on how many streams one user can hold open.
+
+### Shared connections and status
+
+Streams are shared by url, exactly like sockets: several sources and elements on one endpoint open one connection. The status is published under the same `__socket.<sourceName>` paths (`connected`, `lastMessageAt`, `reconnects`, `url`), so an offline banner works the same for both.
+
+### Proxies
+
+Response buffering breaks a stream: the events arrive in one lump when the buffer fills. Turn buffering and compression off for the stream's route (`X-Accel-Buffering: no` for nginx, no `encode` on that route in Caddy), and raise the proxy's read timeout above your comment interval.
+
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.
@@ -12147,7 +12231,7 @@ export class CatalogPicker {
 }
 ```
 
-`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`. It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
+`apply()` takes `params` to merge into the source's params (a key set to `undefined` is removed), and optionally a new `name` and `title`, and a `type` to switch the source to (ignored when the builder does not offer that type). It goes through the same steps as a person's edit: a new name is carried into everything bound to the old one, and the editor shows the change at once. `context.openBodyBuilder()` opens the visual body builder on the current request body. Read the source from the `source` input and never change it directly.
 
 `sourceTypes` limits the row to some source types (`rest`, `route`, `local`, `websocket`); `order` sorts the rows of several plugins. The OpenAPI plugin's endpoint search is built this way.
 
@@ -12418,7 +12502,7 @@ A relative `servers` URL is resolved against the document's address. When that e
 
 ### What it reads
 
-OpenAPI 3.0 and 3.1 in JSON. `$ref` inside the document is followed, `allOf` is merged into one schema, `oneOf` and `anyOf` are shown as alternatives, and 3.1 types such as `["string", "null"]` are read as a nullable string. A schema that refers to itself is shown once and not expanded further.
+OpenAPI 3.0, 3.1 and 3.2, and AsyncAPI 3, in JSON. `$ref` inside the document is followed, `allOf` is merged into one schema, `oneOf` and `anyOf` are shown as alternatives, and 3.1 types such as `["string", "null"]` are read as a nullable string. A schema that refers to itself is shown once and not expanded further.
 
 Not supported yet: YAML documents, Swagger 2.0 (convert it to OpenAPI 3 first) and `$ref` to other files. The API tab says so when a description cannot be read, with the reason.
 
@@ -12446,6 +12530,33 @@ The source also remembers where it came from:
 The runtime ignores `openApi`: these are plain REST sources, and a view keeps working without the plugin installed. The builder uses the link to show the endpoint next to the source, and to warn when the description no longer has that operation.
 
 The plugin does not change how a response is read. It does tell the creator where the rows are when a list comes wrapped, `{ "items": [...], "total": 120 }` for example, so they can set the element's **Items path**, and which fields suit an option's value and label.
+
+## Live endpoints: event streams and WebSockets
+
+An operation whose response is `text/event-stream` is listed as an **SSE** endpoint. With OpenAPI 3.2 `itemSchema`, the plugin reads the event names from `event` (`const` or `enum`) and the message from `data` (its `contentSchema`):
+
+```json
+"responses": { "200": { "content": { "text/event-stream": { "itemSchema": {
+  "type": "object",
+  "properties": {
+    "event": { "const": "order.updated" },
+    "data": { "type": "string", "contentMediaType": "application/json", "contentSchema": { "$ref": "#/components/schemas/OrderUpdate" } }
+  }
+} } } } }
+```
+
+OpenAPI cannot describe WebSocket messages, so a WebSocket API comes as an **AsyncAPI 3** document in the same `specs` list. Each channel on a `ws` or `wss` server becomes a **WS** endpoint: the messages your application sends are what the source receives, and a message it receives becomes the source's connect message, built from the schema like a request body.
+
+```ts
+provideNgxViewBuilderOpenApi({
+  specs: [
+    { id: 'crm', url: '/api/openapi.json' },
+    { id: 'crm-live', url: '/api/asyncapi.json' },
+  ],
+});
+```
+
+A server on the builder's own host is stored as a path (`/api/ws/orders`), which the runtime turns into `wss://` on a secure page. Picking a live endpoint switches the data source to the matching type. Live endpoints appear only where the builder enables those types (`enableEventStream`, `enableWebsocket`), and Try it never opens them.
 
 ## Try it
 
@@ -14480,6 +14591,8 @@ Click an endpoint to see it on the right:
 | **Response** | What comes back. **Example** shows a made-up answer with the right shape, **Schema** lists every field with its type. |
 | **Try it** | For `GET` endpoints only: fill in the parameters, send the request and see the real answer. Nothing that changes data can be sent from here. |
 
+Endpoints marked **SSE** and **WS** are live: the server keeps sending to them. Picking one makes an [event stream or WebSocket source](https://ngxviewbuilder.io/creators/data-sources#event-stream), and their **Message** section shows what each update looks like. Try it does not open them; watch them in the Preview.
+
 **Use as data source** adds a data source for the endpoint to the view you are editing. It appears in the **Data sources** tab below the canvas, named after the endpoint, for example `listCustomers`.
 
 ## Picking an endpoint in a data source
@@ -14819,7 +14932,7 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 | --- | --- |
 | **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). Renaming it updates everything bound to the old name: tables and selects loading from it, actions running it, data source variables, and `runDataSource("…")` in expressions. |
 | **Title** | A friendly display title for the list. |
-| **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
+| **Type** | `REST`, `Route data`, `Local JSON`, and `WebSocket` or `Event stream` when your developer has enabled them. |
 
 ### REST
 
@@ -14857,7 +14970,7 @@ The connection opens the first time something on the page uses the source, and c
 
 | Field | What it does |
 | --- | --- |
-| **Url** | The endpoint, starting with `ws://` or `wss://`. Use `wss://` anywhere that is not your own machine. |
+| **Url** | The endpoint: `wss://...`, or a path on the same site such as `/api/ws/orders`, which becomes `wss://` automatically on a secure page. |
 | **Protocols (optional)** | Comma separated subprotocol names, if your server asks for them. |
 | **Message (optional)** | Sent once, right after the connection opens. This is where a subscribe or handshake payload goes. It is not sent again later. |
 | **Message path (optional)** | Where the useful part of each message lives, for example `rows`. Leave it empty to take the whole message. |
@@ -14887,6 +15000,21 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 #### Sending something back
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](https://ngxviewbuilder.io/creators/events-actions#send-socket-message).
+
+### Event stream
+
+An event stream is the listening-only cousin of a WebSocket: the server keeps an ordinary web request open and writes an event whenever something happens. It is the simpler choice when the form only needs to watch, such as an order moving from Confirmed to Shipped, an import at 40%, or a log of changes.
+
+| Field | What it does |
+| --- | --- |
+| **Url** | The address that sends the events, for example `/api/orders/{orderId}/events`. `{placeholders}` work as in REST. |
+| **Event types (optional)** | Comma separated, for example `order.updated`. Leave it empty to take every event. |
+| **Message path (optional)** | Where the useful part of each event lives. Empty takes the whole event. |
+| **Update mode** | `Replace current value` keeps the latest event: a status, a progress figure. `Push values in array` adds each event to a list, which a table shows as a live log (the latest 500 stay). |
+
+Binding, sharing one connection and the `__socket.<source name>` status work exactly as for a WebSocket, described above. When the connection drops, the runtime reconnects on its own and the server can carry on from the last event.
+
+There is nothing to send back on an event stream. To change something on the server, use a REST source from a button as usual.
 
 ### Building JSON without typing it
 

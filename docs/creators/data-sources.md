@@ -15,7 +15,7 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 | --- | --- |
 | **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). Renaming it updates everything bound to the old name: tables and selects loading from it, actions running it, data source variables, and `runDataSource("…")` in expressions. |
 | **Title** | A friendly display title for the list. |
-| **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
+| **Type** | `REST`, `Route data`, `Local JSON`, and `WebSocket` or `Event stream` when your developer has enabled them. |
 
 ### REST
 
@@ -53,7 +53,7 @@ The connection opens the first time something on the page uses the source, and c
 
 | Field | What it does |
 | --- | --- |
-| **Url** | The endpoint, starting with `ws://` or `wss://`. Use `wss://` anywhere that is not your own machine. |
+| **Url** | The endpoint: `wss://...`, or a path on the same site such as `/api/ws/orders`, which becomes `wss://` automatically on a secure page. |
 | **Protocols (optional)** | Comma separated subprotocol names, if your server asks for them. |
 | **Message (optional)** | Sent once, right after the connection opens. This is where a subscribe or handshake payload goes. It is not sent again later. |
 | **Message path (optional)** | Where the useful part of each message lives, for example `rows`. Leave it empty to take the whole message. |
@@ -83,6 +83,21 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 #### Sending something back
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](./events-actions#send-socket-message).
+
+### Event stream
+
+An event stream is the listening-only cousin of a WebSocket: the server keeps an ordinary web request open and writes an event whenever something happens. It is the simpler choice when the form only needs to watch, such as an order moving from Confirmed to Shipped, an import at 40%, or a log of changes.
+
+| Field | What it does |
+| --- | --- |
+| **Url** | The address that sends the events, for example `/api/orders/{orderId}/events`. `{placeholders}` work as in REST. |
+| **Event types (optional)** | Comma separated, for example `order.updated`. Leave it empty to take every event. |
+| **Message path (optional)** | Where the useful part of each event lives. Empty takes the whole event. |
+| **Update mode** | `Replace current value` keeps the latest event: a status, a progress figure. `Push values in array` adds each event to a list, which a table shows as a live log (the latest 500 stay). |
+
+Binding, sharing one connection and the `__socket.<source name>` status work exactly as for a WebSocket, described above. When the connection drops, the runtime reconnects on its own and the server can carry on from the last event.
+
+There is nothing to send back on an event stream. To change something on the server, use a REST source from a button as usual.
 
 ### Building JSON without typing it
 

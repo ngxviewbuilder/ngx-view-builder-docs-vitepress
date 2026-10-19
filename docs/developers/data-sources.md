@@ -298,6 +298,71 @@ Query strings end up in access logs, proxy logs, and referrer headers. Prefer sh
 
 Sockets die for reasons that have nothing to do with your code. Load balancers and reverse proxies need WebSocket upgrade enabled on the route, and their idle timeout decides how long a quiet connection survives. A server-side heartbeat keeps long-lived views connected instead of relying on the reconnect loop.
 
+### Relative urls and wss
+
+A url without a scheme, such as `/api/ws/orders`, is resolved against the page before the socket opens: `wss://` on a page served over https, `ws://` over http. A view stored with a relative url therefore stays secure wherever it is deployed, and it connects in older browsers too, which accept only absolute WebSocket urls. A page served over https cannot open a plain `ws://` connection at all; the browser blocks it.
+
+## Event stream sources (server-sent events)
+
+An `sse` source is the one-way sibling of a WebSocket: the server answers a GET with `Content-Type: text/event-stream` and keeps writing events to it. Use it when the page only listens, which is most of the time: an order's status, an import's progress, a live log, an AI answer arriving piece by piece. It is plain HTTP, so it passes proxies and firewalls that block WebSocket upgrades, and over HTTP/2 an open stream costs next to nothing.
+
+Enable the type in the builder UI:
+
+```ts
+api.setDataSourceTypeSettings({ enableEventStream: true });
+```
+
+As with WebSocket, the runtime is not gated by the flag: a stored view with an event stream source connects anyway.
+
+### Your server side
+
+The standard [text/event-stream](https://html.spec.whatwg.org/multipage/server-sent-events.html) format:
+
+```
+retry: 3000
+
+event: order.updated
+id: 42
+data: {"id":50001,"status":"shipped","progress":67}
+
+```
+
+- `data:` is the message. JSON is parsed, anything else is delivered as text. Several `data:` lines join with a newline.
+- `event:` names the event type. A source lists the types it wants, or takes every event.
+- `id:` is sent back as `Last-Event-ID` when the stream reconnects, so the server can resume where it stopped.
+- `retry:` sets the reconnect delay. The runtime accepts 1 to 60 seconds; without it, the WebSocket backoff applies.
+- A line starting with `:` is a comment. Send one every 15 to 30 seconds so proxies do not close an idle stream.
+
+When the response ends, the runtime reconnects, so a server may close long streams on purpose and let clients come back.
+
+### Security: authorizing the stream
+
+The stream is read with `fetch`, not `EventSource`, and not through `HttpClient`, so your interceptors do not see it. Unlike a WebSocket it can carry headers, which keeps tokens out of urls:
+
+```ts
+// app.config.ts
+provideNgxViewBuilderProjectLayer({
+  id: 'event-stream-security',
+  authorizeEventStream: async ({ sourceName, url }) => ({
+    headers: { Authorization: `Bearer ${await auth.getFreshToken()}` },
+  }),
+});
+```
+
+The hook runs before every connection and reconnection and may return a promise. Return `{ headers }`, `{ url }`, `{ withCredentials: true }` (cookies to another origin), any mix, or nothing to connect as configured. Cookies go to the page's own origin by default. `NgxViewBuilderApiService.setEventStreamAuthorizer()` sets the hook on one runtime instance and wins over the project layer there.
+
+Limits the runtime enforces against a broken or hostile stream: a `retry` outside 1 to 60 seconds is clamped, a single event or line over 1 MB ends the connection, and `Push values in array` keeps the latest 500 messages. Messages are data: they are parsed as JSON and shown through the same escaping as a REST answer, never run.
+
+What stays yours: authorize the request on the server, allow the stream's origin in your Content-Security-Policy `connect-src`, and keep an eye on how many streams one user can hold open.
+
+### Shared connections and status
+
+Streams are shared by url, exactly like sockets: several sources and elements on one endpoint open one connection. The status is published under the same `__socket.<sourceName>` paths (`connected`, `lastMessageAt`, `reconnects`, `url`), so an offline banner works the same for both.
+
+### Proxies
+
+Response buffering breaks a stream: the events arrive in one lump when the buffer fills. Turn buffering and compression off for the stream's route (`X-Accel-Buffering: no` for nginx, no `encode` on that route in Caddy), and raise the proxy's read timeout above your comment interval.
+
 ## Mock data in development
 
 Use an interceptor to fake endpoints while the backend is in flight. The demo app's `demo-data.interceptor.ts` in `projects/test-app` is a working example that pattern-matches URLs and returns canned JSON.
