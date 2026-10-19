@@ -12,6 +12,8 @@ All choice elements share the same two ways of getting their options:
 
 The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
 
+<YouTubeVideo id="qYdVIdZMkE8" />
+
 ## Options: shared fields
 
 Each manual option row has:
@@ -40,7 +42,7 @@ The standard dropdown. Best default for 5+ options.
 | --- | --- |
 | **Show search** | Adds a search box inside the dropdown. |
 | **Placeholder text** | Shown while nothing is selected. |
-| **Option value key / Option label key** | Which response fields become value and label (data-source options). |
+| **Option value key / Option label key** | Which response fields become value and label (data-source options). Nested fields are written as a path, `info.label`. |
 
 ## Multi-choice menu (`multiSelect`)
 

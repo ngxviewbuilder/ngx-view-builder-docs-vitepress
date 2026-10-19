@@ -5,6 +5,10 @@ description: Badge, Message card, Toast, Stats card, Progress bar, and Stepper/T
 
 # Feedback & status
 
+Message cards, their variants and appearances are shown in this lesson:
+
+<YouTubeVideo id="14FR8gc8DoQ" />
+
 ## Badge (`badge`)
 
 A small colored label: `Active`, `Draft`, `Overdue`.
@@ -103,3 +107,5 @@ The current step is readable in expressions:
 ```
 
 Example: `visibleIf: {approvalFlow.selectedStep} == "Approved"` on a download button.
+
+Conditions that read the step run again every time a person picks another step, so `disableIf: {approvalFlow.selectedStep} == "draft"` locks a field on the draft step and unlocks it on the next one. The same goes for `{myTabs.selectedTab}` on tabs.

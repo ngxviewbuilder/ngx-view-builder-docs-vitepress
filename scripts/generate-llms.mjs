@@ -5,7 +5,7 @@
 //                      that fetch a single URL instead of crawling links
 // Run via `npm run generate:llms`, or automatically before `docs:build`.
 
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,6 +13,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DOCS_DIR = path.join(ROOT, 'docs');
 const SITE_URL = 'https://ngxviewbuilder.io';
+
+// The YouTube lessons. Pages embed them as <YouTubeVideo id="…" />; in the Markdown
+// copies they become plain links an agent can follow.
+const { videos } = JSON.parse(readFileSync(path.join(DOCS_DIR, '.vitepress', 'videos.json'), 'utf8'));
+const formatTime = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+function videoMarkdown(id, start = 0) {
+  const video = videos.find((v) => v.id === id);
+  if (!video) return '';
+  const url = `https://www.youtube.com/watch?v=${id}${start ? `&t=${start}s` : ''}`;
+  const chapters = video.chapters.map((c) => `${formatTime(c.at)} ${c.title}`).join(', ');
+  return (
+    `**Video lesson ${video.lesson} (${formatTime(video.seconds)}):** [${video.title}](${url}). ` +
+    `${video.description} Chapters: ${chapters}.`
+  );
+}
+
+function replaceVideoComponents(body) {
+  return body.replace(/<YouTubeVideo\s+id="([^"]+)"(?:\s+:start="(\d+)")?\s*\/>/g, (_, id, start) =>
+    videoMarkdown(id, Number(start ?? 0)),
+  );
+}
 
 const SUMMARY =
   'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.';
@@ -130,6 +152,7 @@ function parsePage(filePath) {
 
   // Strip raw <style>...</style> blocks (page-local CSS), which is noise for an AI corpus.
   body = body.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').trim();
+  body = replaceVideoComponents(body);
 
   return { relFromDocs, title, description, body, url: toUrl(relFromDocs) };
 }
@@ -167,6 +190,10 @@ const groups = [
 // --- llms.txt: linked index ---
 
 let llmsTxt = `# NGX View Builder\n\n> ${SUMMARY} This file indexes the documentation an AI agent should read, most important first.\n\n`;
+llmsTxt +=
+  `Every page below is also served as plain Markdown: add \`.md\` to its URL ` +
+  `(\`${SITE_URL}/creators/functions.md\`), or \`index.md\` when the URL ends in a slash ` +
+  `(\`${SITE_URL}/developers/index.md\`).\n\n`;
 
 for (const group of groups) {
   if (!group.pages.length) continue;
@@ -242,10 +269,31 @@ const retrievalMapTarget = path.join(DOCS_DIR, 'public', 'ai', 'retrieval-map.js
 mkdirSync(path.dirname(retrievalMapTarget), { recursive: true });
 copyFileSync(retrievalMapSource, retrievalMapTarget);
 
+// --- one Markdown file per page ---
+//
+// Agents that fetch a single page (Claude Code, Cursor, ChatGPT browsing) read Markdown far
+// better than the rendered HTML with its navigation and scripts. Every page is written as
+// clean Markdown with absolute links; config.mts copies the folder next to the HTML at
+// build end, so /creators/functions has /creators/functions.md beside it.
+
+const MARKDOWN_DIR = path.join(DOCS_DIR, '.vitepress', 'markdown-pages');
+rmSync(MARKDOWN_DIR, { recursive: true, force: true });
+for (const p of pages) {
+  if (p.relFromDocs === '404.md') continue;
+  const body = absolutizeLinks(p.relFromDocs, p.body);
+  const h1 = body.match(/^#\s+.+$/m);
+  const heading = h1 && body.trimStart().startsWith(h1[0]) ? h1[0] : `# ${p.title}`;
+  const rest = heading === h1?.[0] ? body.trimStart().slice(h1[0].length).trimStart() : body;
+  const intro = `${p.description ? `> ${p.description}\n\n` : ''}Source: ${p.url}\n\n`;
+  const target = path.join(MARKDOWN_DIR, p.relFromDocs);
+  mkdirSync(path.dirname(target), { recursive: true });
+  writeFileSync(target, `${heading}\n\n${intro}${rest.trimEnd()}\n`);
+}
+
 const kb = (s) => `${Math.round(s.length / 1024)} KB`;
 console.log(
   `generate-llms: indexed ${pages.length} pages -> ` +
     `llms.txt (${kb(llmsTxt)}), llms-full.txt (${kb(llmsFull)}), ` +
     `llms-authoring.txt (${kb(llmsAuthoring)}, ${aiGroup?.pages.length ?? 0} AI pages), ` +
-    `public/ai/retrieval-map.json`,
+    `public/ai/retrieval-map.json, ${pages.length} Markdown pages`,
 );

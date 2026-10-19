@@ -1,6 +1,6 @@
 ---
 title: Expressions basics
-description: How to reference fields and write conditions in NGX View Builder.
+description: "How NGX View Builder expressions work: referencing fields, operators, functions, context tokens, when expressions run and how to debug them."
 ---
 
 # Expressions basics
@@ -84,6 +84,8 @@ Runtime state of some containers is also addressable: `{myTabs.selectedTab}`, `{
 An expression re-evaluates automatically whenever any field it references changes. For text inputs you can tune *when* with **Logic execution mode**: on input (every keystroke), on change, or on blur (leaving the field).
 
 ## Debugging
+
+An expression the parser cannot read never runs: `{qty} >= (` is neither true nor false, so a rule written that way silently does nothing. The builder says so as you type. The Logic panel and the code editor show the reason under the expression (*Unexpected end of expression*), and the rule's card keeps the warning after you save, until the expression is fixed.
 
 Wrap any part in `dbg(value, "label")`. It logs the value to the browser console and passes it through unchanged:
 

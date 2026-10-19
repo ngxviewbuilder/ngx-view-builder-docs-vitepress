@@ -57,7 +57,9 @@ Per-column filter settings live on each column; see [Columns](#columns) below.
 
 ### Columns
 
-**Columns** holds the column schema. Each column has:
+**Columns** holds the column schema, in the **Columns** category of the table's properties. The list there adds, reorders (drag the handle) and removes columns. To change a column's own settings, click its name in the list or the gear button next to it; clicking the column's header on the canvas does the same. The sidebar then shows that column, and the table's own properties come back when you select the table again.
+
+Each column has:
 
 | Column field | What it does |
 | --- | --- |
@@ -83,8 +85,9 @@ Per-column filter settings live on each column; see [Columns](#columns) below.
 | **Filter options / JSON / data source (+ items path, label key, value key)** | Where the filter's choices come from: manual list, JSON, or a data source. |
 | **Filter toggle true/false value** | What a detailed-search toggle sends when on/off (`yes`/`no`, `T`/`N`). |
 | **Filter multi-value delimiter** | Joins multiple filter values into one request param (`,` or `;`). |
-| **Use totals (+ fraction digits, locale, grouping, mask, template)** | Show this column's sum in the footer row, with formatting controls and a `{total}` text template. |
 | **Editable / Editor type / Editor options (+ label key, value key, placeholder)** | Inline-edit settings for this column: which control edits it (text, number, select, date) and where its choices come from. |
+
+A data table has no totals row of its own. Column sums with a footer live on the [Dynamic table](#dynamic-table-dynamictable) (**Use totals**). For a sum over a data table, put a Number next to it with an expression over its rows: `sumArray({__table.el1.allRows}, amount)`.
 
 ### Formatted columns
 
@@ -136,7 +139,7 @@ A cell element knows which row it sits in, so anything you write in it resolves 
 | `{index}` | Zero-based index of the row on the current page |
 | `{value}` | The cell's own value |
 
-This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
+This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Badge with no text of its own shows the cell's value, so a `status` column with a Badge cell element reads `OPEN` or `DONE` row by row. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
 
 Editing a value through a cell element writes it back into the row, so a plain `text` column bound to the same key updates with it, and row actions and conditions see the new value.
 
@@ -214,7 +217,7 @@ The chevron normally shows only where there is something to open, which is right
 
 **Export** opens a dialog where the person picks, in this order:
 
-- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
+- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted; a `Date & time` column keeps its time, in the reader's time zone), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
 - **Rows**, each with the number of rows it would export: **Selected rows** (only when some are selected), **All rows** (or *All rows matching search and filters* while a search or filter is active), or **Current page only**. On a lazy table, *All rows* loads every page from the server, not only the one on screen.
 - **Columns**, when the column picker is on.
 - **File name**, prefilled and editable; the extension follows the format.

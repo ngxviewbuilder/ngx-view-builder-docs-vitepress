@@ -28,6 +28,9 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
+| `listPlugins()` | `nvb_list_plugins` | the installed plugins an AI client can use, see [Plugins](#plugins) |
+| `readPlugin(id, query?)` | `nvb_read_plugin` | what a plugin knows, such as the logic map or the field documentation |
+| `executePlugin(id, command, args?)` | `nvb_plugin_execute` | runs one of a plugin's commands |
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
@@ -70,13 +73,19 @@ A key is valid for 24 hours. When it runs out the builder generates a new one, a
 
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
+ChatGPT, and Codex with the server added as a custom MCP connector, work a little differently: their calls go through OpenAI's servers, which open a new MCP session for every tool call. To keep those pairings, the server reads the anonymous conversation id OpenAI sends with each call (`openai/session` in the call's `_meta`) and keeps the pairing for the conversation instead. The person pairs once per chat, as with any other client, and the builder lists the conversation as one AI client. A new chat starts unpaired.
+
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+**Disconnect** sends the same revoke before it closes the connection, so every AI client paired to the tab loses access too. The key stays the same, so a client the person gives it to again can pair again. A reload or leaving the page does not revoke anything, which is why the AI carries on after a reload.
 
 Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
 
-`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
+`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of a tab.
+
+One connection can hold several tabs, so a person with two builders open needs only one AI chat. Pair it with each key in turn: the tabs paired before stay paired, the calls go to the tab paired last, and `nvb_pair` with a key the connection already holds switches back to that tab. `nvb_status` lists every tab it holds and which one is active. `nvb_unpair` with a `session_key` lets go of that tab only, without one of all of them. If the active tab revokes access, the calls stop and the AI is told which tabs it still holds; they never move to another view on their own.
 
 ### Keys from your backend
 
@@ -107,6 +116,7 @@ Nothing of your views or data. The server is a relay between the AI client and t
 What it does hold, in memory only, is what it needs to route calls and enforce limits:
 
 - the open builder tabs and their pairing keys, and which AI connection is paired with which tab;
+- for ChatGPT and Codex, the anonymous conversation and user ids OpenAI sends with each call, so a pairing outlives the single call it was made on;
 - how many calls each tab made in the current hour;
 - how many browsers use each license right now (by license number), for the seat limit;
 - the license service's answer about a key, for ten minutes, so it is not asked on every connection.
@@ -407,7 +417,7 @@ A few details worth knowing:
 
 | Command | What it does |
 | --- | --- |
-| `switchTab` | Moves the builder to another tab, preview included. |
+| `switchTab` | Moves the builder to another tab, preview and plugin tabs (`logicMap`, `documentation`) included. |
 | `focusElement` | Selects an element so its properties open in the sidebar. |
 | `setData` | Sets working data. Values that belong to real elements go through the value pipeline, so expressions and conditions re-evaluate. |
 | `validate` | Validates the current view against data and returns the issues. |
@@ -420,6 +430,26 @@ A few details worth knowing:
 | `setRuntimeVariableContext` | External values that runtime variables can map from. |
 | `reloadDataSource` | Re-runs a data source. |
 | `undo`, `redo` | Steps the builder history. Warns when there is nothing to step to. |
+
+## Plugins
+
+Installed plugins can offer AI clients their own reads and commands. `listPlugins()` (`nvb_list_plugins`) lists them with what each is for, the query it takes and its commands; `help()` lists them too, and the system instructions mention them, so a model finds them without being told.
+
+```js
+// nvb_read_plugin
+{ "plugin": "logicMap", "query": { "element": "annualRevenue" } }
+
+// nvb_plugin_execute
+{ "plugin": "documentation", "command": "setDescription",
+  "args": { "element": "vatNumber", "text": "VAT number of the company. Finance checks it against VIES." } }
+```
+
+| Plugin | Read | Commands |
+| --- | --- | --- |
+| `logicMap` ([Logic map](./plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
+| `documentation` ([Documentation](./plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+
+A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](./plugin-development#letting-ai-clients-use-your-plugin)).
 
 ## Two languages in one view
 
