@@ -1,6 +1,6 @@
 ---
 title: Rendering views (runtime)
-description: Render saved view definitions to end users and collect their data.
+description: "Render saved NGX View Builder views in your Angular app with the runtime component: inputs, getting data out, programmatic control and render modes."
 ---
 
 # Rendering views (runtime)

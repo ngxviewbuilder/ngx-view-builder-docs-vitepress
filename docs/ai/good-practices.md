@@ -1,6 +1,6 @@
 ---
 title: "AI: Good practices for building views"
-description: How an AI agent builds NGX View Builder views that look finished and behave right. Captions and labels per element, buttons and contrast, layout, names, fields, logic, tables and a final checklist.
+description: "How an AI agent builds NGX View Builder views that look finished: labels per element, buttons and contrast, layout, names, logic, tables and a final checklist."
 ---
 
 # AI: Good practices for building views
@@ -79,6 +79,8 @@ Other caption rules:
 - **One primary action per area**: `variant: "solid"`, `tone: "primary"`. Secondary actions next to it are `variant: "outline"` with `tone: "neutral"`. A destructive action is `tone: "risk"`.
 - **A dark fill needs light text.** A solid button with a dark tone (`primary`, `success`, `info`, `risk`) or a dark custom `color` gets `textColor: "var(--nvb-color-neutral-000)"`. Before 0.10.6 some host stylesheets left the caption dark on dark; setting it explicitly is correct on every version. A light fill (`warning`, or a light custom `color`) gets dark text, `"var(--nvb-color-neutral-900)"`.
 - **Button bars go in an `emptyBlock`**, not in a panel row: `contentDisplay: "grid"`, `gridTemplateColumns: "max-content max-content"`, a `contentJustify` and a `contentGap`. Flex does not line them up, because every row inside the block is full width.
+- **An icon button is `iconOnly: true`, not a variant.** It works with every `variant` and `tone`. The caption stays in `text` ("Delete row"): screen readers read it and it shows as a tooltip, while the button shows only the icon. Without `iconSize` the icon follows the button `size` (16, 18 or 20 px); with a larger `iconSize` the square grows so the icon never touches the edge. `iconColor` colors the icon alone, for example a red bin on a neutral outline button.
+- **Never guess an icon name.** An `icon` is a name from `help().icons` (the system instructions list them: the host's registered icons first, then the built-in ones) or SVG markup such as `"<svg viewBox=\"0 0 24 24\">...</svg>"` for a one-off icon. A name that does not exist draws a question mark, and `execute()` warns about it. The same goes for `icon` on cards, page titles and toasts and `iconName` on the icon element.
 - A button does something. Give it `events` (a `submit`, a `validate`, a data source call, a toast), or leave it out.
 
 ```json
@@ -118,6 +120,28 @@ Other caption rules:
 `firstName` and `lastName` carry no `width`: each takes half the row.
 - **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
 - **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
+- **Line up a row where one field has a description.** The `description` (or a label long enough to wrap) makes that field's header taller, so its input sits lower than its neighbours and the row looks like stairs. Put the row inside an `emptyBlock` with `contentAlign: "flex-end"`. The fields stay side by side in the block's own `rows`, and their inputs line up at the bottom.
+
+```json
+{
+  "rows": [
+    {
+      "columns": [
+        {
+          "elementRef": "amountsBlock",
+          "rows": [
+            { "columns": [{ "elementRef": "netAmount" }, { "elementRef": "vatAmount" }] }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`amountsBlock` is `{ "type": "emptyBlock", "label": "", "contentAlign": "flex-end" }`, and only `vatAmount` has a `description`. Without the block, the VAT input would sit one line lower than the net amount.
+- **A canvas page brings no spacing of its own.** With `settings.renderMode: "canvas"` the gap between rows, between fields in a row and around the page is `0`, because a web page's sections set their own. A form on a canvas therefore goes in an `emptyBlock` that puts the spacing back: `contentGap` (for example `"16px"`) for the space between rows and between the fields in a row, and `panelPadding` for the space around them. Without that block the fields touch each other.
+- **Cards on a canvas need a gap too.** A `messageCard`, `statsCard` or any other element with its own border and rounded corners sticks to its neighbour on a canvas page, edge to edge, and the rounded corners make it look broken. Put the row of cards in an `emptyBlock` with a small `contentGap`, for example `"12px"`. Leave them joined only when the person asks for that.
 - **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
 - A dashboard or display page is not a form: set `showValidateButton: false` and `showSubmitButton: false` in `settings` so the Validate and Submit toolbar does not appear.
 
@@ -193,8 +217,8 @@ Other caption rules:
 Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
-2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
-3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
+2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill. Icon buttons use `iconOnly: true` with the caption still in `text`, and every icon name exists (no question marks).
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile. A row where one field has a description sits in an `emptyBlock` with `contentAlign: "flex-end"`, and a form on a canvas page sits in an `emptyBlock` with its own `contentGap` and `panelPadding`. Cards side by side on a canvas sit in an `emptyBlock` with a small `contentGap`, so they do not touch.
 4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.

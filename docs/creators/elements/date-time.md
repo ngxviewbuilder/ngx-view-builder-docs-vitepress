@@ -1,9 +1,13 @@
 ---
 title: Date & time inputs
-description: Datepicker, Date range, and Time picker, with full property tables.
+description: "Date picker, date range and time picker for Angular forms built in NGX View Builder, with every property and how to work with dates in expressions."
 ---
 
 # Date & time inputs
+
+The inputs lesson shows the date picker, date range and time picker. This player starts at that part:
+
+<YouTubeVideo id="iTN6QoEfT3M" :start="54" />
 
 ## Date picker (`datepicker`)
 

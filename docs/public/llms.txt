@@ -2,20 +2,22 @@
 
 > NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP. This file indexes the documentation an AI agent should read, most important first.
 
+Every page below is also served as plain Markdown: add `.md` to its URL (`https://ngxviewbuilder.io/creators/functions.md`), or `index.md` when the URL ends in a slash (`https://ngxviewbuilder.io/developers/index.md`).
+
 ## AI reference (machine-first, start here)
 
 - [Live builder command API](https://ngxviewbuilder.io/ai/command-api): How an agent drives an open builder directly, instead of only emitting structure JSON.
 - [AI reference](https://ngxviewbuilder.io/ai/): The canonical, indexed knowledge base an AI agent needs to generate or modify NGX View Builder structure JSON.
 - [AI: Generation contract](https://ngxviewbuilder.io/ai/generation-contract): How an AI agent must behave when generating, modifying, reviewing NGX View Builder JSON or consulting on integration questions.
-- [AI: Layout model (pages, rows, columns, elementRef)](https://ngxviewbuilder.io/ai/layout-model): The exact layout tree an AI agent must produce. How pages, rows, columns and elementRef relate to the flat elements map, how containers nest, and where widths belong.
+- [AI: Layout model (pages, rows, columns, elementRef)](https://ngxviewbuilder.io/ai/layout-model): The exact layout tree an AI agent must produce: how pages, rows, columns and elementRef relate to the flat elements map, how containers nest, where widths go.
 - [AI: JSON authoring rules](https://ngxviewbuilder.io/ai/json-authoring-rules): The structure skeleton and hard rules an AI agent must follow when constructing NGX View Builder JSON.
 - [AI: Element selection map](https://ngxviewbuilder.io/ai/element-selection-map): How an AI agent maps user intent to the right NGX View Builder element type.
 - [AI: Logic and expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions): Which expression fields an AI agent may use in NGX View Builder JSON and the rules they must follow.
 - [AI: Element rules and value shapes](https://ngxviewbuilder.io/ai/element-rules): AI-oriented summary of the primary NGX View Builder elements, their usage rules and value shapes.
 - [AI: Canonical properties reference](https://ngxviewbuilder.io/ai/properties-reference): The authoritative property reference for AI JSON generation. Only properties listed here are supported.
 - [AI: Common mistakes and anti-patterns](https://ngxviewbuilder.io/ai/common-mistakes): Known anti-patterns AI agents repeat when generating NGX View Builder JSON, with corrections.
-- [AI: Good practices for building views](https://ngxviewbuilder.io/ai/good-practices): How an AI agent builds NGX View Builder views that look finished and behave right. Captions and labels per element, buttons and contrast, layout, names, fields, logic, tables and a final checklist.
-- [AI: Verified example structures](https://ngxviewbuilder.io/ai/examples): A library of complete, verified NGX View Builder JSON examples covering layout, every element family, the full table feature set, dynamic tables and panels, data sources, runtime variables and expressions.
+- [AI: Good practices for building views](https://ngxviewbuilder.io/ai/good-practices): How an AI agent builds NGX View Builder views that look finished: labels per element, buttons and contrast, layout, names, logic, tables and a final checklist.
+- [AI: Verified example structures](https://ngxviewbuilder.io/ai/examples): Complete, verified NGX View Builder JSON examples: layout, every element family, tables, dynamic panels, data sources, runtime variables and expressions.
 - [AI: Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON, covering element, property, and expression mapping.
 
 ## Developer documentation
@@ -33,63 +35,67 @@
 - [API: validation & lifecycle](https://ngxviewbuilder.io/developers/api/validation): Validate the view on screen or any structure headlessly, show toasts, and fire the render, completion and interaction notifications.
 - [Architecture](https://ngxviewbuilder.io/developers/architecture): How the runtime and designer packages, the shared core, and plugins fit together.
 - [Embedding the builder](https://ngxviewbuilder.io/developers/builder-integration): Host the visual builder, persist structures, and customize the header.
-- [Custom CSS](https://ngxviewbuilder.io/developers/custom-css): Per-view and host-injected CSS on top of the theme system.
+- [Custom CSS](https://ngxviewbuilder.io/developers/custom-css): Style NGX View Builder views with custom CSS: per-view styles, host stylesheets, targeting elements, sanitisation and how to layer it over the theme.
 - [Custom elements](https://ngxviewbuilder.io/developers/custom-elements): Build your own element (model, component, properties) and register it.
-- [Custom expression functions](https://ngxviewbuilder.io/developers/custom-functions): Add project-specific functions to the expression language.
+- [Custom expression functions](https://ngxviewbuilder.io/developers/custom-functions): Add your own functions to the NGX View Builder expression language from your Angular app, including async functions that call your API.
 - [Custom properties](https://ngxviewbuilder.io/developers/custom-properties): Add or override properties in the sidebar, per element type or globally.
 - [Custom validator types](https://ngxviewbuilder.io/developers/custom-validators): Register your own named validation rules so creators pick them from the Type list instead of writing regular expressions.
 - [Data source integration](https://ngxviewbuilder.io/developers/data-sources): Host-side concerns, including defaults, auth, interceptors, and observability.
-- [E2E testing](https://ngxviewbuilder.io/developers/e2e-testing): Every control in a view and in the builder has a stable data-testid. How the ids are built, how they work in repeaters, and how to use them from Playwright or Cypress.
+- [E2E testing](https://ngxviewbuilder.io/developers/e2e-testing): Every control in a view and in the builder has a stable data-testid: how the ids are built, how repeaters number them, and using them from Playwright or Cypress.
 - [Events reference](https://ngxviewbuilder.io/developers/events): Every event of NgxViewBuilderApiService, when it fires and what its payload holds.
 - [Extensions overview](https://ngxviewbuilder.io/developers/extensions): One config object registers everything custom, from elements and functions to properties, icons, and tabs.
-- [Custom SVG icons](https://ngxviewbuilder.io/developers/icons): Register icons by name for elements, buttons, and the builder UI.
-- [Installation](https://ngxviewbuilder.io/developers/installation): Install the package, register providers, and initialize the runtime.
-- [Licensing](https://ngxviewbuilder.io/developers/licensing): Supplying and validating the license key.
-- [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development): Ship your own builder tab as a reusable package.
+- [Custom SVG icons](https://ngxviewbuilder.io/developers/icons): Register custom SVG icons in NGX View Builder by name, inline or from an asset folder, and use them on elements, buttons and in the builder.
+- [Installation](https://ngxviewbuilder.io/developers/installation): Install NGX View Builder in an Angular app: the runtime and designer packages, providers, the global stylesheet, initialization and plugins.
+- [Licensing](https://ngxviewbuilder.io/developers/licensing): How NGX View Builder licensing works: what is free, how to supply and validate the license key, perpetual fallback, and what end users see.
+- [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development): Build your own NGX View Builder plugin: a designer tab, a properties panel section, AI client access, translations and packaging as an npm library.
+- [Documentation plugin](https://ngxviewbuilder.io/developers/plugin-docs): Field documentation kept apart from the view JSON, its storage on your server, the document format and AI access.
+- [Logic map plugin](https://ngxviewbuilder.io/developers/plugin-logic-map): Install the Logic map tab, its license rule, translations and what AI clients can do with it.
 - [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates): Full syntax reference for the Templates plugin  control flow, translations, click actions  plus how to persist templates to your own database.
-- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official Templates plugin and how the plugin system works.
-- [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved view definitions to end users and collect their data.
-- [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Inject route params, user context, and derived values into views.
+- [Using plugins](https://ngxviewbuilder.io/developers/plugins): The official plugins (Templates, Logic map, Documentation) and how the plugin system works.
+- [Rendering views (runtime)](https://ngxviewbuilder.io/developers/runtime-integration): Render saved NGX View Builder views in your Angular app with the runtime component: inputs, getting data out, programmatic control and render modes.
+- [Runtime variables](https://ngxviewbuilder.io/developers/runtime-variables): Pass route parameters, user context and derived values into NGX View Builder views with runtime variables, for example in a route-driven edit form.
 - [Schema versioning](https://ngxviewbuilder.io/developers/schema-versioning): How stored views survive library upgrades, what schemaVersion means, and how to add your own migrations.
 - [Standalone element examples](https://ngxviewbuilder.io/developers/standalone-elements-examples): Working recipes for using the built-in elements inside your own templates.
 - [Standalone elements](https://ngxviewbuilder.io/developers/standalone-elements): Use the built-in elements directly in your own templates, without rendering a saved view.
 - [Structure JSON](https://ngxviewbuilder.io/developers/structure-json): The IStructure document, covering settings, pages, elements, data sources, and localization.
-- [Theming & design tokens](https://ngxviewbuilder.io/developers/theming): Light/dark modes, token overrides, and full custom themes.
+- [Theming & design tokens](https://ngxviewbuilder.io/developers/theming): Theme NGX View Builder with design tokens: light and dark mode, overriding tokens to match your Angular app, and theming custom elements.
 - [UI translations](https://ngxviewbuilder.io/developers/ui-translations): Translate the builder interface itself (tabs, buttons, property labels).
-- [Headless validation](https://ngxviewbuilder.io/developers/validator): Validate structure + data without rendering a visible view.
+- [Headless validation](https://ngxviewbuilder.io/developers/validator): Validate NGX View Builder view data without showing the view: api.validateData(), the headless validator component and server-side checks.
 
 ## Creator documentation
 
 - [Angular form builder for creators](https://ngxviewbuilder.io/creators/): Build Angular forms, dashboards, and data views without writing code. Drag elements onto a canvas, set their properties in a sidebar, and save the result as JSON.
 - [Calculated values](https://ngxviewbuilder.io/creators/calculated-values): Expression and Default value, for computing field values from other fields.
-- [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): The most common expression patterns, copy-paste ready.
+- [Expression cheat sheet](https://ngxviewbuilder.io/creators/cheat-sheet): Copy-paste expression patterns for NGX View Builder: conditions, if/else, sums over table rows, dates, writing values and placeholders in text.
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.
 - [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the Data sources editor and the element binding panel, for REST, route, and local sources.
-- [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element and how it triggers actions.
+- [Field documentation](https://ngxviewbuilder.io/creators/documentation): Describe what each field is for and copy a ready field reference into Confluence.
+- [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element in NGX View Builder: run actions on click, submit or validate the form, ask for confirmation, and hide or disable a button by rule.
 - [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices): Select, Multi-select, Autocomplete, Checkbox, Radio, Select button, Toggles, and List box, with full property tables.
 - [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
 - [Content & media](https://ngxviewbuilder.io/creators/elements/content): Rich text, Custom HTML, Image, Video, Iframe, Icon, Avatar, Page title, Breadcrumbs, and Chart, with full property tables.
-- [Date & time inputs](https://ngxviewbuilder.io/creators/elements/date-time): Datepicker, Date range, and Time picker, with full property tables.
+- [Date & time inputs](https://ngxviewbuilder.io/creators/elements/date-time): Date picker, date range and time picker for Angular forms built in NGX View Builder, with every property and how to work with dates in expressions.
 - [Feedback & status](https://ngxviewbuilder.io/creators/elements/feedback): Badge, Message card, Toast, Stats card, Progress bar, and Stepper/Timeline, with full property tables.
-- [Elements overview](https://ngxviewbuilder.io/creators/elements/): The full element catalogue, grouped by purpose.
-- [Text & number inputs](https://ngxviewbuilder.io/creators/elements/inputs): Text, Textarea, Number, Number stepper, Phone input, and Slider.
-- [Special inputs](https://ngxviewbuilder.io/creators/elements/special): File upload and Signature pad.
+- [Elements overview](https://ngxviewbuilder.io/creators/elements/): Every element you can drag onto an NGX View Builder canvas, grouped by purpose: inputs, choices, dates, tables, charts, layout and content.
+- [Text & number inputs](https://ngxviewbuilder.io/creators/elements/inputs): Text, textarea, number, number stepper, phone input and slider in NGX View Builder: their properties, validation and when to choose which.
+- [Special inputs](https://ngxviewbuilder.io/creators/elements/special): File upload and signature pad elements in NGX View Builder: accepted files, size limits, how the value is stored and how to make them required.
 - [Data tables & lists](https://ngxviewbuilder.io/creators/elements/tables): Table, Dynamic table, and List grid, with the complete property reference for each.
 - [Events & actions](https://ngxviewbuilder.io/creators/events-actions): Every field of the action editor (triggers, action types, confirmation, response handling, toasts) with JSON examples.
-- [Expressions basics](https://ngxviewbuilder.io/creators/expressions): How to reference fields and write conditions in NGX View Builder.
-- [Your first form](https://ngxviewbuilder.io/creators/first-form): Build a working client registration form in ten minutes.
+- [Expressions basics](https://ngxviewbuilder.io/creators/expressions): How NGX View Builder expressions work: referencing fields, operators, functions, context tokens, when expressions run and how to debug them.
+- [Your first form](https://ngxviewbuilder.io/creators/first-form): Step by step: build a client registration form with required fields, a conditional section and a submit button in the NGX View Builder designer.
 - [Form settings](https://ngxviewbuilder.io/creators/form-settings): Every field of the Settings tab, from status and language to width, header, navigation, buttons, dialog mode, and AI access.
-- [Expression functions](https://ngxviewbuilder.io/creators/functions): All built-in expression functions with examples.
-- [JSON editor](https://ngxviewbuilder.io/creators/json-editor): Edit the raw view definition when the visual editor is slower.
-- [Layout & containers](https://ngxviewbuilder.io/creators/layout): Rows, columns, responsive widths, and how containers organise a view.
-- [Pages & navigation](https://ngxviewbuilder.io/creators/pages): Multi-page views, steppers, and page-level states.
-- [Preview & testing](https://ngxviewbuilder.io/creators/preview): Test the view like an end user before handing it off.
+- [Expression functions](https://ngxviewbuilder.io/creators/functions): Every built-in expression function in NGX View Builder with examples: text, numbers, arrays and table rows, dates, data loading and writing values.
+- [JSON editor](https://ngxviewbuilder.io/creators/json-editor): Edit the JSON view definition directly in the NGX View Builder designer: when it is faster than the canvas, how the structure looks and what is checked.
+- [Layout & containers](https://ngxviewbuilder.io/creators/layout): Rows, columns, responsive widths and containers in NGX View Builder: how a view is laid out on desktop, tablet and phone, and canvas pages for web pages.
+- [Logic map](https://ngxviewbuilder.io/creators/logic-map): The NGX View Builder logic map shows on one canvas how fields depend on each other through visibility, required and calculated value rules.
+- [Pages & navigation](https://ngxviewbuilder.io/creators/pages): Multi-page forms in NGX View Builder: Previous and Next buttons or a numbered stepper, step validation, page states, and where Submit and Validate go.
+- [Preview & testing](https://ngxviewbuilder.io/creators/preview): Test a view in the NGX View Builder preview before you ship it: desktop, tablet and phone sizes, live data inspection and expression debugging.
 - [Common properties](https://ngxviewbuilder.io/creators/properties): Every property shared by most elements, from identity and state to limits, validation, logic, actions, design, and data.
-- [Dynamic text & templates](https://ngxviewbuilder.io/creators/templates): Placeholders in text, and the reusable HTML template library.
-- [Translations](https://ngxviewbuilder.io/creators/translations): Multi-language views with the Translations tab.
+- [Dynamic text & templates](https://ngxviewbuilder.io/creators/templates): Dynamic text with placeholders, and the reusable HTML template library in NGX View Builder: where templates are stored and how actions work.
+- [Translations](https://ngxviewbuilder.io/creators/translations): Multi-language forms in NGX View Builder: translate labels, options and messages in the Translations tab, including values that come from data.
 - [Form validation](https://ngxviewbuilder.io/creators/validation): Required fields, validator rules, custom conditions, and error messages, covering every field of the validator editor.
 - [Variables](https://ngxviewbuilder.io/creators/variables): Route params, host context, constants, and computed values available to every expression.
-- [The builder workspace](https://ngxviewbuilder.io/creators/workspace): The main areas of the NGX View Builder screen and what each one does.
+- [The builder workspace](https://ngxviewbuilder.io/creators/workspace): A tour of the NGX View Builder designer: the elements sidebar, canvas, properties panel, footer tabs, header actions and undo history.
 
 ## Product
 

@@ -137,6 +137,15 @@ Actions: `switchTab`, `focusElement`, `setData`, `validate`, `setLanguage`, `set
 
 Mutations are applied to a draft in order and committed together. Actions run afterwards, in order. Call `help()` for the parameters of each.
 
+## Plugins: logic map and field documentation
+
+Installed plugins add their own reads and commands, outside `execute()`. Call `listPlugins()` (MCP `nvb_list_plugins`) to see which are there.
+
+- `logicMap`: `readPlugin('logicMap', { element })` (MCP `nvb_read_plugin`) returns a field's rules in plain words with everything it depends on and changes; without a query, the whole view. Read it before explaining or changing how a form behaves. `executePlugin('logicMap', 'show', { element })` (MCP `nvb_plugin_execute`) opens the map on that field for the person.
+- `documentation`: what each field is for, kept outside the view JSON. Write it with `executePlugin('documentation', 'setDescription', { element, text })`, never into element properties such as `labelTooltip` or `hint`. `setRows`, `setSummary` and `setTitle` finish the page.
+
+A plugin that needs a license answers with the reason when the builder has no valid key; tell the person, do not work around it.
+
 ## Reuse before you invent
 
 Two habits save most of the rework.
@@ -171,6 +180,12 @@ await api.execute([
 ```
 
 `setData` pushes values through the same pipeline as typing, so `visibleIf`, `requireIf` and computed expressions re-evaluate. `validate` returns the issues.
+
+`setData` replaces the test data. Every field the `data` object does not name is emptied, just as if a person cleared it, so totals and summaries count only the answers you sent. To change a few fields and keep the rest, add `merge: true`:
+
+```js
+{ op: 'setData', data: { age: 30 }, merge: true }
+```
 
 **Do not use `validate` to test whether a section is visible.** It runs on a fresh copy and does not apply container visibility to children, so a field inside a hidden panel is still reported as required. Read the preview instead.
 

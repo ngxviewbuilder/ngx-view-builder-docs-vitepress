@@ -1,9 +1,11 @@
 ---
 title: Buttons & actions
-description: The Button element and how it triggers actions.
+description: "The Button element in NGX View Builder: run actions on click, submit or validate the form, ask for confirmation, and hide or disable a button by rule."
 ---
 
 # Buttons & actions
+
+<YouTubeVideo id="14FR8gc8DoQ" />
 
 ## Button (`button`)
 
@@ -24,11 +26,17 @@ A button does nothing by itself. Its behaviour comes from the **actions** you at
 | **Variant** | `solid`, `outline`, `text` |
 | **Size** | `small`, `normal`, `large` |
 | **Tone** | `primary`, `neutral`, `success`, `info`, `warning`, `risk` |
-| **Icon** | Material Symbol or registered SVG icon code |
+| **Icon only** | Shows the icon alone in a square button. Works with every variant: a solid, an outline or a text icon button |
+| **Icon** | Click the preview to pick an icon: search, your application's own icons first, then the built-in ones. You can also type a name, or paste SVG markup under **Custom SVG** for a one-off icon. A name that does not exist is flagged, because it would show a question mark |
 | **Icon position** | `left`, `right`, `top`, `bottom` |
-| **Icon only** | Show only the icon, no text |
+| **Icon size** | In px. Left empty, the icon follows the button size: 16, 18 or 20 px. An icon-only button grows with a larger icon |
+| **Icon color** | Colors the icon alone, for example a red bin on a neutral button |
 | **Color / Text color** | Manual color overrides (text color is handy on light backgrounds) |
 | **Width / Mobile width / Fit content** | Sizing per breakpoint |
+
+### Icon buttons
+
+For a toolbar of small actions (edit, copy, delete), turn on **Icon only** and keep the caption in **Text**, for example *Delete row*. The caption is not drawn, but screen readers read it and it shows as a tooltip when the mouse rests on the button. Leaving **Text** empty works too, but then the button has no name people can hear.
 
 ### Dropdown actions
 

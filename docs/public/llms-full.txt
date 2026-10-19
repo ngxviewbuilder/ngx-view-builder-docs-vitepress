@@ -144,6 +144,15 @@ Actions: `switchTab`, `focusElement`, `setData`, `validate`, `setLanguage`, `set
 
 Mutations are applied to a draft in order and committed together. Actions run afterwards, in order. Call `help()` for the parameters of each.
 
+## Plugins: logic map and field documentation
+
+Installed plugins add their own reads and commands, outside `execute()`. Call `listPlugins()` (MCP `nvb_list_plugins`) to see which are there.
+
+- `logicMap`: `readPlugin('logicMap', { element })` (MCP `nvb_read_plugin`) returns a field's rules in plain words with everything it depends on and changes; without a query, the whole view. Read it before explaining or changing how a form behaves. `executePlugin('logicMap', 'show', { element })` (MCP `nvb_plugin_execute`) opens the map on that field for the person.
+- `documentation`: what each field is for, kept outside the view JSON. Write it with `executePlugin('documentation', 'setDescription', { element, text })`, never into element properties such as `labelTooltip` or `hint`. `setRows`, `setSummary` and `setTitle` finish the page.
+
+A plugin that needs a license answers with the reason when the builder has no valid key; tell the person, do not work around it.
+
 ## Reuse before you invent
 
 Two habits save most of the rework.
@@ -178,6 +187,12 @@ await api.execute([
 ```
 
 `setData` pushes values through the same pipeline as typing, so `visibleIf`, `requireIf` and computed expressions re-evaluate. `validate` returns the issues.
+
+`setData` replaces the test data. Every field the `data` object does not name is emptied, just as if a person cleared it, so totals and summaries count only the answers you sent. To change a few fields and keep the rest, add `merge: true`:
+
+```js
+{ op: 'setData', data: { age: 30 }, merge: true }
+```
 
 **Do not use `validate` to test whether a section is visible.** It runs on a fresh copy and does not apply container visibility to children, so a field inside a hidden panel is still reported as required. Read the preview instead.
 
@@ -2338,6 +2353,14 @@ These fields accept JEXL expressions using `{fieldName}` placeholder syntax.
 
 **All logic fields must contain valid JEXL expressions only.**
 
+**Braces always read a field, so an expression cannot hold an object literal.** `{qty}` is the value of the field called `qty`, which means `[{label: 'A', value: 1}]` looks for a field named `label: 'A', value: 1` and comes out as `[null]`. `nvb_execute` refuses such an expression with `badExpression`. Build objects with `obj()` instead, which takes key and value pairs:
+
+```js
+"[obj('label', 'Yes', 'value', {yesCount}), obj('label', 'No', 'value', {noCount})]"
+```
+
+Arrays of plain values such as `[1, 2, 3]` work as they are.
+
 **There is no `hideIf`, and no `readOnlyIf` with a capital O.** These six keys are the entire list and they are matched exactly. Anything else is an ordinary property as far as the runtime is concerned: it is stored, it is never evaluated, and no dependency is registered for it. What you get is a form that looks correct in the JSON and does nothing at all, with no error anywhere to point at. Write the visible condition rather than the hidden one, because `visibleIf` states when the element **is** shown, so a hide condition has to be inverted, not renamed.
 
 ### Execution mode
@@ -2585,9 +2608,11 @@ Value shape: `boolean`
 |---|---|---|
 | `label` | `string` | Set to `""` on a button: the caption belongs in `text`, and a label draws an extra label row above the button |
 | `text` | `string` | Button text (the caption) |
-| `icon` | `string` | Icon name |
+| `icon` | `string` | Icon name from `help().icons` (registered by the host, or built in), or SVG markup for a one-off icon. An unknown name draws a question mark |
 | `iconPosition` | `string` | `left` `right` `top` `bottom` |
-| `iconOnly` | `boolean` | Show icon only |
+| `iconOnly` | `boolean` | Icon alone in a square button, in any `variant`. Keep the caption in `text`: it becomes the accessible name and the tooltip |
+| `iconSize` | `number` | Icon size in px. Left out it follows `size` (16, 18, 20); an icon-only square grows with a larger icon |
+| `iconColor` | `string` | Icon color when it differs from the caption |
 | `variant` | `string` | `solid` `outline` `text` |
 | `tone` | `string` | `primary` `neutral` `success` `info` `warning` `risk` |
 | `color` | `string` | Custom fill color (any CSS color or `var(--nvb-color-...)`) |
@@ -3779,6 +3804,8 @@ Other caption rules:
 - **One primary action per area**: `variant: "solid"`, `tone: "primary"`. Secondary actions next to it are `variant: "outline"` with `tone: "neutral"`. A destructive action is `tone: "risk"`.
 - **A dark fill needs light text.** A solid button with a dark tone (`primary`, `success`, `info`, `risk`) or a dark custom `color` gets `textColor: "var(--nvb-color-neutral-000)"`. Before 0.10.6 some host stylesheets left the caption dark on dark; setting it explicitly is correct on every version. A light fill (`warning`, or a light custom `color`) gets dark text, `"var(--nvb-color-neutral-900)"`.
 - **Button bars go in an `emptyBlock`**, not in a panel row: `contentDisplay: "grid"`, `gridTemplateColumns: "max-content max-content"`, a `contentJustify` and a `contentGap`. Flex does not line them up, because every row inside the block is full width.
+- **An icon button is `iconOnly: true`, not a variant.** It works with every `variant` and `tone`. The caption stays in `text` ("Delete row"): screen readers read it and it shows as a tooltip, while the button shows only the icon. Without `iconSize` the icon follows the button `size` (16, 18 or 20 px); with a larger `iconSize` the square grows so the icon never touches the edge. `iconColor` colors the icon alone, for example a red bin on a neutral outline button.
+- **Never guess an icon name.** An `icon` is a name from `help().icons` (the system instructions list them: the host's registered icons first, then the built-in ones) or SVG markup such as `"<svg viewBox=\"0 0 24 24\">...</svg>"` for a one-off icon. A name that does not exist draws a question mark, and `execute()` warns about it. The same goes for `icon` on cards, page titles and toasts and `iconName` on the icon element.
 - A button does something. Give it `events` (a `submit`, a `validate`, a data source call, a toast), or leave it out.
 
 ```json
@@ -3818,6 +3845,28 @@ Other caption rules:
 `firstName` and `lastName` carry no `width`: each takes half the row.
 - **Give every side-by-side field `mobileWidth: "100%"`** so the row stacks on a phone.
 - **Align with `emptyBlock`** (grid, flex, gap, padding, background). Do not fake alignment with `customHtml`, spacer stacks or extra panels.
+- **Line up a row where one field has a description.** The `description` (or a label long enough to wrap) makes that field's header taller, so its input sits lower than its neighbours and the row looks like stairs. Put the row inside an `emptyBlock` with `contentAlign: "flex-end"`. The fields stay side by side in the block's own `rows`, and their inputs line up at the bottom.
+
+```json
+{
+  "rows": [
+    {
+      "columns": [
+        {
+          "elementRef": "amountsBlock",
+          "rows": [
+            { "columns": [{ "elementRef": "netAmount" }, { "elementRef": "vatAmount" }] }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`amountsBlock` is `{ "type": "emptyBlock", "label": "", "contentAlign": "flex-end" }`, and only `vatAmount` has a `description`. Without the block, the VAT input would sit one line lower than the net amount.
+- **A canvas page brings no spacing of its own.** With `settings.renderMode: "canvas"` the gap between rows, between fields in a row and around the page is `0`, because a web page's sections set their own. A form on a canvas therefore goes in an `emptyBlock` that puts the spacing back: `contentGap` (for example `"16px"`) for the space between rows and between the fields in a row, and `panelPadding` for the space around them. Without that block the fields touch each other.
+- **Cards on a canvas need a gap too.** A `messageCard`, `statsCard` or any other element with its own border and rounded corners sticks to its neighbour on a canvas page, edge to edge, and the rounded corners make it look broken. Put the row of cards in an `emptyBlock` with a small `contentGap`, for example `"12px"`. Leave them joined only when the person asks for that.
 - **Pages are steps, not sections.** A single form with sections is one page with panels or headings. Several pages only when the person should move through steps.
 - A dashboard or display page is not a form: set `showValidateButton: false` and `showSubmitButton: false` in `settings` so the Validate and Submit toolbar does not appear.
 
@@ -3893,8 +3942,8 @@ Other caption rules:
 Before you report back, check that:
 
 1. No label shows a technical name, and no display element (button, badge, card, image, divider, chart) has a label row.
-2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill.
-3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile.
+2. Every button has its caption in `text`, `label: ""`, an action in `events`, and readable text on its fill. Icon buttons use `iconOnly: true` with the caption still in `text`, and every icon name exists (no question marks).
+3. Related short fields share rows without a `width` (no `50%`), and side-by-side fields stack on mobile. A row where one field has a description sits in an `emptyBlock` with `contentAlign: "flex-end"`, and a form on a canvas page sits in an `emptyBlock` with its own `contentGap` and `panelPadding`. Cards side by side on a canvas sit in an `emptyBlock` with a small `contentGap`, so they do not touch.
 4. Every `table` is basic unless more was asked for (quick search on, no detailed search, no export), its row actions sit in the three-dots menu with no header over that column, and when the person did not say how a record opens, it opens from a Preview action in that menu, not from a row click. It sits alone in a full-width row, so it shows as a table and not as mobile cards.
 5. Every name is meaningful camelCase; no `el1` is left.
 6. Required fields have a `requiredMessage`; validators have messages.
@@ -7453,6 +7502,9 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `getData()` | `nvb_get_data` | current working data |
 | `getAuditLog()` | `nvb_get_audit_log` | every batch applied this session |
 | `execute(commands, options?)` | `nvb_execute` | the only way to change anything |
+| `listPlugins()` | `nvb_list_plugins` | the installed plugins an AI client can use, see [Plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins) |
+| `readPlugin(id, query?)` | `nvb_read_plugin` | what a plugin knows, such as the logic map or the field documentation |
+| `executePlugin(id, command, args?)` | `nvb_plugin_execute` | runs one of a plugin's commands |
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
@@ -7495,13 +7547,19 @@ A key is valid for 24 hours. When it runs out the builder generates a new one, a
 
 A pairing belongs to the MCP session and points at the key, not at the socket. When the person reloads the builder, the tab comes back with the same key (it is kept in `sessionStorage`), the server tells it who is still paired, and the AI carries on without asking again. A new tab gets a new key.
 
+ChatGPT, and Codex with the server added as a custom MCP connector, work a little differently: their calls go through OpenAI's servers, which open a new MCP session for every tool call. To keep those pairings, the server reads the anonymous conversation id OpenAI sends with each call (`openai/session` in the call's `_meta`) and keeps the pairing for the conversation instead. The person pairs once per chat, as with any other client, and the builder lists the conversation as one AI client. A new chat starts unpaired.
+
 **New key** in the builder sends a revoke to the server, which drops every pairing to the old key on the spot, and the tab reconnects with a fresh one.
+
+**Disconnect** sends the same revoke before it closes the connection, so every AI client paired to the tab loses access too. The key stays the same, so a client the person gives it to again can pair again. A reload or leaving the page does not revoke anything, which is why the AI carries on after a reload.
 
 Keys are drawn at random by the browser's cryptographic generator: twelve characters from a 32 letter alphabet, about 10¹⁸ possible keys. There is no date or counter in them on purpose, since anything predictable in a key would make it easier to guess. Two tabs drawing the same key is not something you will meet, and the server covers it anyway: a key that is in use in one browser cannot be taken over from another. The newcomer is refused and its builder simply picks a new key. A reload or a duplicated tab comes from the same browser and keeps its key as before.
 
 The key is forgiving to type: case, spaces and missing dashes are ignored, and `O`, `I` and `L` are read as `0`, `1` and `1`. It is 60 random bits, and a connection that tries ten wrong keys is refused for fifteen minutes, so guessing is not a realistic way in.
 
-`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of the tab.
+`nvb_status` answers whether the connection is paired, whether the paired tab is open right now, and how many calls are left in the current window. `nvb_unpair` lets go of a tab.
+
+One connection can hold several tabs, so a person with two builders open needs only one AI chat. Pair it with each key in turn: the tabs paired before stay paired, the calls go to the tab paired last, and `nvb_pair` with a key the connection already holds switches back to that tab. `nvb_status` lists every tab it holds and which one is active. `nvb_unpair` with a `session_key` lets go of that tab only, without one of all of them. If the active tab revokes access, the calls stop and the AI is told which tabs it still holds; they never move to another view on their own.
 
 ### Keys from your backend
 
@@ -7532,6 +7590,7 @@ Nothing of your views or data. The server is a relay between the AI client and t
 What it does hold, in memory only, is what it needs to route calls and enforce limits:
 
 - the open builder tabs and their pairing keys, and which AI connection is paired with which tab;
+- for ChatGPT and Codex, the anonymous conversation and user ids OpenAI sends with each call, so a pairing outlives the single call it was made on;
 - how many calls each tab made in the current hour;
 - how many browsers use each license right now (by license number), for the seat limit;
 - the license service's answer about a key, for ten minutes, so it is not asked on every connection.
@@ -7832,7 +7891,7 @@ A few details worth knowing:
 
 | Command | What it does |
 | --- | --- |
-| `switchTab` | Moves the builder to another tab, preview included. |
+| `switchTab` | Moves the builder to another tab, preview and plugin tabs (`logicMap`, `documentation`) included. |
 | `focusElement` | Selects an element so its properties open in the sidebar. |
 | `setData` | Sets working data. Values that belong to real elements go through the value pipeline, so expressions and conditions re-evaluate. |
 | `validate` | Validates the current view against data and returns the issues. |
@@ -7845,6 +7904,26 @@ A few details worth knowing:
 | `setRuntimeVariableContext` | External values that runtime variables can map from. |
 | `reloadDataSource` | Re-runs a data source. |
 | `undo`, `redo` | Steps the builder history. Warns when there is nothing to step to. |
+
+## Plugins
+
+Installed plugins can offer AI clients their own reads and commands. `listPlugins()` (`nvb_list_plugins`) lists them with what each is for, the query it takes and its commands; `help()` lists them too, and the system instructions mention them, so a model finds them without being told.
+
+```js
+// nvb_read_plugin
+{ "plugin": "logicMap", "query": { "element": "annualRevenue" } }
+
+// nvb_plugin_execute
+{ "plugin": "documentation", "command": "setDescription",
+  "args": { "element": "vatNumber", "text": "VAT number of the company. Finance checks it against VIES." } }
+```
+
+| Plugin | Read | Commands |
+| --- | --- | --- |
+| `logicMap` ([Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map)) | the view's logic as rules and links, or one element with what it depends on and changes | `show` puts an element on the person's screen in the Logic map |
+| `documentation` ([Documentation](https://ngxviewbuilder.io/developers/plugin-docs)) | the field documentation, as data, Markdown or HTML | `setDescription`, `setRows`, `setSummary`, `setTitle` |
+
+A licensed plugin answers with the reason when the builder has no valid key, so the model can tell the person what to do. Your own plugin can join in through `NgxViewBuilderAiPluginRegistryService` ([Building a plugin](https://ngxviewbuilder.io/developers/plugin-development#letting-ai-clients-use-your-plugin)).
 
 ## Two languages in one view
 
@@ -11625,7 +11704,9 @@ Multiple folders via `svgIconDirectories: [...]`. Runtime loading (`await api.re
 
 ## Using icons
 
-- **Creators**: type the icon name into any `Icon` property (button icon, Icon element, sidebar group…).
+- **Creators**: pick an icon in any `Icon` property (button, card, page title, toast, Icon element). The picker lists your registered icons first, under *This application*, then the built-in ones, and flags a name that does not exist. A one-off icon can also be pasted as SVG markup: the value then holds the markup itself, sanitised the same way as a registered icon.
+- **AI clients** get the same list: the system instructions name every registered and built-in icon, `help().icons` returns them, and `execute()` warns about an icon name nothing draws.
+- **In code**: `IconSvgService.listIconNames()` returns `{ builtIn, registered }`, `isKnownIcon(value)` tells whether a value draws a real icon, and `isInlineSvgIcon(value)` whether it is markup.
 - **In your components**: the exported `NvbIcon` component renders any registered icon:
 
 ```html
@@ -11634,7 +11715,7 @@ Multiple folders via `svgIconDirectories: [...]`. Runtime loading (`await api.re
 
 ## SVG guidelines
 
-- Use `viewBox` and no fixed `width`/`height`; the host sizes the icon.
+- Use `viewBox` and no fixed `width`/`height`; the host sizes the icon. An SVG with only `width` and `height` gets a matching `viewBox` added when it is sanitised, so it still scales.
 - Use `currentColor` for strokes/fills so icons follow text color and theme.
 - Keep markup minimal; icons are inlined into the DOM.
 - Registered SVG is sanitised, so keep icons to plain vector markup (no scripts or foreignObject).
@@ -11840,6 +11921,7 @@ and `@ngxviewbuilder/designer` are separate npm packages with separate license f
 | `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
 | `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
 | `@ngxviewbuilder/plugin-templates` | Follows the designer. |
+| `@ngxviewbuilder/plugin-logic-map`, `@ngxviewbuilder/plugin-docs`, `@ngxviewbuilder/plugin-shared` | Follow the designer. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -11894,11 +11976,34 @@ Every published build embeds its release date. A license covers **all versions r
 | Version not covered (released after license expiry) | The canvas watermark + a banner + a reminder modal (at most once per 24 h) |
 | Invalid / tampered / unparseable / revoked | The canvas watermark + an invalid-license banner + modal (at most once per 24 h) |
 
+The reminder modal can be closed with **Continue without updates** (or **Continue without license** when the key does not check out) once a 15 second countdown on the button has run out.
+
 **The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
 ## AI access
 
 Letting an AI assistant work in the builder over MCP comes with the license, there is nothing extra to buy. It is also the one part that already needs a key before 1.0.0. The builder only opens the connection for a key that is genuine and not expired, whether it goes to our hosted server through the **Connect** button or to [a server you run yourself](https://ngxviewbuilder.io/developers/ai-command-api#running-the-mcp-server). Without such a key the AI access (MCP) group in the settings says what is missing. Our hosted server also checks the key with the license service before it pairs anything, and again every hour. It lets as many browsers use AI access at the same time as the license has seats (see [Seats](https://ngxviewbuilder.io/developers/ai-command-api#seats)). The server only relays requests between the AI client and the builder and stores none of your views or data ([what it keeps](https://ngxviewbuilder.io/developers/ai-command-api#what-the-mcp-server-keeps)).
+
+## Licensed plugins
+
+The [Logic map](https://ngxviewbuilder.io/developers/plugin-logic-map) and the [Documentation](https://ngxviewbuilder.io/developers/plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
+
+To know in your own code whether the key unlocks them, read `proAccess` on the designer's `LicenseService`. It is a signal that holds `'ready'` once the key checks out, `'checking'` while the check runs, and `'missing'`, `'invalid'` or `'expired'` otherwise:
+
+```ts
+import { LicenseService } from '@ngxviewbuilder/designer';
+
+const license = inject(LicenseService);
+const unlocked = computed(() => license.proAccess() === 'ready');
+```
+
+The licensed plugins wrap their own screens in `<nvb-pro-feature-gate>` from `@ngxviewbuilder/plugin-shared`. It shows what is inside it while the key unlocks them, and otherwise explains what is missing and where the key goes, in the builder's language. `feature` names the feature in that explanation, and `compact` fits it into the Properties panel:
+
+```html
+<nvb-pro-feature-gate feature="Logic map">
+  <my-logic-view />
+</nvb-pro-feature-gate>
+```
 
 ## License terms
 
@@ -11980,6 +12085,67 @@ Useful building blocks:
 - `api.translateUi(key, fallback)` + `uiDictionaries` in your extensions config: localise your tab.
 - Tab labels starting with `tab.` resolve through UI dictionaries automatically.
 
+## Tab icon, description and the More menu
+
+A tab can bring an `icon` (a built-in icon name, or SVG markup so it never depends on the host's icon set) and a `description`, a short line shown under its name in the header's **More** menu. Plugin tabs show after the built-in ones while they fit and move into the menu when they do not; `placement: 'menu'` keeps a tab in the menu always, for something people open rarely.
+
+```ts
+builderTabs: [
+  {
+    id: 'acmeAudit',
+    label: 'tab.audit',
+    component: MyStudio,
+    order: 900,
+    icon: '<svg viewBox="0 -960 960 960">…</svg>',
+    description: 'tab.audit.description',
+  },
+],
+```
+
+## A section in the Properties panel
+
+`propertyPanels` adds a category to the Properties panel of the selected element, after the built-in ones. The component gets two inputs, `element` (the selected element's model) and `elementName` (its name, or its path inside a panel):
+
+```ts
+featurePacks: [
+  {
+    id: 'acme-audit',
+    propertyPanels: [
+      { id: 'audit', label: 'propertyCategory.audit', icon: 'history', component: AuditPanel },
+    ],
+  },
+],
+```
+
+`elementTypes` limits it to some element types, `order` places it among the built-in categories (they use 10 to 90; the default is last). The Documentation plugin's panel is built this way.
+
+## Letting AI clients use your plugin
+
+`NgxViewBuilderAiPluginRegistryService` lets a plugin tell AI clients what it offers. A plugin has an `id`, a `description` the model reads, an optional `query` description, a `read(query)` function and a list of `commands`, each with `params`, an `example` and a `run(args)`:
+
+```ts
+inject(NgxViewBuilderAiPluginRegistryService).register({
+  id: 'audit',
+  title: 'Audit notes',
+  description: 'Notes reviewers left on the view. Read them before changing a field someone flagged.',
+  read: () => ({ notes: auditNotes() }),
+  commands: [
+    {
+      name: 'addNote',
+      description: 'Adds a review note to an element.',
+      params: { element: 'Element name or path.', text: 'The note.' },
+      run: (args) => addNote(String(args['element']), String(args['text'])),
+    },
+  ],
+});
+```
+
+Register it from `provideEnvironmentInitializer()` in your provider. The model finds it through `listPlugins()` and uses it with `readPlugin()` and `executePlugin()`, over MCP `nvb_list_plugins`, `nvb_read_plugin` and `nvb_plugin_execute` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)). `available()` and `unavailableReason()` let the plugin say no, with a reason the model can pass on.
+
+## Translating your plugin
+
+Give every text a key and put the English texts in your feature pack's `uiDictionaries`. Packs merge key by key, so your English never replaces another plugin's English. Hosts translate your keys the same way they translate the builder ([UI translations](https://ngxviewbuilder.io/developers/ui-translations)). Text your code builds from words (a status line, a sentence about a rule) needs keys too, with placeholders for the values, so a language with another word order can move them: `'audit.count': '{count} notes'`.
+
 ## Capabilities
 
 `capabilities` are opaque strings other code can require. Property definitions support `requiredFeaturePacks` / `requiredCapabilities`: a property (or other gated UI) shows only when a matching pack is registered. Use this to make core-side features light up when your plugin is installed.
@@ -11993,6 +12159,183 @@ Useful building blocks:
 - [ ] Version-lock releases to the core version you built against.
 - [ ] Keep tab `id` stable, since hosts may persist the active tab.
 - [ ] Style with the design tokens so themes work ([Theming](https://ngxviewbuilder.io/developers/theming)).
+- [ ] Put every text behind a dictionary key, generated sentences included.
+- [ ] Keep your code in your package: everything should leave with `npm uninstall`.
+
+---
+
+## Documentation plugin
+
+Source: https://ngxviewbuilder.io/developers/plugin-docs
+
+# Documentation plugin
+
+`@ngxviewbuilder/plugin-docs` adds field documentation: a **Documentation** section in the Properties panel of every element and a **Documentation** tab with the generated field reference, ready to paste into Confluence. How creators use it is on the [Field documentation](https://ngxviewbuilder.io/creators/documentation) page.
+
+## Install
+
+```bash
+npm install @ngxviewbuilder/plugin-docs
+```
+
+```ts
+import { provideNgxViewBuilderDocs, createHttpDocsStorage } from '@ngxviewbuilder/plugin-docs';
+
+providers: [
+  provideNgxViewBuilderDocs({
+    storage: createHttpDocsStorage('/api/view-docs'),
+  }),
+],
+```
+
+Like the Logic map, it needs a genuine license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)) and brings `@ngxviewbuilder/plugin-shared` along.
+
+## Where the documentation is kept
+
+The text is never written into the view JSON. Each view has its own documentation document, keyed by a **view code**, and the plugin loads and saves it through the storage you give it.
+
+`createHttpDocsStorage(baseUrl)` is a ready REST storage:
+
+| Request | Meaning |
+| --- | --- |
+| `GET {baseUrl}/{viewCode}` | the stored document; `404` (or `204`) means none yet |
+| `PUT {baseUrl}/{viewCode}` | the whole document as JSON |
+
+It takes `headers` (a function, called before every request, for an Authorization header) and `withCredentials` for cookie sessions:
+
+```ts
+createHttpDocsStorage('/api/view-docs', {
+  headers: () => ({ Authorization: `Bearer ${auth.token()}` }),
+});
+```
+
+Or bring your own calls. A function runs in Angular's injection context, so `HttpClient` works and its Observables are accepted as they are:
+
+```ts
+provideNgxViewBuilderDocs({
+  storage: () => {
+    const http = inject(HttpClient);
+    return {
+      load: (viewCode) => http.get<INgxViewBuilderViewDocs | null>(`/api/view-docs/${viewCode}`),
+      save: (docs) => http.put(`/api/view-docs/${docs.viewCode}`, docs),
+      label: 'Confluence sync', // shown as "Saved to Confluence sync"
+    };
+  },
+});
+```
+
+Without a storage the documentation stays in the browser's localStorage, which is fine for trying it out but shared with nobody; the tab says so.
+
+The plugin saves a moment after typing stops (`saveDelayMs`, 800 by default). If a load fails, it does not save over the stored copy until a load succeeds.
+
+### The view code
+
+By default the view code is `settings.viewCode` in the view JSON; the first time something is documented, the plugin writes a new one there, so save the view afterwards. If your database already identifies the view, pass it instead:
+
+```ts
+provideNgxViewBuilderDocs({
+  storage: createHttpDocsStorage('/api/view-docs'),
+  viewCode: (structure) => currentViewId(),
+});
+```
+
+## The document
+
+```json
+{
+  "format": "ngx-view-builder-docs",
+  "version": 1,
+  "viewCode": "loan-application",
+  "title": "Business loan application",
+  "summary": "<p>Filled in by the client, checked by the credit team.</p>",
+  "updatedAt": "2026-10-13T09:12:00.000Z",
+  "elements": {
+    "vatNumber": {
+      "description": "<p>VAT number of the company. Finance checks it against VIES.</p>",
+      "rows": ["required", "prop:placeholder"],
+      "updatedAt": "2026-10-13T09:10:41.000Z"
+    },
+    "billing.city": { "description": "<p>City of the registered office.</p>" }
+  }
+}
+```
+
+Descriptions are keyed by element name, or by path for panel children. `rows` are the rows picked under the description: `required`, `logic`, `validation`, `data`, `events` (written from the view's logic) or `prop:<key>` for one of the element's own properties. Store the document as it is; the plugin only needs it back the same way.
+
+## Translations
+
+The tab, the Properties panel section and the copied or downloaded table follow the builder's language, headings, "Yes"/"No" and rule sentences included. The English texts are in `NGX_VIEW_BUILDER_DOCS_UI_EN` and `NGX_VIEW_BUILDER_SHARED_UI_EN`; property rows use the builder's own `property.<key>` names. See [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## AI clients
+
+The plugin registers itself for AI clients as `documentation` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)):
+
+| | |
+| --- | --- |
+| read | the documented fields with their rules; `{ "element": "vatNumber" }` for one, `{ "missingOnly": true }` for fields without a description, `{ "format": "markdown" }` or `"html"` for the finished table |
+| `setDescription` | writes one element's description (text or simple HTML) |
+| `setRows` | sets the rows under a description, e.g. `["required", "logic", "prop:placeholder"]` |
+| `setSummary` | the summary of the whole form |
+| `setTitle` | the page title |
+
+A model asked to "document this form" writes the descriptions here and never into element properties.
+
+---
+
+## Logic map plugin
+
+Source: https://ngxviewbuilder.io/developers/plugin-logic-map
+
+# Logic map plugin
+
+`@ngxviewbuilder/plugin-logic-map` adds the **Logic map** tab: every condition, calculation, validator, event action, data source, variable and view rule of the open view on one canvas, with what drives what and what needs attention. How creators use it is on the [Logic map](https://ngxviewbuilder.io/creators/logic-map) page.
+
+## Install
+
+```bash
+npm install @ngxviewbuilder/plugin-logic-map
+```
+
+```ts
+import { provideNgxViewBuilderLogicMap } from '@ngxviewbuilder/plugin-logic-map';
+
+providers: [provideNgxViewBuilderLogicMap()],
+```
+
+That is all: the plugin reads the view in the builder and keeps itself current as it changes. It brings `@ngxviewbuilder/plugin-shared` along, which holds the logic analysis it shares with the Documentation plugin.
+
+## License
+
+The tab works with a genuine, unexpired license key in the builder settings, the same rule as [AI access](https://ngxviewbuilder.io/developers/licensing#ai-access). Without one it shows what is missing and how to add the key; nothing else in the designer changes. See [Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins).
+
+## The analysis on its own
+
+The graph behind the map is a plain function of the view JSON, so you can use it in your own tooling, a CI check for broken references for example:
+
+```ts
+import { analyzeViewLogic, traceViewLogic } from '@ngxviewbuilder/plugin-shared';
+
+const graph = analyzeViewLogic(viewJson);
+graph.issues.forEach((issue) => console.log(issue.severity, issue.message));
+
+const trace = traceViewLogic(graph, 'el:annualRevenue');
+// trace.upstream: what it depends on, trace.downstream: what it changes
+```
+
+`graph.nodes` are the elements, data sources, variables, view rules and triggers; `graph.rules` are their rules, each with a `summary` sentence; `graph.edges` link them by kind (`visibility`, `required`, `locked`, `value`, `reset`, `validation`, `data`, `action`). Pass `{ translate }` to get the sentences in another language.
+
+## Translations
+
+Every text of the tab follows the builder's language, the rule sentences included. The English texts are in `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` (the tab) and `NGX_VIEW_BUILDER_SHARED_UI_EN` from `@ngxviewbuilder/plugin-shared` (the sentences about rules, shared with the Documentation plugin). See [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## AI clients
+
+The plugin registers itself for AI clients as `logicMap` ([AI plugins](https://ngxviewbuilder.io/developers/ai-command-api#plugins)):
+
+- **read** returns the graph in a compact shape. With `{ "element": "annualRevenue" }` it returns that element with its rules and everything upstream and downstream; with `{ "kind": "visibility" }` only those links.
+- **show** opens the Logic map for the person with one element selected, while the model explains how it works.
+
+Both answer with a clear reason when the license key is missing.
 
 ---
 
@@ -12029,7 +12372,19 @@ A template's **HTML content** is rendered by a small purpose-built engine, not t
 <span>Row {{ index + 1 }} of {{ $count }}</span>
 ```
 
-The expression runs against the template's runtime context: `item` / `row` / `value` (the bound record all three names point at the same object), `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+The expression runs against the template's runtime context: the bound record, `index`, every field in the current form data, and (inside `@for`) the loop variables below. Output is HTML-escaped automatically.
+
+What `item`, `row` and `value` hold depends on the element rendering the template:
+
+| Element | `item` / `row` | `value` | Also |
+| --- | --- | --- | --- |
+| List grid card | the record | the record | `index` |
+| Select / Multi select option | the option object (`label`, `value` and any field the data source returned) | the option's value, a plain string or number | `label`, `selected` |
+| Table cell template | the row | the cell value | |
+| Table row template | the row | the row | |
+| Panel / dynamic panel header | `{}` | the panel's value | `rows`, `count`, `label` |
+
+So in an option template <code v-pre>{{ item.info.code }}</code> reads a field of the option, while <code v-pre>{{ value }}</code> is only its value.
 
 ### Legacy single-brace tokens `{path}`
 
@@ -12138,7 +12493,7 @@ Template HTML goes through a sanitizing pass before rendering, and the rendered 
 
 ## Template field slots
 
-Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced in the editor as **Template fields**, so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
+Bracket-indexed references in the content `row[0]`, `item['status']`, `value[2]` are surfaced as **Template fields** in the properties of the element that uses the template (next to its template picker, not in the Templates tab), so a List grid or Select can map its own data onto those slots without touching the template markup. At render time the mapping rewrites `row` / `item` / `value` on the runtime context before the template renders.
 
 ## Where templates are read from at runtime
 
@@ -12281,14 +12636,26 @@ providers: [ provideNgxViewBuilderTemplates() ],
 | Package                             | Provider                           | Adds                                                                                                                                                                                                                                                              |
 | ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@ngxviewbuilder/plugin-templates` | `provideNgxViewBuilderTemplates()` | The **Templates** tab, holding the reusable HTML [template library](https://ngxviewbuilder.io/creators/templates) used by option templates, card templates, row templates, and header templates full syntax and host persistence in the [Templates plugin reference](https://ngxviewbuilder.io/developers/plugin-templates) |
+| `@ngxviewbuilder/plugin-logic-map` | `provideNgxViewBuilderLogicMap()` | The **Logic map** tab: every condition, calculation, event and data source of the view on one canvas, with what drives what and what needs attention ([creators](https://ngxviewbuilder.io/creators/logic-map), [reference](https://ngxviewbuilder.io/developers/plugin-logic-map)) |
+| `@ngxviewbuilder/plugin-docs` | `provideNgxViewBuilderDocs({ storage })` | Field documentation: a **Documentation** section in the Properties panel and a **Documentation** tab with a field reference ready for Confluence, kept apart from the view JSON ([creators](https://ngxviewbuilder.io/creators/documentation), [reference](https://ngxviewbuilder.io/developers/plugin-docs)) |
+
+The Logic map and the Documentation plugin need a license key in the builder settings ([Licensed plugins](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)); the Templates plugin does not. Both install `@ngxviewbuilder/plugin-shared` with them, a small package with the logic analysis, the license notice and the plugin icons they share. You never add it yourself.
+
+Every plugin text follows the builder's language; see [Translating the plugins](https://ngxviewbuilder.io/developers/ui-translations#translating-the-plugins).
+
+## Where plugin tabs go
+
+Builder, Preview and JSON Editor always come first in the header. Plugin tabs follow after a divider, in their `order`, as long as they fit; the rest move into a **More** menu that shows each tab's icon and a line about what it is for. When the open tab sits in the menu, the menu button takes its name. Nothing to configure: install a fourth or a tenth plugin and the header makes room.
 
 ## How gating works
 
-A plugin registers a **feature pack** (id + capabilities + tabs). Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
+A plugin registers a **feature pack** (id + capabilities + tabs, and optionally Properties panel sections).
+
+Removing a plugin removes everything it added: the core holds only the generic places a plugin plugs into, never the plugin's own code. Parts of the core UI are capability-aware: the _Option template_ property on Select elements, for example, appears only when the Templates feature pack is present. So an uninstalled plugin cleanly hides everything that depends on it.
 
 ## Version rule
 
-Keep every `ngx-view-builder-plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
+Keep every `@ngxviewbuilder/plugin-*` version aligned with the `@ngxviewbuilder/designer` version, which in turn pins its `@ngxviewbuilder/runtime` peer to the exact same number. All three move together; mixed versions are unsupported.
 
 Want to build your own tab? See [Building a plugin](https://ngxviewbuilder.io/developers/plugin-development).
 
@@ -13737,6 +14104,29 @@ api.setUiDictionaries({ lt: LT_UI_DICTIONARY }, /* merge */ true);
 // or inside extensions config: { uiDictionaries: { lt: {...} } }
 ```
 
+## Translating the plugins
+
+The official plugins use the same dictionaries, so a host translates them like the rest of the builder. Each exports its English texts, every key with its default, to hand to a translator:
+
+| Export | Package | Covers |
+| --- | --- | --- |
+| `NGX_VIEW_BUILDER_LOGIC_MAP_UI_EN` | `@ngxviewbuilder/plugin-logic-map` | the Logic map tab |
+| `NGX_VIEW_BUILDER_DOCS_UI_EN` | `@ngxviewbuilder/plugin-docs` | the Documentation tab and panel, the copied and downloaded table |
+| `NGX_VIEW_BUILDER_SHARED_UI_EN` | `@ngxviewbuilder/plugin-shared` | the sentences about rules both plugins write, and the license notice |
+
+```ts
+provideNgxViewBuilderUiTranslations({
+  lt: {
+    'logicMap.title': 'Logikos žemėlapis',
+    'logic.visibleIf.when': 'Matomas, kai',
+    'logic.op.isNot': 'nėra',
+    'docs.progress': 'Aprašyta {documented} iš {total} elementų',
+  },
+});
+```
+
+The sentences about rules ("Visible when Country is not US and Revenue > 85000") are put together from these keys, operators included, so they read naturally once the keys are translated. Words in braces are filled in by the plugin: keep them, in whatever place the language needs. Element type names come from the builder's own `element.<type>` keys and property names from `property.<key>`, so they match the rest of the builder. A key you leave out stays in English, and dates follow the language.
+
 ## Using translations in host code
 
 Host UI that lives next to the builder (header actions, toolbars) can reuse the same dictionaries:
@@ -14091,6 +14481,8 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+**Video lesson 9 (2:27):** [Conditional logic](https://www.youtube.com/watch?v=RqYkX5_ruKw). Make forms smart with five logic rules: Visible if, Disable if, Require if, Read only if and Reset if, built visually with Match all or Match any, and tested in Preview. Chapters: 0:00 Intro, 0:16 Disable if, 0:34 Match any, 0:55 Reset if, 1:21 Number conditions, 1:43 Read only if, 2:13 Recap.
+
 ## Building a rule without writing it
 
 Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.
@@ -14207,7 +14599,7 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 
 | Field | What it does |
 | --- | --- |
-| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). |
+| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). Renaming it updates everything bound to the old name: tables and selects loading from it, actions running it, data source variables, and `runDataSource("…")` in expressions. |
 | **Title** | A friendly display title for the list. |
 | **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
 
@@ -14309,7 +14701,7 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | --- | --- |
 | **Data source** | Which source feeds this element. Dependent fields are supported via the param map and refresh paths. |
 | **Use as** | `Option` loads selectable options (select, radio, checkbox); `Value` loads the field's own value. |
-| **Option value key / Option label key** | Which response fields become the stored value and the visible label. |
+| **Option value key / Option label key** | Which response fields become the stored value and the visible label. A path into the item works too: `info.label`, `names[0]`. |
 | **Items path** | Where the array lives in the response (e.g. `data.items`). |
 | **Filter options by** | Legacy conditional filter, leave empty if unused. Prefer the *Filter if equal / not equal* option properties. |
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |
@@ -14339,11 +14731,68 @@ Saving goes through [actions](https://ngxviewbuilder.io/creators/events-actions)
 
 ---
 
+## Field documentation
+
+Source: https://ngxviewbuilder.io/creators/documentation
+
+# Field documentation
+
+Analysts usually keep a separate document that explains each field of a form: what it means, who fills it in, where the value goes. The Documentation plugin lets you write that next to the field itself and turns it into a field reference table you can paste into Confluence.
+
+It needs a license key in the builder settings (see [Licensing](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)).
+
+## Where the text is kept
+
+The descriptions are **not** written into the view JSON. They live in their own document, keyed by the view code and the element names, and your developer decides where it is saved (usually your server, so the whole team shares it). The view stays exactly what the runtime renders. If the save status says **Kept in this browser**, nothing is shared yet; ask your developer to connect a storage.
+
+## Describing a field
+
+Select an element on the canvas and open **Documentation** in the Properties panel. Write what the field means, who fills it in and where the value goes. Bold, italic, lists and links are kept; colours and fonts are left out because they would not survive a paste into Confluence. The text saves a moment after you stop typing.
+
+Leave the text empty to take the element out of the documentation.
+
+## The Documentation tab
+
+The tab shows only the elements you described, each as a small table:
+
+- the element's label, its name and where it sits ("Column of Order lines · Date picker") across the top,
+- the description over both columns,
+- the rows you picked, as name and value.
+
+The counter at the top says how many elements are documented and how many are not yet. **Document an element** picks one of the rest, so you can work through them without leaving the tab.
+
+### Adding rows
+
+The plus button under a description adds a row to that element. There are two kinds:
+
+- **From the logic**: Required, Logic, Validation, Data source and Events, written from the view itself, for example "When Country of registration is not US and Annual revenue (EUR) > 85000". They stay current: change the rule in the builder and the row follows.
+- **Properties**: any of the element's own settings, such as the placeholder, the options or the default value, each shown with its current value.
+
+The rows are picked per element and saved with the documentation. The cross next to a row removes it. A row whose source is gone from the view says **Not set in the view**.
+
+### The page around it
+
+Give the document a title and a summary of the whole form at the top. **A heading for each page** groups the elements by page.
+
+If an element was renamed or removed, its description moves to **Descriptions without an element** at the bottom. It is not copied or downloaded; rename the element back to reuse the text, or remove it.
+
+## Copying it out
+
+- **Copy for Confluence** puts the whole reference on the clipboard as formatted tables. Paste it into a Confluence page (Notion, Google Docs and Word take it the same way).
+- **Copy Markdown** gives the same as Markdown for Jira, GitLab or GitHub.
+- The download buttons save it as an HTML page, or as the documentation file itself (JSON).
+
+The documentation follows the builder's language, so a team that works in Lithuanian gets the headings and the rule sentences in Lithuanian too.
+
+---
+
 ## Buttons & actions
 
 Source: https://ngxviewbuilder.io/creators/elements/buttons
 
 # Buttons & actions
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
 
 ## Button (`button`)
 
@@ -14364,11 +14813,17 @@ A button does nothing by itself. Its behaviour comes from the **actions** you at
 | **Variant** | `solid`, `outline`, `text` |
 | **Size** | `small`, `normal`, `large` |
 | **Tone** | `primary`, `neutral`, `success`, `info`, `warning`, `risk` |
-| **Icon** | Material Symbol or registered SVG icon code |
+| **Icon only** | Shows the icon alone in a square button. Works with every variant: a solid, an outline or a text icon button |
+| **Icon** | Click the preview to pick an icon: search, your application's own icons first, then the built-in ones. You can also type a name, or paste SVG markup under **Custom SVG** for a one-off icon. A name that does not exist is flagged, because it would show a question mark |
 | **Icon position** | `left`, `right`, `top`, `bottom` |
-| **Icon only** | Show only the icon, no text |
+| **Icon size** | In px. Left empty, the icon follows the button size: 16, 18 or 20 px. An icon-only button grows with a larger icon |
+| **Icon color** | Colors the icon alone, for example a red bin on a neutral button |
 | **Color / Text color** | Manual color overrides (text color is handy on light backgrounds) |
 | **Width / Mobile width / Fit content** | Sizing per breakpoint |
+
+### Icon buttons
+
+For a toolbar of small actions (edit, copy, delete), turn on **Icon only** and keep the caption in **Text**, for example *Delete row*. The caption is not drawn, but screen readers read it and it shows as a tooltip when the mouse rests on the button. Leaving **Text** empty works too, but then the button has no name people can hear.
 
 ### Dropdown actions
 
@@ -14417,6 +14872,8 @@ All choice elements share the same two ways of getting their options:
 
 The stored value is the option **value**, not the label. The one exception is an Autocomplete with a search data source, which can store the whole record the user picked (see below).
 
+**Video lesson 6 (2:10):** [Choice inputs](https://www.youtube.com/watch?v=qYdVIdZMkE8). Dropdowns, radio and select buttons, multi-choice, autocomplete, checkboxes and toggles: option labels and values, option conditions, switching choice types, and when to pick which. Chapters: 0:00 Intro, 0:28 Select button, 0:40 Dropdown, 1:06 Search in dropdowns, 1:31 Toggle switch, 1:52 Recap.
+
 ## Options: shared fields
 
 Each manual option row has:
@@ -14445,7 +14902,7 @@ The standard dropdown. Best default for 5+ options.
 | --- | --- |
 | **Show search** | Adds a search box inside the dropdown. |
 | **Placeholder text** | Shown while nothing is selected. |
-| **Option value key / Option label key** | Which response fields become value and label (data-source options). |
+| **Option value key / Option label key** | Which response fields become value and label (data-source options). Nested fields are written as a path, `info.label`. |
 
 ## Multi-choice menu (`multiSelect`)
 
@@ -14770,6 +15227,10 @@ Source: https://ngxviewbuilder.io/creators/elements/content
 
 Presentational elements. They display information and add nothing to the form data.
 
+This lesson covers buttons, message cards and the other elements that only show something:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
+
 ## Rich text (`richText` / `richTextViewer`)
 
 Formatted text written in a WYSIWYG editor: headings, bold, lists, links, images, video. Use it for instructions, section intros, and legal text. The viewer variant renders content read-only at runtime.
@@ -14788,11 +15249,12 @@ Content written in a Custom HTML element renders the same way here. Both element
 
 Raw HTML for layouts the rich text editor can't produce. HTML is sanitised at runtime, so scripts are stripped.
 
+Both fields are in the **General** category, under the name. **Edit content** opens the markup in the code editor.
+
 | Property | What it does |
 | --- | --- |
-| **HTML template** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
-| **Template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. |
-| **HTML source path** | Take the markup from a data path or source response instead of a static property. |
+| **HTML template (inline)** | Supports `@if`/`@for` blocks, <code v-pre>{{...}}</code> placeholders, and click bindings: `(click)="action('Open dialog')"` or `(click)="loadData(id)"`. |
+| **HTML template ref** | Reference to a [Templates-tab](https://ngxviewbuilder.io/creators/templates) template. Wins over the inline HTML. Shown when the Templates plugin is installed. |
 
 ## Image (`image`)
 
@@ -14908,6 +15370,10 @@ Source: https://ngxviewbuilder.io/creators/elements/date-time
 
 # Date & time inputs
 
+The inputs lesson shows the date picker, date range and time picker. This player starts at that part:
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M&t=54s). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
+
 ## Date picker (`datepicker`)
 
 A calendar picker that stores a single date, a date-time, or a time.
@@ -14970,6 +15436,10 @@ with the message `End date must be after start date`.
 Source: https://ngxviewbuilder.io/creators/elements/feedback
 
 # Feedback & status
+
+Message cards, their variants and appearances are shown in this lesson:
+
+**Video lesson 7 (1:50):** [Buttons, content & feedback](https://www.youtube.com/watch?v=14FR8gc8DoQ). Elements that do not collect data: message cards, variants and appearances, buttons with fit content, outline variant and tones, plus content and status elements. Chapters: 0:00 Intro, 0:12 Review page, 0:30 Variants, 0:45 Buttons, 0:59 Button styles, 1:24 Preview.
 
 ## Badge (`badge`)
 
@@ -15127,6 +15597,8 @@ Regardless of type, elements share the [common properties](https://ngxviewbuilde
 Source: https://ngxviewbuilder.io/creators/elements/inputs
 
 # Text & number inputs
+
+**Video lesson 5 (1:49):** [Text, number & date inputs](https://www.youtube.com/watch?v=iTN6QoEfT3M). When to use which input: text with input mode and length, number with visual formatting, number stepper, date picker with a minimum of today(), date range, time picker and slider. Chapters: 0:00 Intro, 0:25 Number input, 0:40 Number stepper, 0:54 Date picker, 1:09 Date range, time, slider, 1:33 Recap.
 
 ## Text (`text`)
 
@@ -15337,7 +15809,9 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 
 ### Columns
 
-**Columns** holds the column schema. Each column has:
+**Columns** holds the column schema, in the **Columns** category of the table's properties. The list there adds, reorders (drag the handle) and removes columns. To change a column's own settings, click its name in the list or the gear button next to it; clicking the column's header on the canvas does the same. The sidebar then shows that column, and the table's own properties come back when you select the table again.
+
+Each column has:
 
 | Column field | What it does |
 | --- | --- |
@@ -15363,8 +15837,9 @@ Per-column filter settings live on each column; see [Columns](https://ngxviewbui
 | **Filter options / JSON / data source (+ items path, label key, value key)** | Where the filter's choices come from: manual list, JSON, or a data source. |
 | **Filter toggle true/false value** | What a detailed-search toggle sends when on/off (`yes`/`no`, `T`/`N`). |
 | **Filter multi-value delimiter** | Joins multiple filter values into one request param (`,` or `;`). |
-| **Use totals (+ fraction digits, locale, grouping, mask, template)** | Show this column's sum in the footer row, with formatting controls and a `{total}` text template. |
 | **Editable / Editor type / Editor options (+ label key, value key, placeholder)** | Inline-edit settings for this column: which control edits it (text, number, select, date) and where its choices come from. |
+
+A data table has no totals row of its own. Column sums with a footer live on the [Dynamic table](https://ngxviewbuilder.io/creators/elements/tables#dynamic-table-dynamictable) (**Use totals**). For a sum over a data table, put a Number next to it with an expression over its rows: `sumArray({__table.el1.allRows}, amount)`.
 
 ### Formatted columns
 
@@ -15416,7 +15891,7 @@ A cell element knows which row it sits in, so anything you write in it resolves 
 | `{index}` | Zero-based index of the row on the current page |
 | `{value}` | The cell's own value |
 
-This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
+This works in the places you would expect: a Button's text, a Badge's text, a Custom HTML template, and inside the element's events. A Badge with no text of its own shows the cell's value, so a `status` column with a Badge cell element reads `OPEN` or `DONE` row by row. A Select in a `status` column can fire an `onChange` toast reading `Row {row.name} changed to {value}`, and it reports the right row every time.
 
 Editing a value through a cell element writes it back into the row, so a plain `text` column bound to the same key updates with it, and row actions and conditions see the new value.
 
@@ -15494,7 +15969,7 @@ The chevron normally shows only where there is something to open, which is right
 
 **Export** opens a dialog where the person picks, in this order:
 
-- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
+- **Format**: **Excel** (a real `.xlsx` with a bold, frozen header row, an auto filter, and numbers and dates as proper cells, so they can be summed and sorted; a `Date & time` column keeps its time, in the reader's time zone), **CSV** (plain text for imports, `;` separated) or **PDF** (a print-ready page with the title, row count and date; the browser's print dialog saves it as PDF).
 - **Rows**, each with the number of rows it would export: **Selected rows** (only when some are selected), **All rows** (or *All rows matching search and filters* while a search or filter is active), or **Current page only**. On a lazy table, *All rows* loads every page from the server, not only the one on screen.
 - **Columns**, when the column picker is on.
 - **File name**, prefilled and editable; the extension follows the format.
@@ -16062,6 +16537,8 @@ An expression re-evaluates automatically whenever any field it references change
 
 ## Debugging
 
+An expression the parser cannot read never runs: `{qty} >= (` is neither true nor false, so a rule written that way silently does nothing. The builder says so as you type. The Logic panel and the code editor show the reason under the expression (*Unexpected end of expression*), and the rule's card keeps the warning after you save, until the expression is fixed.
+
 Wrap any part in `dbg(value, "label")`. It logs the value to the browser console and passes it through unchanged:
 
 ```text
@@ -16080,17 +16557,7 @@ Source: https://ngxviewbuilder.io/creators/first-form
 
 This walkthrough builds a small **client registration form**: name, email, client type, a company-only section, and a submit button. It touches the four skills you will use every day: placing elements, naming them, adding logic, and previewing.
 
-<figure class="doc-video">
-  <a href="/first-form/first-form.webp" target="_blank" rel="noopener" title="Open full size">
-  <img
-    src="/first-form/first-form.webp"
-    width="1024"
-    height="611"
-    alt="The whole walkthrough in the builder: First name and Email are dragged side by side and named from their labels, a Client type radio gets the options Private person and Company, the email is made required with an email validator, a Company details panel and its Company code field get Visible if and Require if rules from the visual rule builder, a Register button gets a success toast that validates the form first, and the Preview tab tests an empty submit, the Company choice and a valid registration."
-  />
-  </a>
-  <figcaption>The five steps below, recorded in the <a href="https://demo.ngxviewbuilder.io/builder">live builder</a>. Click it to watch at full size.</figcaption>
-</figure>
+**Video lesson 1 (4:36):** [Your first form](https://www.youtube.com/watch?v=q2sRLHZfM1w). Build your first form from scratch in NGX View Builder: place and name fields, set up options, make fields required, add validators, show a section only for companies, add a submit button with a toast, and test it in Preview. Chapters: 0:00 Intro, 0:18 Page title, 0:50 Fields side by side, 1:02 Radio input, 1:32 Required fields, 1:59 Conditional section, 2:21 Visible if, 2:46 Require if, 3:04 Submit button, 3:18 Toast action, 3:34 Validate before action, 3:51 Testing in Preview, 4:17 Recap.
 
 ## 1. Place the fields
 
@@ -16178,19 +16645,32 @@ Source: https://ngxviewbuilder.io/creators/form-settings
 
 # Form settings
 
-The **Settings** tab holds everything that applies to the whole view rather than one element. It has five groups: **General**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**.
+The **Settings** tab holds everything that applies to the whole view rather than one element. It has seven groups: **Layout**, **Language and formats**, **Behaviour**, **Form header**, **Navigation and actions**, **Rendering and dialog**, and **AI access (MCP)**. The list on the left jumps to each one.
 
-## General
+## Layout
 
 | Setting | What it does |
 | --- | --- |
-| **Status** | `Default` (editable) or `Read only`. A read-only view displays values but blocks editing everywhere. Individual elements can opt out with *Inherit parent state*. |
-| **Current language** | The content language shown right now in the builder and preview. |
-| **Default language** | The language the view starts in at runtime. |
-| **Supported languages (comma separated)** | Languages the view offers, e.g. `en, lt, de`. Texts for them are managed in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
-| **Locale** | Number/date formatting locale (e.g. `lt-LT`, `en-US`). Used by number formatting, date pickers, and table totals. |
 | **Form width** + **Form width unit** | Maximum content width of the rendered view (`px` or `%`). |
-| **Element spacing** | Vertical gap between element rows. |
+| **Element spacing** | The gap between fields, in px. |
+| **Content padding** | The space inside the form frame, in px. |
+| **No content padding** | The form touches the edges of the page it sits in. |
+| **Breakpoints** (*Tablet*, *Mobile*) | Below these widths the view switches to the tablet and the mobile layout, so fields use their *Tablet width* and *Mobile width*. |
+
+## Language and formats
+
+| Setting | What it does |
+| --- | --- |
+| **Languages** | The languages the view can be shown in. Pick one from **Add a language…** and press **Add language**; remove one with the × next to it. The language marked *source* cannot be removed. Texts for the others are translated in the [Translations](https://ngxviewbuilder.io/creators/translations) tab. |
+| **Source language** | The language you type the texts in here, in the builder. |
+| **Shown in** | The language the canvas and Preview show right now, so you can check a translation without leaving the builder. |
+| **Number and date format** | The locale for numbers, dates and currency: the decimal separator, the date order and so on. Number fields, date pickers and table totals follow it. |
+
+## Behaviour
+
+| Setting | What it does |
+| --- | --- |
+| **Editing** | `Editable`: people fill in the form, and single fields can still be locked. `Read only`: every field shows its value but cannot be changed. Individual elements can opt out with *Inherit parent state*. |
 
 ## Form header
 
@@ -16209,15 +16689,15 @@ The optional header block rendered above the first page.
 
 | Setting | What it does |
 | --- | --- |
-| **Page navigation mode** | `Default` (Prev/Next buttons) or `Stepper` (numbered steps). |
-| **Page navigation position** | Where the Prev/Next controls render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Stepper position** | Where the stepper renders when stepper mode is on. |
-| **Action buttons position** | Where Validate/Submit render: `Top`, `Bottom`, `Both`, or `None`. |
-| **Allow step without validation** | Users may move between steps/pages even when the current page is invalid. |
+| **Moving between pages** | `Steps`: numbered steps, and a step is checked before the next one opens. `Previous / Next buttons`: pages in any order. |
+| **Page buttons** | Where the Previous and Next buttons render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Steps** | Where the numbered steps render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Validate and Submit buttons** | Where Validate and Submit render: `Top`, `Bottom`, `Both`, or `Hidden`. |
+| **Allow step without validation** | People may move to the next step even when the current one has errors. |
+| **Show validate button** | The built-in Validate button: checks the whole form without submitting. |
 | **Show submit button** | The built-in Submit button (fires completion with data + validation result). |
-| **Show validate button** | The built-in Validate button (checks without submitting). |
+| **Show validation issues modal** | After a failed check, a dialog lists every validation issue with links to the fields. |
 | **Show table of contents** | Renders a contents panel for long views. |
-| **Show validation issues modal** | After a failed submit, shows a dialog listing every validation issue with links to the fields. |
 
 See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
@@ -16225,7 +16705,7 @@ See [Pages & navigation](https://ngxviewbuilder.io/creators/pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
+| **Shown as** | `Page`: a framed form inside the host page. `Dialog`: a window over the host page, with its own header and buttons. `Canvas (full width, no frame)`: for web pages (see [Web pages with Canvas](https://ngxviewbuilder.io/creators/layout#web-pages-with-canvas)). |
 | **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
@@ -16394,7 +16874,7 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | --- | --- | --- |
 | `today()` | today, `YYYY-MM-DD` | `Default value: =today()` |
 | `now()` | current date-time (ISO) | timestamp fields |
-| `date(value, mode)` | normalised date (`iso`, `datetime`, `timestamp`) | `date({created}, "iso")` |
+| `date(value, mode)` | the date as `YYYY-MM-DD`; with `iso` or `datetime` the moment as UTC text, with `timestamp` milliseconds | `date({created}, "iso")` |
 | `day(value)` / `month(value)` / `year(value)` | date parts | `year({birthDate}) < 2000` |
 | `weekDay(value, locale, style)` | weekday name | `weekDay({date}, "en", "long")` |
 | `weekDayIndex(value)` | Monday=1 … Sunday=7 | `weekDayIndex({date}) <= 5` |
@@ -16403,6 +16883,8 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | `dateDiffDays(from, to)` | day difference | `dateDiffDays({start}, {end}) >= 1` |
 | `startOfWeek(value)` / `endOfWeek(value)` | week boundaries | report period defaults |
 | `age(birthDate)` | full years from that date until today | `age({birthDate}) >= 18` |
+
+`date` without a mode keeps the calendar date of the view's time zone: `date("2024-02-29")` is `2024-02-29`. The `iso` and `datetime` modes return the moment in UTC instead, the way a server expects it, and a plain date is midnight in the user's time zone. So in Vilnius (UTC+2 in winter) `date("2024-02-29", "iso")` gives `2024-02-28T22:00:00.000Z`: the same moment, not a different day. Use the default mode when you mean a calendar date, and `iso` when you send a point in time.
 
 `age` counts a year only once the birthday has passed, so someone born on 30 June 2008 is still 17 on 29 June 2026. It gives nothing while the date is empty, which keeps a condition like `age({birthDate}) >= 18` false until the date is filled in.
 
@@ -16563,6 +17045,8 @@ Source: https://ngxviewbuilder.io/creators/layout
 
 # Layout & containers
 
+**Video lesson 3 (2:55):** [Layout & containers](https://www.youtube.com/watch?v=rrYSBcpJcZE). Shape your form layout in NGX View Builder: rows and columns, side-by-side fields, uneven widths, mobile widths, panels, tabs and accordions, element spacing, and the Canvas mode for web pages. Chapters: 0:00 Intro, 0:31 Moving a field to a new row, 0:48 Containers, 1:04 Tabs, 1:30 Uneven widths, 1:49 Mobile widths, 2:06 Element spacing, 2:28 Desktop and phone preview.
+
 ## Rows and columns
 
 The canvas is a stack of **rows**. Each row holds one or more **columns**, and each column holds exactly one element. You create layout by dragging:
@@ -16631,6 +17115,63 @@ Elements placed directly on a Canvas page, outside a section, run edge to edge w
 
 ---
 
+## Logic map
+
+Source: https://ngxviewbuilder.io/creators/logic-map
+
+# Logic map
+
+A large form hides its logic in dozens of property panels: this field shows when that one is filled in, that total is calculated from three others, a button calls a data source and puts the answer somewhere else. The **Logic map** tab puts all of it on one canvas, so you can see how the form works without opening every element.
+
+It comes with the Logic map plugin and needs a license key in the builder settings (see [Licensing](https://ngxviewbuilder.io/developers/licensing#licensed-plugins)). Without one, the tab says what is missing.
+
+## Reading the map
+
+Each card is something with logic: a field, a data source, a variable, a view rule or a trigger. A card shows the element's label, its type and the page it sits on. A field inside a dynamic table or a panel says so on top of the card, such as "Column of Order lines" or "In Billing address", so two fields called `city` never look alike. The number on the right is how many rules the element has.
+
+The links run left to right, from what drives a value to what it changes. Each link type has its own colour and line style:
+
+| Link | Means |
+| --- | --- |
+| Shows or hides | a `visibleIf` condition reads the field on the left |
+| Makes required | a `requireIf` condition |
+| Disables or locks | `disableIf` or `readonlyIf` |
+| Calculates or sets a value | a calculation, or an event that sets a value |
+| Clears a value | a `resetIf` condition |
+| Validates | a validator that reads another field |
+| Loads data | a data source call, its parameters, options that reload |
+| Runs an action | dialogs, navigation, messages, submit |
+
+The list of link types on the left doubles as a filter: untick one to hide those links. **Elements without logic** adds the plain fields back, and **Page** narrows the map to one page.
+
+## Tracing one field
+
+Click a card. The map highlights everything the field depends on and everything it changes, through any number of steps, and dims the rest. The panel on the right lists:
+
+- **Rules on this element**, each read back in words, for example "Required when Country of registration is not US and Annual revenue (EUR) > 85000".
+- **Depends on** and **Affects**, each with how far away it is ("Direct", "2 steps away").
+
+Tick **Highlight direct links only** to keep just the first step. **Edit in builder** (or a double click on the card) opens the element in the Builder tab with its properties ready.
+
+## Needs attention
+
+The map also checks the logic. Under **Needs attention** it lists:
+
+- a condition or calculation that refers to a field, data source or variable the view does not have,
+- an event that changes an element that is not there,
+- a data source that is used but not defined,
+- values that calculate each other in a loop, which never settle.
+
+Click an item to jump to the card.
+
+## Moving around
+
+Drag the canvas to move it, Ctrl + scroll to zoom, or use `+`, `-`, `0` (100%) and `F` (fit) on the keyboard. The minimap in the corner shows where you are. Search finds a field by its label or name.
+
+The download button saves the map as an SVG with a legend, ready for a wiki page or a ticket.
+
+---
+
 ## Pages & navigation
 
 Source: https://ngxviewbuilder.io/creators/pages
@@ -16638,6 +17179,8 @@ Source: https://ngxviewbuilder.io/creators/pages
 # Pages & navigation
 
 A view can have one page or many. Pages appear as cards in the **Pages** tab under the canvas, each with its number, name, element count and code: click a card to switch, use **New page** to add one, drag a card to reorder (a line shows where it will land), and hover it for Duplicate and Delete. Duplicate copies the page with all of its elements.
+
+**Video lesson 2 (2:56):** [Pages & navigation](https://www.youtube.com/watch?v=KLdQYH4y5m8). Split a long form into pages and turn it into a multi-step wizard: the pages strip, new pages, duplicate and delete, Steps navigation, button positions, and the validation issues dialog. Chapters: 0:00 Intro, 0:16 The pages strip, 0:28 Renaming a page, 0:46 Adding pages, 1:25 Page cards, 1:43 Steps navigation, 1:58 Button positions, 2:40 Recap.
 
 ## When to use multiple pages
 
@@ -16647,22 +17190,24 @@ A view can have one page or many. Pages appear as cards in the **Pages** tab und
 
 ## Navigation modes
 
-Set in **Form settings → Page navigation mode**:
+Set in **Form settings → Navigation and actions → Moving between pages**:
 
 | Mode | Behaviour |
 | --- | --- |
-| `default` | Previous / Next buttons between pages |
-| `stepper` | A visual stepper shows all pages; users move step by step |
+| `Previous / Next buttons` | Previous and Next buttons between pages, in any order. |
+| `Steps` | A numbered stepper shows all pages; people move step by step. |
 
-By default a page must pass validation before the user can continue. Turn on **Allow step without validation** in Form settings to let users move freely.
+With steps, a page must pass validation before the person can continue. **Next checks the page being left only**: a required field or a rule on a later step does not hold anyone on the first one, and its errors show up when they get there. **Submit** still checks the whole form, and **Validate** checks it too without submitting. Turn on **Allow step without validation** in Form settings to let people move freely.
+
+On a phone, a stepper with more than three steps shows only the numbered markers, with *Step 2 of 5* and the current step's name below them, so the steps and the buttons under them stay on the screen. Screen readers still hear the name of every step.
 
 ## Positions
 
-Form settings let you place navigation chrome where it suits the layout:
+Form settings let you place navigation chrome where it suits the layout, each `Top`, `Bottom`, `Both`, or `Hidden`:
 
-- **Page navigation position**: `top`, `bottom`, `both`, or `none`.
-- **Stepper position**: where the step indicator renders.
-- **Action buttons position**: where Validate/Submit buttons render.
+- **Page buttons**: the Previous and Next buttons.
+- **Steps**: the numbered stepper.
+- **Validate and Submit buttons**.
 
 ## Page states
 
@@ -16738,44 +17283,33 @@ Source: https://ngxviewbuilder.io/creators/properties
 
 Most elements share the same core properties. Element-specific properties are covered on each [element page](https://ngxviewbuilder.io/creators/elements/).
 
+**Video lesson 4 (2:24):** [Common properties](https://www.youtube.com/watch?v=TrCpk9M5Ofo). The properties every element shares: finding a property, label vs name, placeholder, description, help tooltip, switching types, field states, length limits, autocomplete and input mode. Chapters: 0:00 Intro, 0:13 Finding properties, 0:28 Label and name, 0:47 Placeholder, description, tooltip, 1:07 Switching type, 1:21 Hidden, disabled, read only, 1:35 Limits, 2:02 Preview.
+
 ::: tip Finding a property
 The properties sidebar has a **search box** (*Search in property list*): type part of a property name to filter. Every field also has a **help icon**: hover it for a short explanation with an example.
 :::
 
 ## How the sidebar is organised
 
-Properties are grouped into sections. Only sections relevant to the selected element appear:
+The properties sidebar groups an element's properties into collapsible categories. Only the categories the selected element has appear, in this order:
 
-| Section | What it holds |
+| Category | What it holds |
 | --- | --- |
-| **Identity** | Name, label, and basic identifiers |
-| **Content** | Visible texts, titles, placeholders, and content fields |
-| **Input** | Input modes, autocomplete, and user input UX |
-| **Formatting** | Masks, locale, and value formatting settings |
-| **Primary source** | Data source binding and response paths |
-| **Request** | Request params, lazy load, and backend request settings |
-| **Search** | Quick or detailed search and their extra settings |
-| **Saved filters** | Saved filters data source and payload schema |
-| **Options schema** | Option lists, filtering, and selection modes |
-| **Selection** | Table selection and selected item configuration |
-| **Details** | Expanded rows, details panel, and nested views |
-| **Pagination** | Paginator and footer control |
-| **Header controls** | Header bar, export, and search controls |
-| **Columns schema** | Main and expanded table columns |
-| **Trigger button** | Button that opens a dialog or another action |
-| **State** | Hidden, disabled, and readonly states |
-| **Limits** | Min/max, lengths, counts, and other restrictions |
-| **Deletion** | Delete flow and confirm settings |
-| **Validation** | Required, validators, and strict options |
-| **Visibility logic** | Visible-if and open conditions |
-| **Interaction logic** | Disable, require, and readonly conditions |
-| **Value logic** | Expression, default value, and reset conditions |
-| **Execution modes** | Logic and validation execution mode settings |
-| **Actions** | Events and action collections |
-| **Layout** | Width, padding, orientation, gap, and overall layout |
-| **Surface** | Borders, backgrounds, shadows, and page or panel surfaces |
-| **Appearance** | Variants, colors, icons, and visual accents |
-| **Advanced** | Rare or specialized properties |
+| **General** | Name, label, description, placeholder, field help tooltip, and the element's own content: a button's text, a card's title, an HTML element's markup. |
+| **Restrictions** | Hidden, disabled, read only, required, and limits such as min and max, lengths, counts, and accepted files. |
+| **Validators** | Validation rules, the required message, and strict options. |
+| **Logic** | Visible if, disable if, require if, reset if, calculated values (expression), and the default value. |
+| **Data** | Data source binding, response paths, and lazy loading. |
+| **Options** | Option lists and how they are filtered and selected. |
+| **Columns** | A table's columns and expanded-row columns. |
+| **Events** | Actions run on clicks, value changes, and other triggers. |
+| **Design** | Width per screen size, colors, icons, variants, padding, borders, backgrounds, and shadows. |
+| **Behavior** | How an element works at runtime: paging, quick search, loading mode, initially visible, dismissible, and other element-specific switches. |
+| **Texts** | The fixed texts an element shows besides its label, such as *Add row* and the delete confirmation. |
+
+Plugins can add their own categories after these, such as **Documentation**.
+
+The sections below go through the properties most elements share, grouped by what they do rather than by category. The category each one sits in is given in the tables above, and the search box finds any of them by name.
 
 ## Identity & content
 
@@ -16788,7 +17322,7 @@ Properties are grouped into sections. Only sections relevant to the selected ele
 | **Placeholder text** | Text shown while the field is empty. Use as an example or short hint, not as the only explanation. |
 | **Title** / **Subtitle** | Main heading text and secondary text for elements with their own header (cards, page titles, panels). |
 | **Text** | Main text for content-style elements (button caption, badge text…). |
-| **Icon** | Material Symbol or registered SVG icon code, used as a visual accent or a shorter way to present an action. |
+| **Icon** | Picked from a list (your application's icons first, then the built-in ones), typed by name, or pasted as SVG markup. Used as a visual accent or a shorter way to present an action. |
 | **Type** | Switches the element to a closely related type without recreating it (e.g. `text` → `number`), preserving shared properties. |
 
 ## State
@@ -16880,44 +17414,78 @@ Source: https://ngxviewbuilder.io/creators/templates
 
 ## Dynamic text
 
-Text-bearing properties (rich text, custom HTML, message cards, dialog titles, toast messages, set-value templates…) accept **double-brace placeholders** that render live values:
+Two kinds of text show live values, and they use different braces.
+
+**Text properties** (a label, a description, a placeholder, a tooltip, a button caption, a table's empty message, a tab title, a chart title) take a reference in single braces, the same way an expression does:
 
 ```text
-Hello, {{firstName}} {{lastName}}!
-Your order total is {{orderTotal}} €.
-Application no. {{__variables.route.id}}
+Hello, {firstName} {lastName}!
+Your order total is {orderTotal} €.
+Application no. {__variables.route.id}
 ```
 
-Placeholders re-render when the referenced values change. Inside repeaters, item context is available: <code v-pre>{{ item.name }}</code>, <code v-pre>{{ index }}</code>.
+Double braces work there too, so <code v-pre>{{firstName}}</code> in a label shows the same name. Before 0.13.4 the double form left a stray brace on screen.
 
-Simple logic is supported in template blocks:
+**HTML templates** (Custom HTML, list grid cards, option and header templates, the Templates tab) use double braces, Angular style, and add `@if`, `@for` and the rest:
 
 ```html
+<strong>{{ item.name }}</strong>
 @if (item.status == "Active") {<span class="ok">Active</span>}
 ```
 
+Older templates written with single braces (`{pageTitle}`) still render.
+
 ::: tip Single vs. double braces
-`{name}` (single) is for **expressions**: logic properties, conditions, params.
-<code v-pre>{{name}}</code> (double) is for **text templates**: content that renders on screen.
+`{name}` is for **expressions** (logic properties, conditions, params) and for **text properties**.
+<code v-pre>{{name}}</code> is for **HTML templates**, and is also accepted in text properties.
 :::
+
+### Where references resolve
+
+| Field | Resolves references |
+| --- | --- |
+| Label, description, label tooltip, placeholder | yes |
+| Button text, badge text, page and panel titles | yes |
+| Table and dynamic table empty message, list grid empty message | yes |
+| Tab titles (Tabs, Tabs Pro), chart title, dynamic table caption | yes |
+| Time picker placeholder | yes, since 0.13.4 |
+| Option labels of a Select, Radio, Checkbox group, List box | no, an option label is shown as written. Load the options from a data source when the text has to change. |
+| Custom HTML, cards and other templates | yes, with <code v-pre>{{ }}</code> |
+
+Screen reader names follow the visible text: a table caption, a chart's description and a column's cell names are read with their references filled in.
+
+### Inside repeaters
+
+In a dynamic panel or dynamic table a text belongs to one entry, so it can read that entry:
+
+| Token | In a text | Means |
+| --- | --- | --- |
+| `{panel.fieldName}` / `{row.fieldName}` | dynamic panel / dynamic table | a field of the current entry |
+| `{fieldName}` | both | the same, short form for a sibling field |
+| `{index}`, `{panel.index}`, `{row.index}` | both | zero based position of the entry |
+| `{el1[0].fieldName}` | anywhere | a field of a fixed entry |
+
+A label such as `Contact #{panel.index}: {panel.name}` updates as the entry is filled in and renumbers when an entry above it is removed.
 
 ## The template library
 
 The **Templates** tab (plugin) manages reusable HTML templates. Define a card or option layout once, use it in any List grid, Select option template, or content block by picking its **name**, with no copy-pasting HTML between views.
 
-A template has:
+Pick a template in the list on the left, or add one with the **+** button. The editor has three columns: **HTML content** and **CSS** in the middle, and **Template settings** with the preview on the right.
 
-| Field                      | What it is                                                                                                                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                   | The identifier elements reference. Must be unique; the editor rejects duplicates.                                                             |
-| **Title**                  | Human-friendly display title.                                                                                                                 |
-| **Description**            | What the template is for.                                                                                                                     |
-| **Tags (comma separated)** | For finding it later.                                                                                                                         |
-| **HTML content**           | The markup, with <code v-pre>{{placeholders}}</code>. Required. A small **format** icon button (top-right corner of the box) tidies the HTML. |
-| **CSS**                    | Styles scoped to the template, with its own **format** icon button.                                                                           |
-| **Template fields**        | Declares the data fields the template expects (e.g. `jarStatus` or `status.code`) so pickers can map data onto slots.                         |
+| Field | What it is |
+| --- | --- |
+| **HTML content** | The markup, with <code v-pre>{{placeholders}}</code>. Required. The button in the card's corner tidies the HTML. |
+| **CSS** | Styles scoped to the template, with its own format button. |
+| **Name** | The identifier elements reference. Must be unique; the editor rejects duplicates. |
+| **Title** | Human-friendly display title, shown in the list and in the template pickers. |
+| **Preview data (JSON)** | The object the preview renders the template with, edited right under the preview. Put in a record shaped like your real data, for example `{ "name": "Harbor Foods", "status": "active" }`. It must be a valid JSON object. |
 
-The preview panel next to the editor renders the template live against a fixed built-in sample object, so you can see card/option layouts update as you type there's nothing to configure for it.
+The **Preview** renders the template live as you type, against the preview data. Changes are kept as a draft until you press **Save** in **Template settings**; the editor marks unsaved changes in the meantime. Saved changes reach every element that uses the template, on the canvas, in Preview and in the exported view.
+
+### Template fields
+
+A template can leave its fields open with bracket slots, `row[0]`, `item['status']`, `value[2]`, so the same markup fits records with different field names. The mapping is not in this tab: select the element that uses the template (a List grid, a Select), and next to the template picker in its properties a **Template fields** list appears, one line per slot, where you say which field of the element's data fills it. A template without bracket slots has no such list.
 
 ### Storage settings
 
@@ -17058,6 +17626,8 @@ Source: https://ngxviewbuilder.io/creators/validation
 # Validation
 
 Validation runs when the user submits, when a page changes in stepper mode, and (depending on settings) while editing. Failing elements show their error message and block submission.
+
+**Video lesson 8 (1:44):** [Validation](https://www.youtube.com/watch?v=ZPpFMkTfjkw). Keep bad data out: pattern validators, clear error messages, input masks, and custom validation rules with expressions like dateDiffDays. Chapters: 0:00 Intro, 0:15 Pattern validator, 0:36 Input masks, 0:49 Custom rules, 1:18 Testing validation, 1:30 Recap.
 
 ## Required
 
@@ -17231,7 +17801,7 @@ The builder screen has five working areas:
 | Properties sidebar | Right | Configure the selected element |
 | Header | Top | Switch between builder modes, settings, undo and save |
 
-![Builder workspace](https://ngxviewbuilder.io/first-look/builder.png)
+**Video lesson 0 (2:53):** [The builder workspace](https://www.youtube.com/watch?v=oWwWsfP-BLY). A quick tour of the NGX View Builder workspace: the elements library, the canvas, the Layers tree, the properties panel, the pages footer, the header tabs, and undo and redo. Chapters: 0:00 Intro, 0:27 Elements library and search, 0:40 Adding elements, 0:55 Layers tree, 1:08 Moving elements on the canvas, 1:33 Right-click menu, 1:56 Pages, data sources, variables, 2:09 Header tabs and plugins, 2:24 Undo, redo, settings and save, 2:44 Next lesson.
 
 ## Elements sidebar
 
@@ -17305,6 +17875,10 @@ With nothing selected, the sidebar shows how to add, find and edit elements.
 | Preview | Run the view exactly as end users will see it |
 | JSON Editor | Edit the raw view definition |
 | Templates | Manage reusable HTML templates *(plugin)* |
+| Logic map | See how the fields depend on each other, on one canvas *(plugin)*, see [Logic map](https://ngxviewbuilder.io/creators/logic-map) |
+| Documentation | The field reference for Confluence *(plugin)*, see [Field documentation](https://ngxviewbuilder.io/creators/documentation) |
+
+Plugin tabs come after a thin divider. When there are more than fit, the rest go into a **More** menu at the end of the tabs, each with its icon and a line about what it is for; the menu takes the name of the tab you have open from it. It works from the keyboard too: arrows move through it, Home and End jump to the ends, Escape closes it.
 
 The buttons on the right are undo and redo, **Form settings** (the gear: width, navigation, buttons, custom CSS, AI access), **Translations**, and **Save**.
 
@@ -17342,7 +17916,7 @@ Source: https://ngxviewbuilder.io/privacy
 
 # Privacy Policy
 
-*Last updated: 18 July 2026*
+*Last updated: 16 October 2026*
 
 This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
@@ -17368,7 +17942,7 @@ Analytics processing relies on your **consent** (GDPR Art. 6(1)(a)), which you c
 
 ## Third parties
 
-We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). We do not sell your data or share it with any other third party.
+We use **Google Analytics** (Google Ireland Limited) as a data processor for the analytics described above. Google's own privacy policy and data-transfer safeguards apply to its processing: [policies.google.com/privacy](https://policies.google.com/privacy). Video lessons in the documentation are hosted on **YouTube** (Google Ireland Limited). A page with a lesson shows only a picture stored on this site; the YouTube player loads from youtube-nocookie.com when you press play, and from then on YouTube's privacy policy applies to that video. We do not sell your data or share it with any other third party.
 
 ## Retention
 

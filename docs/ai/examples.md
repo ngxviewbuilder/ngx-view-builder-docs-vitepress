@@ -1,6 +1,6 @@
 ---
 title: "AI: Verified example structures"
-description: A library of complete, verified NGX View Builder JSON examples covering layout, every element family, the full table feature set, dynamic tables and panels, data sources, runtime variables and expressions.
+description: "Complete, verified NGX View Builder JSON examples: layout, every element family, tables, dynamic panels, data sources, runtime variables and expressions."
 ---
 
 # AI: Verified example structures

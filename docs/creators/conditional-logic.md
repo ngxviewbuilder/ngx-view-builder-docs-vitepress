@@ -15,6 +15,8 @@ Five properties in the **Logic** category control element state. Each takes a tr
 | **Read only if** | the value is visible but locked |
 | **Reset if** | *the moment it becomes true*, the value is cleared/reset to default |
 
+<YouTubeVideo id="RqYkX5_ruKw" />
+
 ## Building a rule without writing it
 
 Every logic editor has two tabs: **Code** and **Visual builder**. The visual builder lets you put a rule together from dropdowns, so you do not need to know the expression syntax at all.

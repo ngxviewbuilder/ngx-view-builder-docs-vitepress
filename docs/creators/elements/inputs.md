@@ -1,9 +1,11 @@
 ---
 title: Text & number inputs
-description: Text, Textarea, Number, Number stepper, Phone input, and Slider.
+description: "Text, textarea, number, number stepper, phone input and slider in NGX View Builder: their properties, validation and when to choose which."
 ---
 
 # Text & number inputs
+
+<YouTubeVideo id="iTN6QoEfT3M" />
 
 ## Text (`text`)
 

@@ -1,6 +1,6 @@
 ---
 title: Custom CSS
-description: Per-view and host-injected CSS on top of the theme system.
+description: "Style NGX View Builder views with custom CSS: per-view styles, host stylesheets, targeting elements, sanitisation and how to layer it over the theme."
 ---
 
 # Custom CSS
