@@ -75,7 +75,10 @@ The runtime ignores `openApi`: these are plain REST sources, and a view keeps wo
 
 The plugin does not change how a response is read. It does tell the creator where the rows are when a list comes wrapped, `{ "items": [...], "total": 120 }` for example, so they can set the element's **Items path**, and which fields suit an option's value and label.
 
-## Live endpoints: event streams and WebSockets
+## Live endpoints: event streams and WebSockets <Badge type="warning" text="Experimental" /> {#live-endpoints-event-streams-and-websockets}
+
+Built on the [live sources](./data-sources#event-stream-sources-server-sent-events), which are experimental: the parts below may change in a minor release.
+
 
 An operation whose response is `text/event-stream` is listed as an **SSE** endpoint. With OpenAPI 3.2 `itemSchema`, the plugin reads the event names from `event` (`const` or `enum`) and the message from `data` (its `contentSchema`):
 

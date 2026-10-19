@@ -218,7 +218,11 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 - Responses are cached per request signature (URL + method + payload); identical concurrent requests are coalesced. Force fresh data with the reload APIs.
 - A request whose URL/body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
 
-## WebSocket sources
+## WebSocket sources <Badge type="warning" text="Experimental" /> {#websocket-sources}
+
+::: warning Experimental
+Live sources work and are covered by our tests, but their options and behaviour may still change in a minor release while we improve them. Try them, tell us what you need, and keep a fallback for flows your business depends on.
+:::
 
 A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [Data sources tab](../creators/data-sources#websocket); this section is about what the host controls.
 
@@ -302,7 +306,11 @@ Sockets die for reasons that have nothing to do with your code. Load balancers a
 
 A url without a scheme, such as `/api/ws/orders`, is resolved against the page before the socket opens: `wss://` on a page served over https, `ws://` over http. A view stored with a relative url therefore stays secure wherever it is deployed, and it connects in older browsers too, which accept only absolute WebSocket urls. A page served over https cannot open a plain `ws://` connection at all; the browser blocks it.
 
-## Event stream sources (server-sent events)
+## Event stream sources (server-sent events) <Badge type="warning" text="Experimental" /> {#event-stream-sources-server-sent-events}
+
+::: warning Experimental
+Live sources work and are covered by our tests, but their options and behaviour may still change in a minor release while we improve them. Try them, tell us what you need, and keep a fallback for flows your business depends on.
+:::
 
 An `sse` source is the one-way sibling of a WebSocket: the server answers a GET with `Content-Type: text/event-stream` and keeps writing events to it. Use it when the page only listens, which is most of the time: an order's status, an import's progress, a live log, an AI answer arriving piece by piece. It is plain HTTP, so it passes proxies and firewalls that block WebSocket upgrades, and over HTTP/2 an open stream costs next to nothing.
 

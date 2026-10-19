@@ -115,7 +115,7 @@ api.setWebsocketAuthorizer(async ({ url }) => {
 
 See [WebSocket security](../data-sources#security-authorizing-the-connection).
 
-### `setEventStreamAuthorizer()`
+### `setEventStreamAuthorizer()` <Badge type="warning" text="Experimental" /> {#seteventstreamauthorizer}
 
 ```ts
 setEventStreamAuthorizer(authorizer: (context: { sourceName: string; url: string }) =>

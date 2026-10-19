@@ -8489,7 +8489,7 @@ api.setWebsocketAuthorizer(async ({ url }) => {
 
 See [WebSocket security](https://ngxviewbuilder.io/developers/data-sources#security-authorizing-the-connection).
 
-### `setEventStreamAuthorizer()`
+### `setEventStreamAuthorizer()` <Badge type="warning" text="Experimental" /> {#seteventstreamauthorizer}
 
 ```ts
 setEventStreamAuthorizer(authorizer: (context: { sourceName: string; url: string }) =>
@@ -11195,7 +11195,11 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 - Responses are cached per request signature (URL + method + payload); identical concurrent requests are coalesced. Force fresh data with the reload APIs.
 - A request whose URL/body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
 
-## WebSocket sources
+## WebSocket sources <Badge type="warning" text="Experimental" /> {#websocket-sources}
+
+::: warning Experimental
+Live sources work and are covered by our tests, but their options and behaviour may still change in a minor release while we improve them. Try them, tell us what you need, and keep a fallback for flows your business depends on.
+:::
 
 A `websocket` source is a live connection rather than a request. The runtime opens it the first time anything on the page uses that source, keeps it open, and pushes every message into the bound elements and variables. Creators configure it in the [Data sources tab](https://ngxviewbuilder.io/creators/data-sources#websocket); this section is about what the host controls.
 
@@ -11279,7 +11283,11 @@ Sockets die for reasons that have nothing to do with your code. Load balancers a
 
 A url without a scheme, such as `/api/ws/orders`, is resolved against the page before the socket opens: `wss://` on a page served over https, `ws://` over http. A view stored with a relative url therefore stays secure wherever it is deployed, and it connects in older browsers too, which accept only absolute WebSocket urls. A page served over https cannot open a plain `ws://` connection at all; the browser blocks it.
 
-## Event stream sources (server-sent events)
+## Event stream sources (server-sent events) <Badge type="warning" text="Experimental" /> {#event-stream-sources-server-sent-events}
+
+::: warning Experimental
+Live sources work and are covered by our tests, but their options and behaviour may still change in a minor release while we improve them. Try them, tell us what you need, and keep a fallback for flows your business depends on.
+:::
 
 An `sse` source is the one-way sibling of a WebSocket: the server answers a GET with `Content-Type: text/event-stream` and keeps writing events to it. Use it when the page only listens, which is most of the time: an order's status, an import's progress, a live log, an AI answer arriving piece by piece. It is plain HTTP, so it passes proxies and firewalls that block WebSocket upgrades, and over HTTP/2 an open stream costs next to nothing.
 
@@ -12536,7 +12544,10 @@ The runtime ignores `openApi`: these are plain REST sources, and a view keeps wo
 
 The plugin does not change how a response is read. It does tell the creator where the rows are when a list comes wrapped, `{ "items": [...], "total": 120 }` for example, so they can set the element's **Items path**, and which fields suit an option's value and label.
 
-## Live endpoints: event streams and WebSockets
+## Live endpoints: event streams and WebSockets <Badge type="warning" text="Experimental" /> {#live-endpoints-event-streams-and-websockets}
+
+Built on the [live sources](https://ngxviewbuilder.io/developers/data-sources#event-stream-sources-server-sent-events), which are experimental: the parts below may change in a minor release.
+
 
 An operation whose response is `text/event-stream` is listed as an **SSE** endpoint. With OpenAPI 3.2 `itemSchema`, the plugin reads the event names from `event` (`const` or `enum`) and the message from `data` (its `contentSchema`):
 
@@ -14309,6 +14320,24 @@ api.setCustomTheme({
 
 `runtimeSettings.customTheme` accepts the same object at bootstrap.
 
+## Motion
+
+The builder and the runtime move a little where it explains a change: an element dropped on the canvas settles into place, dialogs and menus fade in, a validation message or a new table row appears instead of popping, a toast slides in. Everything takes 120 to 180 ms and animates only opacity and position, so large forms are not slowed down.
+
+| Token | Default | Used for |
+| --- | --- | --- |
+| `--nvb-motion-duration-fast` | `120ms` | messages, menus, backdrops |
+| `--nvb-motion-duration` | `180ms` | dialogs, drops, toasts, added rows |
+| `--nvb-motion-easing` | `cubic-bezier(0.2, 0, 0, 1)` | all of them |
+
+Set both durations to `0ms` to turn motion off, for example in end-to-end tests that take screenshots:
+
+```ts
+api.setCssVariables({ '--nvb-motion-duration-fast': '0ms', '--nvb-motion-duration': '0ms' });
+```
+
+A person who asks their system for reduced motion gets it off without anything from you.
+
 ## Custom elements & theming
 
 Write custom element styles against the tokens and they follow every theme automatically:
@@ -14967,7 +14996,11 @@ With the OpenAPI plugin, an **API** row above the request lets you pick the endp
 | **JSON data** | The inline JSON when mode is `JSON`. |
 | **Local function** | Optionally call a JS function for the data. Example: `window.myFunction` or `this.myFunction`. |
 
-### WebSocket
+### WebSocket <Badge type="warning" text="Experimental" /> {#websocket}
+
+::: warning Experimental
+Live sources are new. They work, but details may change in a coming release. Your developer decides whether they are turned on.
+:::
 
 A REST source answers once, when something asks it. A WebSocket source stays connected and keeps handing you whatever the server sends, so the view moves on its own: a dashboard counter, a queue, an order that someone else just changed.
 
@@ -15006,7 +15039,11 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](https://ngxviewbuilder.io/creators/events-actions#send-socket-message).
 
-### Event stream
+### Event stream <Badge type="warning" text="Experimental" /> {#event-stream}
+
+::: warning Experimental
+Live sources are new. They work, but details may change in a coming release. Your developer decides whether they are turned on.
+:::
 
 An event stream is the listening-only cousin of a WebSocket: the server keeps an ordinary web request open and writes an event whenever something happens. It is the simpler choice when the form only needs to watch, such as an order moving from Confirmed to Shipped, an import at 40%, or a log of changes.
 

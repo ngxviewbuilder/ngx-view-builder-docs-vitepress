@@ -45,7 +45,11 @@ With the OpenAPI plugin, an **API** row above the request lets you pick the endp
 | **JSON data** | The inline JSON when mode is `JSON`. |
 | **Local function** | Optionally call a JS function for the data. Example: `window.myFunction` or `this.myFunction`. |
 
-### WebSocket
+### WebSocket <Badge type="warning" text="Experimental" /> {#websocket}
+
+::: warning Experimental
+Live sources are new. They work, but details may change in a coming release. Your developer decides whether they are turned on.
+:::
 
 A REST source answers once, when something asks it. A WebSocket source stays connected and keeps handing you whatever the server sends, so the view moves on its own: a dashboard counter, a queue, an order that someone else just changed.
 
@@ -84,7 +88,11 @@ Reconnecting is automatic. A dropped connection is retried with a growing delay,
 
 The **Message** field only fires at connection time. To push something later, put a **Send socket message** action on a button: pick the WebSocket source and write the payload. See [Actions](./events-actions#send-socket-message).
 
-### Event stream
+### Event stream <Badge type="warning" text="Experimental" /> {#event-stream}
+
+::: warning Experimental
+Live sources are new. They work, but details may change in a coming release. Your developer decides whether they are turned on.
+:::
 
 An event stream is the listening-only cousin of a WebSocket: the server keeps an ordinary web request open and writes an event whenever something happens. It is the simpler choice when the form only needs to watch, such as an order moving from Confirmed to Shipped, an import at 40%, or a log of changes.
 
