@@ -1,6 +1,6 @@
 ---
 title: Expression functions
-description: All built-in expression functions with examples.
+description: "Every built-in expression function in NGX View Builder with examples: text, numbers, arrays and table rows, dates, data loading and writing values."
 ---
 
 # Function reference
@@ -114,7 +114,7 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | --- | --- | --- |
 | `today()` | today, `YYYY-MM-DD` | `Default value: =today()` |
 | `now()` | current date-time (ISO) | timestamp fields |
-| `date(value, mode)` | normalised date (`iso`, `datetime`, `timestamp`) | `date({created}, "iso")` |
+| `date(value, mode)` | the date as `YYYY-MM-DD`; with `iso` or `datetime` the moment as UTC text, with `timestamp` milliseconds | `date({created}, "iso")` |
 | `day(value)` / `month(value)` / `year(value)` | date parts | `year({birthDate}) < 2000` |
 | `weekDay(value, locale, style)` | weekday name | `weekDay({date}, "en", "long")` |
 | `weekDayIndex(value)` | Monday=1 … Sunday=7 | `weekDayIndex({date}) <= 5` |
@@ -123,6 +123,8 @@ joinInArray(mapArray(filterArray({tasks}, status == "OPEN"), title), "", ", ")
 | `dateDiffDays(from, to)` | day difference | `dateDiffDays({start}, {end}) >= 1` |
 | `startOfWeek(value)` / `endOfWeek(value)` | week boundaries | report period defaults |
 | `age(birthDate)` | full years from that date until today | `age({birthDate}) >= 18` |
+
+`date` without a mode keeps the calendar date of the view's time zone: `date("2024-02-29")` is `2024-02-29`. The `iso` and `datetime` modes return the moment in UTC instead, the way a server expects it, and a plain date is midnight in the user's time zone. So in Vilnius (UTC+2 in winter) `date("2024-02-29", "iso")` gives `2024-02-28T22:00:00.000Z`: the same moment, not a different day. Use the default mode when you mean a calendar date, and `iso` when you send a point in time.
 
 `age` counts a year only once the birthday has passed, so someone born on 30 June 2008 is still 17 on 29 June 2026. It gives nothing while the date is empty, which keeps a condition like `age({birthDate}) >= 18` false until the date is filled in.
 

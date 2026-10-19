@@ -13,7 +13,7 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 
 | Field | What it does |
 | --- | --- |
-| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). |
+| **Name** | The technical name used everywhere else (`loadClients`, `saveOrder`). Renaming it updates everything bound to the old name: tables and selects loading from it, actions running it, data source variables, and `runDataSource("…")` in expressions. |
 | **Title** | A friendly display title for the list. |
 | **Type** | `REST`, `Route data`, `Local JSON`, or `WebSocket` when your developer has enabled it. |
 
@@ -115,7 +115,7 @@ Choice elements, tables, list grids, and charts have a **Data source** binding i
 | --- | --- |
 | **Data source** | Which source feeds this element. Dependent fields are supported via the param map and refresh paths. |
 | **Use as** | `Option` loads selectable options (select, radio, checkbox); `Value` loads the field's own value. |
-| **Option value key / Option label key** | Which response fields become the stored value and the visible label. |
+| **Option value key / Option label key** | Which response fields become the stored value and the visible label. A path into the item works too: `info.label`, `names[0]`. |
 | **Items path** | Where the array lives in the response (e.g. `data.items`). |
 | **Filter options by** | Legacy conditional filter, leave empty if unused. Prefer the *Filter if equal / not equal* option properties. |
 | **Param mapping** | One row per `{placeholder}`: **Param** (the placeholder name) → **Value / `{path}`** (a form path, variable, or plain value). **Auto from params** pre-fills rows from the URL/body placeholders. Only used for REST URL/body placeholders. |

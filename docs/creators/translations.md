@@ -1,6 +1,6 @@
 ---
 title: Translations
-description: Multi-language views with the Translations tab.
+description: "Multi-language forms in NGX View Builder: translate labels, options and messages in the Translations tab, including values that come from data."
 ---
 
 # Translations

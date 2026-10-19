@@ -1,6 +1,6 @@
 ---
 title: Licensing
-description: Supplying and validating the license key.
+description: "How NGX View Builder licensing works: what is free, how to supply and validate the license key, perpetual fallback, and what end users see."
 ---
 
 # Licensing
@@ -72,6 +72,8 @@ Every published build embeds its release date. A license covers **all versions r
 | Version not covered (released after license expiry) | The canvas watermark + a banner + a reminder modal (at most once per 24 h) |
 | Invalid / tampered / unparseable / revoked | The canvas watermark + an invalid-license banner + modal (at most once per 24 h) |
 
+The reminder modal can be closed with **Continue without updates** (or **Continue without license** when the key does not check out) once a 15 second countdown on the button has run out.
+
 **The runtime never shows any license UI.** Rendering views in production is unaffected; license messaging is builder-facing only. The check itself lives in the designer package, so a runtime-only application does not even ship the code that draws a watermark.
 
 ## AI access
@@ -81,6 +83,23 @@ Letting an AI assistant work in the builder over MCP comes with the license, the
 ## Licensed plugins
 
 The [Logic map](./plugin-logic-map) and the [Documentation](./plugin-docs) plugin come with the license as well. Like AI access, they already need a key before 1.0.0: their tab and panel open for a key that is genuine and not expired, and otherwise say what is missing and where the key goes. The check is the one AI access uses in the builder: the key's signature and its expiry date, done in the browser with no network call, so it works in air-gapped environments too. The public demo runs them without a key. The Templates plugin needs no key.
+
+To know in your own code whether the key unlocks them, read `proAccess` on the designer's `LicenseService`. It is a signal that holds `'ready'` once the key checks out, `'checking'` while the check runs, and `'missing'`, `'invalid'` or `'expired'` otherwise:
+
+```ts
+import { LicenseService } from '@ngxviewbuilder/designer';
+
+const license = inject(LicenseService);
+const unlocked = computed(() => license.proAccess() === 'ready');
+```
+
+The licensed plugins wrap their own screens in `<nvb-pro-feature-gate>` from `@ngxviewbuilder/plugin-shared`. It shows what is inside it while the key unlocks them, and otherwise explains what is missing and where the key goes, in the builder's language. `feature` names the feature in that explanation, and `compact` fits it into the Properties panel:
+
+```html
+<nvb-pro-feature-gate feature="Logic map">
+  <my-logic-view />
+</nvb-pro-feature-gate>
+```
 
 ## License terms
 
