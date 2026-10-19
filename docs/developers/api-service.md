@@ -37,7 +37,60 @@ You always inject the root service. What it talks to depends on what is on scree
 | `<ngx-view-builder-designer>` | the view being edited (the builder owns it) | the root, the builder and its Preview |
 | nothing yet | the root itself | the root; views created later pick them up |
 
-Two things follow from that table. You can register everything at startup, before any view exists, and every view gets it. And you never need a reference to a particular runtime, because the root forwards. When several views render at once, every event still reaches the root and carries `elementName` and `elementDataPath`, which is how you tell them apart.
+Two things follow from that table. You can register everything at startup, before any view exists, and every view gets it. And with one view on screen you never need a reference to it, because the root forwards. Several views on one page are different, see the next section.
+
+## The root API and a view's own API
+
+There is one class, but there are several objects. `inject(NgxViewBuilderApiService)` gives you the root one, a single object for the whole app. Every `<ngx-view-builder-runtime>`, `<ngx-view-builder-renderer>` and `<nvb-scope>` makes one more for itself, so its data, structure and elements stay apart from every other view. A page with a nav bar view and a content view has three: the root, the nav bar's and the content's.
+
+The component hands you its own one as `api`:
+
+| | Root API, `inject(NgxViewBuilderApiService)` | A view's own API, `runtime.api` |
+| --- | --- | --- |
+| How many | one for the whole app | one per view component |
+| Exists | always, even before any view | while that view component exists |
+| `getData()`, `setValue()`, `getElement()`, `validateData()`... | go to the view created last | go to this view, always |
+| Events (`onValueChanged`, `onComplete`...) | from every view on screen | from this view |
+| Registrations (functions, validators, elements, icons) | reach every view, now and later | reach this view only |
+| Use it for | registrations at startup, one view per page, listening to all views | several views on one page |
+
+So with several views, the root is still right for registering things and for listening to everything, but a call like `getData()` on it reaches only the newest view. Ask the view itself instead:
+
+```ts
+import { Component, viewChild } from '@angular/core';
+import { NgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
+
+@Component({
+  imports: [NgxViewBuilderRuntime],
+  template: `
+    <ngx-view-builder-runtime #client [pageJson]="clientView" />
+    <ngx-view-builder-runtime #order [pageJson]="orderView" />
+  `,
+})
+export class ClientOrderPage {
+  private readonly client = viewChild.required('client', { read: NgxViewBuilderRuntime });
+  private readonly order = viewChild.required('order', { read: NgxViewBuilderRuntime });
+
+  async save(): Promise<void> {
+    const check = await this.client().api.validateData();
+    if (check.isValid) {
+      await this.clients.save(this.client().api.getData());
+    }
+    this.order().api.setValue('status', 'ready');
+  }
+}
+```
+
+With a single view on the page, `viewChild.required(NgxViewBuilderRuntime)` is enough. The template can reach the API too, through the export names `nvbRuntime`, `nvbRenderer` and `nvbScope`:
+
+```html
+<ngx-view-builder-runtime #client="nvbRuntime" [pageJson]="clientView" />
+<button type="button" (click)="client.api.validateData()">Check</button>
+```
+
+`api` exists as soon as the component does, but values and elements are there only after the view has rendered (see the tip below). On `<ngx-view-builder>` it is `undefined` until that component's view has initialised.
+
+To tell views apart in events, listen on each view rather than on the root. Each component has outputs such as `(valueChanged)`, and `runtime.api.onValueChanged` fires for that view only. A root `onValueChanged` payload has the `dataPath` but not the view it came from, so two views with a field of the same name look the same there.
 
 ::: tip Waiting for a view
 Values and elements exist once the view has rendered. Subscribe to `onAfterRender`, or call the API from a button or an event handler, rather than straight from your constructor.

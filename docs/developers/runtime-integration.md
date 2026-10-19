@@ -77,6 +77,8 @@ ngOnInit(): void {
 
 The runtime keeps its own isolated API instance internally, but every event it fires is forwarded to the root `NgxViewBuilderApiService` automatically, so the root-injected subscriptions above receive everything, including render lifecycle (`onAfterRender`, `onElementAfterRender`) and element interaction events (`onDynamicTableRowAdded`, `onDynamicPanelItemRemoved`, …).
 
+Several views on one page, for example a nav bar view and a content view, each have their own API. The root still hears all their events, but its methods such as `getData()` reach only the view created last. Read a particular view through `runtime.api`, as described in [The root API and a view's own API](./api-service#the-root-api-and-a-view-s-own-api).
+
 ## Programmatic control
 
 ```ts

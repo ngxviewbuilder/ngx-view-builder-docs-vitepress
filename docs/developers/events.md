@@ -14,7 +14,7 @@ api.onValueChanged.once((e) => { /* ... */ });                    // first time 
 api.onValueChanged.remove(handler);
 ```
 
-Detach in `ngOnDestroy`. A runtime view, a scope and the builder's Preview each fire on their own instance, and every event is forwarded to the root service you inject, so the same subscription works on any page. When several views are on screen, `elementName` and `elementDataPath` in the payload tell them apart.
+Detach in `ngOnDestroy`. A runtime view, a scope and the builder's Preview each fire on their own instance, and every event is forwarded to the root service you inject, so the same subscription works on any page. When several views are on screen, the root hears all of them and the payload does not say which view fired. Subscribe on the view's own API (`runtime.api.onValueChanged`) or use the component's outputs such as `(valueChanged)` to keep them apart, see [The root API and a view's own API](./api-service#the-root-api-and-a-view-s-own-api).
 
 For one element only, the [element handle](./api/elements#element-getelementapi) has its own `onValueChanged`, `onValueChanging` and `onPropertyChanged`.
 
