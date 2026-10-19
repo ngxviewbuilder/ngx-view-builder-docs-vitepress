@@ -1482,10 +1482,11 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Avatar | `avatar` | Not for general images |
 | Icon | `icon` | Small UI symbol |
 | Navigation path | `breadcrumbs` | Navigation context |
+| Sidebar or top menu of app pages, with active link, badges and sub-links | `navMenu` | App navigation; items static or from a data source |
 | Page heading | `pageTitle` | Hero or page top |
 | Badge | `badge` | Short status or label |
 | Informational card | `messageCard` | Message, warning, info |
-| Statistics card | `statsCard` | KPI or summary |
+| Statistics card | `statsCard` | KPI or summary; `progressValue` / `progressMax` add a goal bar |
 | Toast notification | `toast` | Temporary notifications |
 | Completion percentage | `progressBar` | Not for step/page navigation; use `progressFlow` |
 
@@ -2722,6 +2723,17 @@ Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions an
 
 Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `disallowAddRowsIf`, `disallowDeleteRowsIf`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
 
+Display filtering, all optional and off when unset:
+
+| Property | Type | Notes |
+|---|---|---|
+| `itemsFilter` | `string` | JEXL, checked per entry: only entries where it is `true` are drawn. `row.<field>` is the entry, `index` its position, other `{field}`s read the view: `row.stage == 'Won'`, `row.stage == 'Qualified' && (isEmpty({search}) \|\| contains(row.title, {search}))`. Hidden entries keep their data and their index. |
+| `showQuickSearch` | `boolean` | Search box above the entries; hides entries whose text and numbers do not contain the typed text (case and accent insensitive). Loaded entries only. |
+| `quickSearchPlaceholder` | `string` | |
+| `noMatchesMessage` | `string` | Shown when entries exist but none passes the filter or the search. |
+
+A read-only list (pipeline column, task list, feed) is a `dynamicPanel` with `disallowAddRows: true`, `disallowDeleteRows: true`, display children in its `template`, and an `itemsFilter`.
+
 `disallowAddRowsIf` and `disallowDeleteRowsIf` are JEXL conditions, the same pair as on `dynamicTable` below: while `disallowAddRowsIf` is `true` the add button is disabled, and `disallowDeleteRowsIf` is checked for every entry, so an entry where it is `true` has no remove button. Inside them `{row.field}` (or `{panel.field}`) reads the entry, `{index}` is its position, `{rowCount}` the number of entries, and any other `{field}` reads the form.
 
 ### `dynamicTable`
@@ -2892,9 +2904,16 @@ Value shape: `string` (HTML).
 
 | Property | Type | Notes |
 |---|---|---|
-| `value` | `string` | Main numeric/text value |
-| `trend` | `string` | Trend direction |
-| `trendValue` | `string` | Trend amount |
+| `title` | `string` | Card title |
+| `valueText` | `string` | Main value; dynamic text such as `{revenue}` |
+| `trendText` | `string` | Short change text next to the trend icon |
+| `trendDirection` | `string` | `up` `down` `neutral` |
+| `icon` | `string` | Icon name |
+| `variant` | `string` | `neutral` `success` `warn` `risk` `info` `primary` |
+| `variantMode` / `variantRules` / `variantExpression` | | Conditional tone: `variantMode: "conditional"` with `[{ "variant": "success", "condition": "{won} >= {target}" }]` |
+| `progressValue` | `string` | Goal bar: a number or expression (`{wonTotal}`). Unset: no bar |
+| `progressMax` | `string` | Goal target, number or expression; 100 when unset |
+| `progressText` | `string` | Caption next to the bar (`{wonTotal} of {target}`); unset shows the percentage |
 
 ### `badge`
 
@@ -2941,6 +2960,28 @@ No additional properties beyond base.
 | Property | Type | Notes |
 |---|---|---|
 | `items` | `array` | Breadcrumb items |
+
+### `navMenu`
+
+A menu of app routes: sidebar (`orientation: "vertical"`, default) or top bar (`"horizontal"`). The link matching the current route is active.
+
+| Property | Type | Notes |
+|---|---|---|
+| `items` | `INavMenuItem[]` | Static items, see below |
+| `orientation` | `string` | `vertical` `horizontal` |
+| `showIcons` | `boolean` | Default `true` |
+| `dataSource` | `IElementDataSource` | Optional: items from a server, shown with the static ones |
+| `itemsPath` | `string` | Path to the item array in the data source answer; unset uses the answer or its `items` / `data` / `menu` |
+| `sourceItemsPosition` | `string` | `after` (default) or `before` the static items |
+
+`INavMenuItem`: `{ "id": "contacts", "kind": "link", "label": "Contacts", "icon": "group", "route": "/contacts", "badge": "{contactCount}", "visibleIf": "{role} == 'admin'", "exact": false, "children": [...] }`.
+
+- `kind`: `link` (default), `heading` (a small label above a group), `divider`.
+- `route`: app route (opened with the host router) or full url.
+- `badge`: dynamic text; empty or `0` is not shown.
+- `exact`: active only on exactly this url; otherwise also on routes under it.
+- `children`: sub-links (`link` or `divider`, one level). A link with children opens and closes its group instead of navigating; children draw no icon. In a sidebar the group opens by itself when a child is the current page.
+- Server items may use `title` / `name` for `label` and `url` / `path` / `href` for `route`.
 
 ### `iframe`
 
@@ -3138,7 +3179,7 @@ datepicker | dateRange | timePicker
 panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
-divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
+divider | spacer | breadcrumbs | navMenu | pageTitle | badge | messageCard | statsCard | toast | progressBar
 page
 ```
 
@@ -10541,7 +10582,7 @@ Declarative equivalents exist on `runtimeSettings` (`customCss`, `customCssUrls`
 ## Targeting elements
 
 - Every class the library renders starts with `nvb-`, so `nvb-field`, `nvb-panel`, `nvb-dropdown`. Anything without that prefix in a view belongs to you or to a template.
-- Custom CSS is injected without a cascade layer, so it beats the library's own rules without needing `!important`.
+- Custom CSS is injected without a cascade layer, so it beats the library's global stylesheet. Element styles are different: they are component styles, scoped with an attribute (`.nvb-panel[_ngcontent-...]`), so a plain `.nvb-panel { ... }` rule has the lower specificity and loses. That is why overrides tend to grow into `.nvb-root.nvb-root .nvb-panel` and `!important`. Before writing such a rule, look for a token: most elements read their colours, radii, padding and sizes from `--nvb-*` variables (see [Component tokens](https://ngxviewbuilder.io/developers/theming#component-tokens)), and a token set through `cssVariables` needs no selector at all.
 - Elements render with stable identity hooks, so prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
 - Template HTML ([template library](https://ngxviewbuilder.io/creators/templates)) carries its own scoped CSS, so for card layouts prefer a template's CSS over global custom CSS.
 - Custom-HTML elements can include class names that your custom CSS styles.
@@ -11204,6 +11245,40 @@ Defaults to `DELETE`. If no **Request body** template is configured, the fallbac
 ```
 
 Any 2xx response counts as success; the response body itself is ignored.
+
+## Your app's own data
+
+Often the data is already in your application: a store, a signal, a response another part of the page loaded. Do not write it into the view's JSON (`elements.chart.points = ...`) and set the view again. Pass it as data, and let a **Local** source in the view point at it.
+
+In the view, a source of type `local` in `dataPath` mode reads a path of the view's data and reloads whenever that path changes:
+
+```json
+"dataSources": [
+  { "name": "revenuePoints", "type": "local",
+    "params": { "localMode": "dataPath", "dataPath": "report.points" } }
+],
+"elements": {
+  "revenueChart": { "name": "revenueChart", "type": "chart", "chartType": "line",
+    "dataSource": { "name": "revenuePoints" } }
+}
+```
+
+In the host, put the data at that path, once through `dataJson` and on every change with `setValue`:
+
+```ts
+private readonly runtime = viewChild.required(NgxViewBuilderRuntime);
+
+constructor() {
+  effect(() => {
+    const points = this.store.revenueByMonth();   // [{ label: 'Jan', value: 12 }, ...]
+    void this.runtime().api.setValue('report.points', points);
+  });
+}
+```
+
+The same source works for any element that takes one: a list grid of deals, the options of a select, a dynamic panel of tasks, the items of a navigation menu. Plain values need no source at all, a stats card shows `{revenueTotal}` straight from the data. Keep the view the creator's: it says *where* the numbers go, your code says *what* they are.
+
+If the data only exists on a server, a `rest` source is simpler than fetching it yourself and passing it in.
 
 ## Default data sources
 
@@ -14393,6 +14468,32 @@ api.setCssVariables({ '--nvb-motion-duration-fast': '0ms', '--nvb-motion-duratio
 
 A person who asks their system for reduced motion gets it off without anything from you.
 
+## Component tokens
+
+Below the colour scales, elements read their own variables. Each falls back to the scales, so leaving them alone keeps everything consistent, and setting one changes that part of every element that uses it. Pass them like any other token, through `cssVariables` or `setCssVariables`.
+
+| Family | Tokens | Used by |
+| --- | --- | --- |
+| Inputs | `--nvb-input-height`, `--nvb-input-radius`, `--nvb-input-padding-x`, `--nvb-input-font-size`, `--nvb-input-bg`, `--nvb-input-text-color`, `--nvb-input-border-color`, `--nvb-input-border-width`, `--nvb-input-focus-border-color`, `--nvb-input-placeholder-color`, `--nvb-input-disabled-bg`, `--nvb-input-disabled-text-color`, `--nvb-input-error-border-color` | text fields, selects, date pickers, the quick search boxes |
+| Controls | `--nvb-control-height`, `--nvb-control-height-sm`, `--nvb-control-radius`, `--nvb-control-padding-x`, `--nvb-control-font-size`, `--nvb-control-font-weight`, `--nvb-control-button-*` | buttons inside elements, segmented controls |
+| Checkbox / radio | `--nvb-checkbox-*`, `--nvb-radio-*` (size, radius, border, checked and disabled colours) | checkboxes, radio groups, toggles |
+| Cards | `--nvb-card-bg`, `--nvb-card-border-color`, `--nvb-card-radius`, `--nvb-card-padding`, `--nvb-card-shadow` | panels, dynamic panels, stats cards, list grid cards, tables, tabs, accordions, dialogs, date pickers |
+| Textarea | `--nvb-textarea-min-height`, `--nvb-textarea-padding-x`, `--nvb-textarea-padding-y` | textareas |
+| Navigation menu | `--nvb-nav-menu-item-height`, `--nvb-nav-menu-item-radius`, `--nvb-nav-menu-item-color`, `--nvb-nav-menu-item-hover-bg`, `--nvb-nav-menu-active-color`, `--nvb-nav-menu-active-bg`, `--nvb-nav-menu-badge-bg`, `--nvb-nav-menu-badge-color`, `--nvb-nav-menu-active-badge-bg`, `--nvb-nav-menu-heading-color`, `--nvb-nav-menu-divider-color`, `--nvb-nav-menu-subitem-indent`, `--nvb-nav-menu-dropdown-bg`, `--nvb-nav-menu-gap`, `--nvb-nav-menu-font-size` | the Navigation menu |
+| Dynamic panel search | `--nvb-dynamic-panel-search-width` (plus the input tokens) | the quick search in a dynamic panel's header |
+| Stats card goal | `--nvb-stats-card-goal-height`, `--nvb-stats-card-goal-track`, `--nvb-stats-card-goal-fill` | the goal bar of a stats card |
+
+A green sidebar and flatter cards, for example:
+
+```ts
+api.setCssVariables({
+  '--nvb-nav-menu-active-bg': 'oklch(95% 0.03 145)',
+  '--nvb-nav-menu-active-color': 'oklch(42% 0.09 145)',
+  '--nvb-card-radius': '10px',
+  '--nvb-card-shadow': 'none',
+});
+```
+
 ## Custom elements & theming
 
 Write custom element styles against the tokens and they follow every theme automatically:
@@ -15302,6 +15403,59 @@ disableIf:  !{agreeTerms}              → inactive until terms accepted
 
 For the full action reference (triggers, action types, confirmations, and response handling) see [Events & actions](https://ngxviewbuilder.io/creators/events-actions).
 
+## Navigation menu (`navMenu`)
+
+A menu of app routes: a sidebar when vertical, a top bar when horizontal. The link for the page the user is on is marked active, and each link can carry an icon and a badge such as the number of open tasks.
+
+| Property | What it does |
+| --- | --- |
+| **Menu items** | The items, in order. Each is a **Link**, a small **Heading** above a group, or a **Divider**. |
+| **Data source** / **Items path** | Menu items from a server, shown next to the typed ones. See below. |
+| **Server items position** | Whether the server items go after the typed items (the default) or before them. |
+| **Orientation** | `Vertical (sidebar)` or `Horizontal (top bar)`. |
+| **Show icons** | Draws each link's icon. |
+
+A link has these fields:
+
+| Field | What it does |
+| --- | --- |
+| **Label** | The link text. |
+| **Route or url** | An app route such as `/contacts`, or a full url. App routes open through the host application's router, without reloading the page. |
+| **Icon** | An icon name, for example `dashboard` or `group`. |
+| **Badge** | Short text after the label, usually a count: `{openTasks}`. A badge that comes out empty or `0` is not shown. |
+| **Visible if** | Shows the item only while the condition is true: `{role} == "admin"`. Works on headings too. |
+| **Active only on this exact url** | Normally `/contacts` is also active on `/contacts/42`. Turn this on for a link such as `/` or an overview page that should not light up for everything under it. |
+
+### Sub-links
+
+A link can hold sub-links: under **Sub-links** in its card, add one per page. The link then opens and closes its group instead of navigating, and shows an arrow. Sub-links have a label, a route, a badge and a **Visible if**, but no icon, so they line up under the text of their group.
+
+In a sidebar a group opens by itself when the page the user is on is one of its sub-links, and the group's own label is highlighted. In a top bar a group opens as a dropdown, which closes again on the next click elsewhere or after navigating. One level of sub-links is supported.
+
+### Items from the server
+
+When the menu depends on who is signed in, let the server send it. Bind a data source to the menu: its answer, or the list at **Items path** inside it, becomes more menu items. The typed items stay, so a fixed *Overview* link and a *Settings* link can sit around whatever the server adds.
+
+The server sends the same fields a typed link has. It may also use `title` or `name` for the label, and `url`, `path` or `href` for the route, so an existing endpoint often fits as it is:
+
+```json
+{
+  "items": [
+    { "kind": "heading", "label": "Sales" },
+    { "title": "Pipeline", "url": "/deals", "icon": "dashboard", "badge": "{openDeals}" },
+    { "title": "Billing", "url": "/billing", "icon": "settings", "visibleIf": "{role} == 'admin'" },
+    { "title": "Reports", "icon": "dashboard", "children": [
+      { "title": "Monthly", "url": "/reports/monthly" },
+      { "title": "Yearly", "url": "/reports/yearly" }
+    ] }
+  ]
+}
+```
+
+Server items can carry their own `visibleIf` and badge expressions; they are worked out on the page like typed ones. Hiding a link is not access control, though: the routes behind it still have to check permissions on the server.
+
+On the builder canvas the links do not navigate, so clicking one just selects the menu. Click actions under **Events** run instead of the navigation, with the clicked item in `{item.label}` and `{item.route}`.
+
 ---
 
 ## Choice inputs
@@ -15603,6 +15757,27 @@ A repeatable group. You design the fields once; users add, remove, and reorder e
 | **Max rows** | Upper limit. The add button disables once it is reached. |
 | **Confirm row deletion** (+ title, message, button texts) | Ask before removing an entry. |
 | **Empty state text** | Shown when the panel has no entries. |
+| **Show rows if** (Logic) | Shows only the entries this condition is true for, for example `row.stage == "Won"`. See below. |
+| **Show quick search** | A search box above the entries. Entries that do not contain the typed text are hidden. |
+| **Quick search placeholder** / **No matches text** | The search box hint, and the text shown when entries exist but none of them is shown. |
+
+### Showing only some entries
+
+A dynamic panel can also be a list you read rather than fill in: a pipeline column, a task list, an activity feed. Turn on **Disallow adding rows** and **Disallow deleting rows**, put display elements in the entry, and decide which entries show.
+
+**Show rows if** is checked for every entry. `row` is the entry itself and `index` its position, and the rest of the view is in scope too, so a search field elsewhere on the page can narrow the list:
+
+```text
+row.stage == "Qualified"
+row.stage == "Qualified" && (isEmpty({search}) || contains(row.title, {search}))
+row.done == false
+```
+
+Four panels over the same `deals` list, each with its own stage in the condition, make a pipeline board. The data is not split or copied: every panel reads the whole list and shows its part.
+
+**Show quick search** puts a small search box on the right of the panel's header, next to its title. It looks through every text and number in an entry, ignoring case and accents, so `zalgiris` finds *Žalgiris*. It searches only the entries that are already loaded; for a server-side search use a [Table](https://ngxviewbuilder.io/creators/elements/tables) or a [List grid](https://ngxviewbuilder.io/creators/elements/tables#list-grid-listgrid).
+
+Hidden entries keep their data and their place. Editing an entry while others are hidden still writes to the right one, and the panel's value is always the full list.
 
 Inside a dynamic panel, expressions get extra context:
 
@@ -15781,7 +15956,7 @@ A navigation trail (*Clients / Jonas / Edit*). Items can be static or built from
 
 ## Chart (`chart`)
 
-Renders a chart from a data source or expression-provided data.
+Renders a chart from a data source, or from points typed in.
 
 | Property | What it does |
 | --- | --- |
@@ -15806,6 +15981,15 @@ Hovering a bar, point or slice shows its value. The chart can also be used with 
 **Click actions.** Add actions under **Events** with the *Click* trigger and they run when someone clicks a bar, a point, a slice or a legend row. The clicked item is available as `{item.label}` and `{item.value}` (and `{index}`), so a click can, for example, set a filter field to `{item.label}` or open a detail dialog. Only a chart with a click action shows the hand cursor and the "Click to select" hint.
 
 Charts refresh when their data source reloads. Combine that with **React to change** to make dashboards live.
+
+### Charting data the view already has
+
+The numbers do not have to come from an API call of the chart's own. When they are already in the view's data, because the host application passed them in or another source loaded them, point a **Local** source at them:
+
+1. Add a data source, type **Local**, mode **Another question value**, and set its path to the list, for example `report.points`.
+2. Bind the chart to that source and leave **Data path** empty.
+
+The list is the usual one: `[{ "label": "Jan", "value": 12 }, ...]`, or set **Label key** and **Value key** to whatever the items use. Whenever `report.points` changes, the source reloads and the chart redraws. A developer feeds it from code as described in [Your app's own data](https://ngxviewbuilder.io/developers/data-sources#your-app-s-own-data); nobody has to edit the view's JSON.
 
 ---
 
@@ -15938,6 +16122,10 @@ A KPI tile: big number, label, and optional trend. Feed the value with an expres
 | **Trend direction** | `up`, `down`, or `neutral`. |
 | **Trend text** | Short change explanation next to the indicator. |
 | **Trend direction expression / Variant expression / Icon expression** | Drive trend, tone, and icon from data. |
+| **Goal value** / **Goal target** | Turns the card into a goal: a bar filled to the value out of the target. Each is a number or an expression such as `{wonTotal}`. The target is 100 when empty. |
+| **Goal caption** | Text next to the bar, for example `{wonTotal} of {target}`. Empty shows the percentage. |
+
+A monthly sales goal is one card: **Value text** `{wonTotal}`, **Goal value** `{wonTotal}`, **Goal target** `{monthlyTarget}`, **Goal caption** `{wonTotal} of {monthlyTarget}`. The bar takes the card's variant colour, so a conditional variant can turn it green once the goal is reached.
 
 ## Progress bar (`progressBar`)
 
@@ -16013,6 +16201,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 | Yes/no | Single checkbox, Toggle switch | [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices) |
 | Search-as-you-type choice | Autocomplete | [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices) |
 | A clickable action | Button | [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons) |
+| A sidebar or top menu | Navigation menu | [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons#navigation-menu-navmenu) |
 | Group fields visually | Panel, Tabs, Accordion | [Containers](https://ngxviewbuilder.io/creators/elements/containers) |
 | Several fields saved as one object (an address, a contact) | Object panel | [Containers](https://ngxviewbuilder.io/creators/elements/containers) |
 | Repeatable entries (0 to n) | Dynamic panel, Dynamic table | [Containers](https://ngxviewbuilder.io/creators/elements/containers) / [Tables](https://ngxviewbuilder.io/creators/elements/tables) |

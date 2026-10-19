@@ -23,6 +23,7 @@ Elements are the building blocks of every view. This page is the index; each gro
 | Yes/no | Single checkbox, Toggle switch | [Choice inputs](./choices) |
 | Search-as-you-type choice | Autocomplete | [Choice inputs](./choices) |
 | A clickable action | Button | [Buttons & actions](./buttons) |
+| A sidebar or top menu | Navigation menu | [Buttons & actions](./buttons#navigation-menu-navmenu) |
 | Group fields visually | Panel, Tabs, Accordion | [Containers](./containers) |
 | Several fields saved as one object (an address, a contact) | Object panel | [Containers](./containers) |
 | Repeatable entries (0 to n) | Dynamic panel, Dynamic table | [Containers](./containers) / [Tables](./tables) |

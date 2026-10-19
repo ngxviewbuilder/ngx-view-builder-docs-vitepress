@@ -116,7 +116,7 @@ A navigation trail (*Clients / Jonas / Edit*). Items can be static or built from
 
 ## Chart (`chart`)
 
-Renders a chart from a data source or expression-provided data.
+Renders a chart from a data source, or from points typed in.
 
 | Property | What it does |
 | --- | --- |
@@ -141,3 +141,12 @@ Hovering a bar, point or slice shows its value. The chart can also be used with 
 **Click actions.** Add actions under **Events** with the *Click* trigger and they run when someone clicks a bar, a point, a slice or a legend row. The clicked item is available as `{item.label}` and `{item.value}` (and `{index}`), so a click can, for example, set a filter field to `{item.label}` or open a detail dialog. Only a chart with a click action shows the hand cursor and the "Click to select" hint.
 
 Charts refresh when their data source reloads. Combine that with **React to change** to make dashboards live.
+
+### Charting data the view already has
+
+The numbers do not have to come from an API call of the chart's own. When they are already in the view's data, because the host application passed them in or another source loaded them, point a **Local** source at them:
+
+1. Add a data source, type **Local**, mode **Another question value**, and set its path to the list, for example `report.points`.
+2. Bind the chart to that source and leave **Data path** empty.
+
+The list is the usual one: `[{ "label": "Jan", "value": 12 }, ...]`, or set **Label key** and **Value key** to whatever the items use. Whenever `report.points` changes, the source reloads and the chart redraws. A developer feeds it from code as described in [Your app's own data](../../developers/data-sources#your-app-s-own-data); nobody has to edit the view's JSON.

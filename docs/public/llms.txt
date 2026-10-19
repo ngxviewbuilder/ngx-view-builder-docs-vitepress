@@ -72,7 +72,7 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 - [Conditional logic](https://ngxviewbuilder.io/creators/conditional-logic): Show, hide, require, disable, lock, and reset fields based on other answers.
 - [Data sources](https://ngxviewbuilder.io/creators/data-sources): Every field of the Data sources editor and the element binding panel, for REST, route, and local sources.
 - [Field documentation](https://ngxviewbuilder.io/creators/documentation): Describe what each field is for and copy a ready field reference into Confluence.
-- [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): The Button element in NGX View Builder: run actions on click, submit or validate the form, ask for confirmation, and hide or disable a button by rule.
+- [Buttons & actions](https://ngxviewbuilder.io/creators/elements/buttons): Button and Navigation menu in NGX View Builder: run actions on click, submit or validate a form, and build a sidebar menu from static or server items.
 - [Choice inputs](https://ngxviewbuilder.io/creators/elements/choices): Select, Multi-select, Autocomplete, Checkbox, Radio, Select button, Toggles, and List box, with full property tables.
 - [Containers](https://ngxviewbuilder.io/creators/elements/containers): Panel, Object panel, Tabs, Accordion, Dynamic panel, Dialog, Splitter, Spacer, and Divider, with full property tables.
 - [Content & media](https://ngxviewbuilder.io/creators/elements/content): Rich text, Custom HTML, Image, Video, Iframe, Icon, Avatar, Page title, Breadcrumbs, and Chart, with full property tables.

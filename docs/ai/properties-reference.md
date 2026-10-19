@@ -423,6 +423,17 @@ Value shape: `{ "address": { "city": "...", "street": "..." } }`. Expressions an
 
 Same as `panel` plus repeatable container behavior (`addRowButtonText`, `removeRowButtonText`, `emptyMessage`, `disallowAddRows`, `disallowDeleteRows`, `disallowAddRowsIf`, `disallowDeleteRowsIf`, `maxRows`, `confirmRowDeletion`, `hideHeader`). Value shape: array of objects. Children are attached the same way as for `panel`, via `column.rows`.
 
+Display filtering, all optional and off when unset:
+
+| Property | Type | Notes |
+|---|---|---|
+| `itemsFilter` | `string` | JEXL, checked per entry: only entries where it is `true` are drawn. `row.<field>` is the entry, `index` its position, other `{field}`s read the view: `row.stage == 'Won'`, `row.stage == 'Qualified' && (isEmpty({search}) \|\| contains(row.title, {search}))`. Hidden entries keep their data and their index. |
+| `showQuickSearch` | `boolean` | Search box above the entries; hides entries whose text and numbers do not contain the typed text (case and accent insensitive). Loaded entries only. |
+| `quickSearchPlaceholder` | `string` | |
+| `noMatchesMessage` | `string` | Shown when entries exist but none passes the filter or the search. |
+
+A read-only list (pipeline column, task list, feed) is a `dynamicPanel` with `disallowAddRows: true`, `disallowDeleteRows: true`, display children in its `template`, and an `itemsFilter`.
+
 `disallowAddRowsIf` and `disallowDeleteRowsIf` are JEXL conditions, the same pair as on `dynamicTable` below: while `disallowAddRowsIf` is `true` the add button is disabled, and `disallowDeleteRowsIf` is checked for every entry, so an entry where it is `true` has no remove button. Inside them `{row.field}` (or `{panel.field}`) reads the entry, `{index}` is its position, `{rowCount}` the number of entries, and any other `{field}` reads the form.
 
 ### `dynamicTable`
@@ -593,9 +604,16 @@ Value shape: `string` (HTML).
 
 | Property | Type | Notes |
 |---|---|---|
-| `value` | `string` | Main numeric/text value |
-| `trend` | `string` | Trend direction |
-| `trendValue` | `string` | Trend amount |
+| `title` | `string` | Card title |
+| `valueText` | `string` | Main value; dynamic text such as `{revenue}` |
+| `trendText` | `string` | Short change text next to the trend icon |
+| `trendDirection` | `string` | `up` `down` `neutral` |
+| `icon` | `string` | Icon name |
+| `variant` | `string` | `neutral` `success` `warn` `risk` `info` `primary` |
+| `variantMode` / `variantRules` / `variantExpression` | | Conditional tone: `variantMode: "conditional"` with `[{ "variant": "success", "condition": "{won} >= {target}" }]` |
+| `progressValue` | `string` | Goal bar: a number or expression (`{wonTotal}`). Unset: no bar |
+| `progressMax` | `string` | Goal target, number or expression; 100 when unset |
+| `progressText` | `string` | Caption next to the bar (`{wonTotal} of {target}`); unset shows the percentage |
 
 ### `badge`
 
@@ -642,6 +660,28 @@ No additional properties beyond base.
 | Property | Type | Notes |
 |---|---|---|
 | `items` | `array` | Breadcrumb items |
+
+### `navMenu`
+
+A menu of app routes: sidebar (`orientation: "vertical"`, default) or top bar (`"horizontal"`). The link matching the current route is active.
+
+| Property | Type | Notes |
+|---|---|---|
+| `items` | `INavMenuItem[]` | Static items, see below |
+| `orientation` | `string` | `vertical` `horizontal` |
+| `showIcons` | `boolean` | Default `true` |
+| `dataSource` | `IElementDataSource` | Optional: items from a server, shown with the static ones |
+| `itemsPath` | `string` | Path to the item array in the data source answer; unset uses the answer or its `items` / `data` / `menu` |
+| `sourceItemsPosition` | `string` | `after` (default) or `before` the static items |
+
+`INavMenuItem`: `{ "id": "contacts", "kind": "link", "label": "Contacts", "icon": "group", "route": "/contacts", "badge": "{contactCount}", "visibleIf": "{role} == 'admin'", "exact": false, "children": [...] }`.
+
+- `kind`: `link` (default), `heading` (a small label above a group), `divider`.
+- `route`: app route (opened with the host router) or full url.
+- `badge`: dynamic text; empty or `0` is not shown.
+- `exact`: active only on exactly this url; otherwise also on routes under it.
+- `children`: sub-links (`link` or `divider`, one level). A link with children opens and closes its group instead of navigating; children draw no icon. In a sidebar the group opens by itself when a child is the current page.
+- Server items may use `title` / `name` for `label` and `url` / `path` / `href` for `route`.
 
 ### `iframe`
 
@@ -839,7 +879,7 @@ datepicker | dateRange | timePicker
 panel | objectPanel | dynamicPanel | tabs | tabsPro | accordion | dialog | splitter | progressFlow | emptyBlock
 dynamicTable | table | listGrid | chart
 richText | richTextViewer | customHtml | htmlSnippet | image | video | iframe | avatar | icon | routerOutlet
-divider | spacer | breadcrumbs | pageTitle | badge | messageCard | statsCard | toast | progressBar
+divider | spacer | breadcrumbs | navMenu | pageTitle | badge | messageCard | statsCard | toast | progressBar
 page
 ```
 
