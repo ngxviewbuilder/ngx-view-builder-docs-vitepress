@@ -8,7 +8,7 @@ sidebar: false
 
 *Last updated: 18 July 2026*
 
-This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by NGX View Builder ("we", "us"). For questions, contact **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**.
+This policy covers **ngxviewbuilder.io** and **demo.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
 ## What we collect
 
@@ -40,7 +40,7 @@ Analytics data is retained according to our Google Analytics account settings. E
 
 ## Your rights
 
-Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**. You may also lodge a complaint with your local data protection authority: in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
+Under GDPR you have the right to access, correct, delete, or export your data, to object to or restrict its processing, and to withdraw consent at any time. To exercise any of these, email **[info@heydelabs.com](mailto:info@heydelabs.com)**. You may also lodge a complaint with your local data protection authority: in Lithuania, the [State Data Protection Inspectorate (VDAI)](https://vdai.lrv.lt/).
 
 ## Children
 

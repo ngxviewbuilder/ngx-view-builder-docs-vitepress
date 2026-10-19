@@ -5,6 +5,8 @@ description: The canonical, indexed knowledge base an AI agent needs to generate
 
 # AI reference
 
+> NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas. Nothing in this section describes a chat window in the builder, because there is none.
+
 This section is the **single indexed knowledge base for AI agents** that generate or modify NGX View Builder structure JSON. It is written for machine consumption first: an agent driving the builder over [MCP](../developers/ai-command-api) loads slices of these pages into its prompts, and any other LLM setup (ChatGPT, Claude, a custom pipeline) can use the same pages as system-prompt material.
 
 Everything here has one goal: the agent must behave as a **strict NGX View Builder JSON author**, using real elements, documented properties and valid references, never as a generic frontend generator.
@@ -22,8 +24,9 @@ An agent (or a person building prompts) should consume the pages in this order:
 6. [Element rules & value shapes](./element-rules): per-element expectations.
 7. [Canonical properties reference](./properties-reference): the authoritative property list.
 8. [Common mistakes](./common-mistakes): anti-patterns to avoid.
-9. [Verified examples](./examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
-10. [Legacy form migration](./legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
+9. [Good practices](./good-practices): what makes a view look finished, element by element. Read before building or changing a view.
+10. [Verified examples](./examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
+11. [Legacy form migration](./legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
@@ -36,6 +39,7 @@ An agent (or a person building prompts) should consume the pages in this order:
 | [Canonical properties reference](./properties-reference) | Every supported property per element type, settings, data sources | Always |
 | [Element rules & value shapes](./element-rules) | Per-element usage rules and value shapes | Always |
 | [Common mistakes](./common-mistakes) | Known anti-patterns with corrections | Always; especially in review mode |
+| [Good practices](./good-practices) | What makes a view look finished: captions and labels per element, buttons and contrast, layout, names, fields, logic | Always, before building or changing a view |
 | [Verified examples](./examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](./element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](./logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |

@@ -7,6 +7,8 @@ description: A JSON command surface that lets an external agent read and edit a 
 
 The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so nothing Angular shaped leaks out and the whole contract survives a trip through a websocket.
 
+NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas.
+
 An agent reaches it over MCP. The browser dials out to the MCP server and the server forwards each method call back down that socket, so the user's machine never has to accept an inbound connection.
 
 It exposes one write door and a handful of read methods, one MCP tool each:
@@ -29,7 +31,7 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 
 Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
 
-`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference and the common mistakes. Until it has, `nvb_execute` answers with the list of pages still to read. That is about 30 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
+`nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference, the common mistakes and the [good practices](../ai/good-practices). Until it has, `nvb_execute` answers with the list of pages still to read. That is about 33 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
 
 ## Connecting the builder
 
@@ -78,7 +80,7 @@ The key is forgiving to type: case, spaces and missing dashes are ignored, and `
 
 ### Keys from your backend
 
-If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with `https://<your server>/mcp?key=<the key>` (or an `x-nvb-session-key` header). Such a connection starts out paired and nobody types anything. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
+If your backend already knows who should drive which view, it can hand out the key itself. Pass it as `mcp.sessionKey` and wire the AI client with an `x-nvb-session-key: <the key>` header on `https://<your server>/mcp`. Such a connection starts out paired and nobody types anything. The server does not read the key from the URL, because a query string ends up in proxy logs and browser history. Make the key random, at least 128 bits, 16 to 128 characters of letters, digits and `. _ ~ -`. The builder hides **New key** in this case, because the backend gave that same key to the AI client and rotating it on one side only would break the pairing.
 
 ### The bridge keeps itself up
 
@@ -143,8 +145,19 @@ It listens on port 3200 by default, with the MCP endpoint at `/mcp` and the buil
 | `NVB_MCP_DEMO_MAX_TABS` | `30` | Tabs from exempt origins that may be connected at once, all of them together. |
 | `NVB_MCP_DEMO_MAX_CALLS_PER_SESSION` | `150` | Calls per window for a tab from an exempt origin. |
 | `NVB_MCP_DEMO_KEY_TTL_MS` | `7200000` | How long a pairing key from an exempt origin is valid. |
+| `NVB_MCP_DEMO_MAX_TABS_PER_IP` | `5` | Tabs from exempt origins one address may hold, so one network cannot take the whole demo pool. |
+| `NVB_MCP_MAX_CONNECTIONS` | `5000` | Open MCP sessions in total. When it is reached, a new session pushes out the unpaired one idle the longest, never a working pairing. |
+| `NVB_MCP_UNPAIRED_IDLE_TIMEOUT_MS` | `900000` | An MCP session that never paired is closed after this long without a request. |
+| `NVB_MCP_MAX_SOCKETS` | `10000` | Builder tabs connected in total. |
+| `NVB_MCP_MAX_SOCKETS_PER_IP` | `500` | Builder tabs connected from one address. An office behind one address fits easily. |
+| `NVB_MCP_HELLO_TIMEOUT_MS` | `15000` | A tab that does not introduce itself by then is closed. |
+| `NVB_MCP_TRUST_PROXY` | `loopback, linklocal, uniquelocal` | Which proxies may name the client address in `X-Forwarded-For` (Express `trust proxy`). The default takes it only from a proxy on the same machine or a private network. |
+| `NVB_MCP_ALLOWED_HOSTS` | empty | `Host` values `/mcp` answers to, comma separated. Set it to turn on DNS rebinding protection. |
+| `NVB_MCP_MAX_CONNECTIONS_PER_IP` | `0` (off) | Open MCP sessions per address. Leave it off when AI clients are hosted (claude.ai, ChatGPT): they reach the server from their provider's addresses, shared by everyone. |
+| `NVB_MCP_NEW_SESSIONS_PER_IP_PER_MINUTE` | `0` (off) | New MCP sessions per address per minute. Same caveat. |
+| `NVB_MCP_MAX_FAILED_PAIRS_PER_IP` | `0` (off) | Wrong pairing keys per address per 15 minutes. Same caveat. |
 
-The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set.
+The license and seat settings only matter when `NVB_LICENSE_CHECK_URL` is set. Seats are counted per license and per browser, never per address, so twenty people behind one office address with their own licenses each get their own seat.
 
 ### Seats
 

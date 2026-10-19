@@ -61,7 +61,7 @@ shapes, which are the same either way.
 
 Hard rules:
 
-1. **An array is atomic.** If one command fails, none are applied. Prefer one batch over a sequence of single calls, so a partial build cannot happen.
+1. **An array is atomic.** If one command fails, none are applied. Group commands into batches by section rather than sending single calls: a change goes in one batch, a new view of more than about eight elements in one batch per section, all with the same `group`.
 2. **Use `{ dryRun: true }` first** for anything large or destructive. It runs every check and reports `changed` without touching the view.
 3. **Read `warnings`, not just `errors`.** `ok: true` with warnings means something landed that the builder does not recognise.
 4. **Act on `hint`.** Errors carry a concrete correction. One retry using the hint should succeed; if it does not, stop and ask rather than looping.
@@ -178,7 +178,9 @@ Note that a mutation rebuilds the view, which clears working data. Set data afte
 
 ## Your changes are one undo step
 
-Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. Batches that share a `group` option (MCP: `group` on `nvb_execute`) fold into one undo step as long as the person edits nothing in between, so a view built section by section still undoes whole. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.
+
+While you build, the canvas shows the person what you are doing (reading, checking, building with a count) and plays the elements a batch adds in one by one, top to bottom.
 
 ## What gets checked
 

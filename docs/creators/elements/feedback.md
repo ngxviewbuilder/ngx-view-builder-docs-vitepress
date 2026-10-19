@@ -19,15 +19,17 @@ A small colored label: `Active`, `Draft`, `Overdue`.
 
 ## Message card (`messageCard`)
 
-A highlighted box with icon, title, and text, for inline notices ("Your application is being reviewed").
+A box with an icon, a title and a description, for inline notices ("Your trial ends in 3 days"), hints next to a field, or a row of feature cards.
 
 | Property | What it does |
 | --- | --- |
-| **Title / Description text** | The heading and extended content. |
-| **Variant** | `info`, `success`, `warning`, `error`. |
-| **Show icon / Icon** | The leading icon. |
-| **Dismissible** | The user can close the card manually. |
-| **Primary / Secondary button text** | Optional CTA buttons (wire them with [actions](../events-actions)). |
+| **Title / Description text** | The heading and the text under it. Line breaks you type in the description are kept. Both start on the same left edge. |
+| **Buttons** | Small buttons under the text. Each click action with a label becomes one, and runs its actions when pressed. One or two work best: the first is drawn as the main action in the message's colour, the rest as quiet outlined buttons, unless you set a style on the action yourself (filled, outlined or text). |
+| **Appearance** | `Soft banner` (a tinted box, the default), `Card (icon above)` (a white card with the icon in a tile above the title, good for feature lists and empty states) or `Accent line` (just a coloured line on the left, for a hint inside a form). |
+| **Buttons position** | `Under the text`, or `Beside the text`: on the right of a wide message, falling back under the text when it gets narrow. |
+| **Variant** | The colour: `info`, `primary`, `success`, `warn`, `risk` or `neutral`. With **Variant mode: Conditional** the colour follows rules instead. |
+| **Show icon / Icon** | The leading icon; each variant has a sensible default. |
+| **Dismissible** | Adds a close button. Closing it also runs click actions with the `dismiss` reason in `{action}`. |
 
 Combine with `visibleIf` to show it only in the relevant state:
 

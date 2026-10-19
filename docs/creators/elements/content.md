@@ -115,11 +115,24 @@ Renders a chart from a data source or expression-provided data.
 
 | Property | What it does |
 | --- | --- |
-| **Chart type** | `bar`, `line`, `pie`, … Match it to the data shape. |
-| **Data source / Chart data path** | Where the series data comes from; point the path at the dataset (`stats.points`). |
-| **Points** | Data passed directly at the property level (instead of a source). |
-| **Label / value mapping** | Which fields feed axes and series. |
-| **Chart height** | Stable widget size for dashboards and cards. |
-| **Show legend** | Explains colors/series. |
+| **Chart type** | `Bar`, `Horizontal bar`, `Line`, `Area`, `Pie`, `Donut`. See below for which to pick. |
+| **Data source / Data path** | Where the items come from; point the path at the list inside the response (`stats.points`). |
+| **Points** | Items typed in directly, instead of a source. |
+| **Label key / Value key** | Which field of each item is its name and which its number (default `label` and `value`). |
+| **Merge items with the same label** | Two items called `Audi` become one bar with their sum. On by default. |
+| **Chart height** | Height of the plot area in pixels. |
+| **Show legend** / **Legend layout** | Pie and donut only: the legend lists every slice with its value and share, as a list beside the chart or inline under it. |
+
+Which type to pick:
+
+- **Bar** compares a handful of categories; **Horizontal bar** is better when the names are long or there are many of them.
+- **Line** and **Area** show change over time.
+- **Pie** and **Donut** show parts of a whole. They work for up to six slices; anything beyond that is folded into one *Other* slice. A donut shows the total in its centre, and the hovered slice's value and share.
+
+A bar, line or area chart is one series, so it is drawn in one colour and needs no legend: the title says what it shows. Pie and donut slices get distinct colours from a palette picked so that neighbouring slices stay apart for colour blind readers too.
+
+Hovering a bar, point or slice shows its value. The chart can also be used with the keyboard: tab to it, move with the arrow keys, Enter runs the click action.
+
+**Click actions.** Add actions under **Events** with the *Click* trigger and they run when someone clicks a bar, a point, a slice or a legend row. The clicked item is available as `{item.label}` and `{item.value}` (and `{index}`), so a click can, for example, set a filter field to `{item.label}` or open a detail dialog. Only a chart with a click action shows the hand cursor and the "Click to select" hint.
 
 Charts refresh when their data source reloads. Combine that with **React to change** to make dashboards live.

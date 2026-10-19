@@ -52,8 +52,8 @@ See [Pages & navigation](./pages).
 
 | Setting | What it does |
 | --- | --- |
-| **Render mode** | `Page` (normal, in the document flow) or `Dialog`, where the whole view opens as a modal. |
-| **Dialog header title** / **Dialog header description** | Modal header texts. |
+| **Render mode** | `Page` (normal, in the document flow), `Dialog`, where the whole view opens as a modal, or `Canvas (full width, no frame)` for web pages (see [Web pages with Canvas](./layout#web-pages-with-canvas)). |
+| **Dialog header title** / **Dialog header description** | Modal header texts. They can show field values: `Order {orderNo}` reads *Order A-1042* and updates when the field changes. |
 | **Dialog width** + **Dialog width unit** | Modal width (e.g. `720` + `px`, or `90` + `%`). |
 | **Dialog max width** / **Dialog max height** | Upper bounds (e.g. `90vh`). |
 | **Dialog padding** | Inner padding of the modal content. |
@@ -67,7 +67,7 @@ Dialog mode is useful when a developer embeds the view as a popup (e.g. "New cli
 
 ## AI access (MCP)
 
-This group lets an AI assistant such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. AI access is included with an active designer license, at no extra cost.
+This group lets an AI client such as Claude work in the builder with you: add fields, set up logic, fix a layout, while you watch the canvas change. There is no chat inside the builder; you talk to the AI in your own AI app, and it drives the builder over MCP. AI access is included with an active designer license, at no extra cost.
 
 If nothing is connected yet, the group has one button, **Connect**. It links this tab to our hosted MCP server. The button only shows when the builder has a genuine license key that has not expired; otherwise the group tells you what is missing (no key, a key that is not valid, or a license that ran out). Your developers can also point the builder at an MCP server of their own (see [MCP bridge](../developers/ai-command-api#connecting-the-builder)), in which case it connects without the button.
 

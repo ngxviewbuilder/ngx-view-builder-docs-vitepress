@@ -86,4 +86,4 @@ The designer is **commercial software**, distributed under the NGX View Builder 
 - Keep the key out of client repositories where possible; inject it from environment configuration.
 - The `domain` sent to the validation server is `window.location.hostname`; issue keys per environment if you validate domains.
 
-Licensing questions: **[support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io)**.
+Licensing questions: **[info@heydelabs.com](mailto:info@heydelabs.com)**.

@@ -63,7 +63,7 @@ These live in the **Search source** section of the properties sidebar.
 
 | Property | What it does |
 | --- | --- |
-| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the DataSources tab. |
+| **Search datasource** | The data source called while the user types. Pick it from the list of sources in the Data sources tab. |
 | **Items path** | Where the array sits in the response, e.g. `data.items`. Leave it empty if the response is the array itself, or wraps it in a common key such as `items`, `data`, `results`, `rows` or `content`. |
 | **Label key** | Which field of each record the user sees, e.g. `name`. Nested fields work too: `address.city`. Left empty, the element tries `label`, `name`, `title` and `text` in that order. |
 | **Value key** | Which field gets stored, e.g. `id`. Leave it empty to store the **whole record** the user picked. |

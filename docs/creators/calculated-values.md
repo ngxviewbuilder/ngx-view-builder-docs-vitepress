@@ -18,6 +18,8 @@ Two Logic properties produce values instead of true/false.
 sumInArray({orderLines}, "total")               sum over table rows
 ```
 
+The **Visual builder** tab can write this kind of expression too: give the conditions, then what to return when they match and what to return otherwise (a text, a number, Yes/No, another field's value, nothing, or a formula). See [Building a rule without writing it](./conditional-logic#building-a-rule-without-writing-it).
+
 Rules of thumb:
 
 - A field with an Expression is effectively computed, so combine it with **Read only** and users won't fight the recalculation.

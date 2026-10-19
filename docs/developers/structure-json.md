@@ -90,7 +90,7 @@ An `objectPanel` inside another `objectPanel` or a `dynamicPanel` keeps its own 
 
 ## `settings`: view-wide configuration
 
-Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog'` + `dialog*` keys), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
+Everything from the Form settings tab: `width`/`widthUnit`, `language`, `locale`, `theme`, `elementSpacing`, page navigation (`pageNavigationMode`, positions, `showValidateButton`, `showSubmitButton`, `showValidationIssuesModal`), render mode (`renderMode: 'page' | 'dialog' | 'canvas'` + `dialog*` keys; `canvas` is a full width page without chrome for web pages), `customCss`, `customCssUrls`, `lazyElementRendering`, plus advanced blocks:
 
 | Key | Holds |
 | --- | --- |

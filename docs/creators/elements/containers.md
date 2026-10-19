@@ -22,10 +22,25 @@ A titled box that groups related fields.
 | **Min height / Max height / Height / Fit content** | Sizing; content past *Max height* scrolls (see *Overflow*). |
 | **Overflow** | `visible`, `auto`, `hidden`, `scroll`, `clip`. |
 | **Opacity / Backdrop filter** | Transparency and glass-style effects. |
-| **Background image (+ position, size, repeat, overlay color, blend mode)** | Full image-background support for hero panels and cards. |
+| **Use as page section** | Turns the panel into a full width band for web pages: no border, content centred at a readable width. Its settings are listed below. |
 | **Content display** | How children lay out: `flex` or `grid`. |
 | **Flex direction / Content gap / Content justify / Content align / Content wrap / Align content / Row & column gap** | Flex composition of the children. |
 | **Grid columns / Grid rows / Grid auto rows** | Grid composition, e.g. `repeat(2, minmax(0, 1fr))`, `minmax(120px, auto)`. |
+
+### Page section
+
+With **Use as page section** on (Design → Page section), a panel becomes the kind of block a web page is made of: a hero, a row of features, a call to action. It stretches the full width of its parent and centres its content inside.
+
+| Property | What it does |
+| --- | --- |
+| **Section colours** | `Light`, or `Dark (light text)`: everything inside switches to the dark palette, so headings, text, buttons and inputs stay readable on a dark background without any CSS. |
+| **Content width** | How wide the content may get inside the band (default `1120px`). Narrow it, e.g. `720px`, for a sign-up box or a block of text. |
+| **Space above and below** | Vertical breathing room. The default grows with the screen, from 48px on phones to 96px on wide screens. |
+| **Minimum height** + **Vertical position** | For a hero band, e.g. `480px` or `80vh`, with the content at the top, middle or bottom. |
+| **Background color** | The band's colour (the regular panel setting). |
+| **Background image** + **Image overlay** | A picture behind the band, and a colour laid over it, e.g. `rgba(0, 0, 0, 0.45)`, so text on a busy photo stays readable. |
+
+Sections work in any render mode, but they shine with **Canvas**, where nothing else sits around them; see [Web pages with Canvas](../layout#web-pages-with-canvas).
 
 A panel's `visibleIf` hides the whole group at once, which is usually cleaner than hiding fields one by one. Disabling or making a panel read-only cascades to children (children can opt out by turning off **Inherit parent state**).
 
