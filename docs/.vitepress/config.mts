@@ -425,6 +425,7 @@ export default defineConfig({
             { text: "Theming & design tokens", link: "/developers/theming" },
             { text: "Custom CSS", link: "/developers/custom-css" },
             { text: "UI translations", link: "/developers/ui-translations" },
+            { text: "Accessibility and languages", link: "/developers/accessibility" },
           ],
         },
         {

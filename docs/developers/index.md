@@ -22,6 +22,9 @@ You embed the components you need as standalone components, persist the JSON whe
 you like, and control everything else (data, theming, custom elements, plugins) through
 providers and a typed API service.
 
+Both halves are checked against WCAG 2.2 AA with axe-core on every release, and every
+interface text can be translated. See [Accessibility and languages](./accessibility).
+
 ## The five components
 
 | Component | Selector | Package | Purpose |
