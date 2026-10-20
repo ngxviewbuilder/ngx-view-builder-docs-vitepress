@@ -175,6 +175,40 @@ Defaults to `DELETE`. If no **Request body** template is configured, the fallbac
 
 Any 2xx response counts as success; the response body itself is ignored.
 
+## Your app's own data
+
+Often the data is already in your application: a store, a signal, a response another part of the page loaded. Do not write it into the view's JSON (`elements.chart.points = ...`) and set the view again. Pass it as data, and let a **Local** source in the view point at it.
+
+In the view, a source of type `local` in `dataPath` mode reads a path of the view's data and reloads whenever that path changes:
+
+```json
+"dataSources": [
+  { "name": "revenuePoints", "type": "local",
+    "params": { "localMode": "dataPath", "dataPath": "report.points" } }
+],
+"elements": {
+  "revenueChart": { "name": "revenueChart", "type": "chart", "chartType": "line",
+    "dataSource": { "name": "revenuePoints" } }
+}
+```
+
+In the host, put the data at that path, once through `dataJson` and on every change with `setValue`:
+
+```ts
+private readonly runtime = viewChild.required(NgxViewBuilderRuntime);
+
+constructor() {
+  effect(() => {
+    const points = this.store.revenueByMonth();   // [{ label: 'Jan', value: 12 }, ...]
+    void this.runtime().api.setValue('report.points', points);
+  });
+}
+```
+
+The same source works for any element that takes one: a list grid of deals, the options of a select, a dynamic panel of tasks, the items of a navigation menu. Plain values need no source at all, a stats card shows `{revenueTotal}` straight from the data. Keep the view the creator's: it says *where* the numbers go, your code says *what* they are.
+
+If the data only exists on a server, a `rest` source is simpler than fetching it yourself and passing it in.
+
 ## Default data sources
 
 Give every view a base catalogue of sources so creators don't retype URLs:

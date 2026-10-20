@@ -61,6 +61,10 @@ A KPI tile: big number, label, and optional trend. Feed the value with an expres
 | **Trend direction** | `up`, `down`, or `neutral`. |
 | **Trend text** | Short change explanation next to the indicator. |
 | **Trend direction expression / Variant expression / Icon expression** | Drive trend, tone, and icon from data. |
+| **Goal value** / **Goal target** | Turns the card into a goal: a bar filled to the value out of the target. Each is a number or an expression such as `{wonTotal}`. The target is 100 when empty. |
+| **Goal caption** | Text next to the bar, for example `{wonTotal} of {target}`. Empty shows the percentage. |
+
+A monthly sales goal is one card: **Value text** `{wonTotal}`, **Goal value** `{wonTotal}`, **Goal target** `{monthlyTarget}`, **Goal caption** `{wonTotal} of {monthlyTarget}`. The bar takes the card's variant colour, so a conditional variant can turn it green once the goal is reached.
 
 ## Progress bar (`progressBar`)
 

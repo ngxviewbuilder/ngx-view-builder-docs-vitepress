@@ -141,6 +141,27 @@ A repeatable group. You design the fields once; users add, remove, and reorder e
 | **Max rows** | Upper limit. The add button disables once it is reached. |
 | **Confirm row deletion** (+ title, message, button texts) | Ask before removing an entry. |
 | **Empty state text** | Shown when the panel has no entries. |
+| **Show rows if** (Logic) | Shows only the entries this condition is true for, for example `row.stage == "Won"`. See below. |
+| **Show quick search** | A search box above the entries. Entries that do not contain the typed text are hidden. |
+| **Quick search placeholder** / **No matches text** | The search box hint, and the text shown when entries exist but none of them is shown. |
+
+### Showing only some entries
+
+A dynamic panel can also be a list you read rather than fill in: a pipeline column, a task list, an activity feed. Turn on **Disallow adding rows** and **Disallow deleting rows**, put display elements in the entry, and decide which entries show.
+
+**Show rows if** is checked for every entry. `row` is the entry itself and `index` its position, and the rest of the view is in scope too, so a search field elsewhere on the page can narrow the list:
+
+```text
+row.stage == "Qualified"
+row.stage == "Qualified" && (isEmpty({search}) || contains(row.title, {search}))
+row.done == false
+```
+
+Four panels over the same `deals` list, each with its own stage in the condition, make a pipeline board. The data is not split or copied: every panel reads the whole list and shows its part.
+
+**Show quick search** puts a small search box on the right of the panel's header, next to its title. It looks through every text and number in an entry, ignoring case and accents, so `zalgiris` finds *Žalgiris*. It searches only the entries that are already loaded; for a server-side search use a [Table](./tables) or a [List grid](./tables#list-grid-listgrid).
+
+Hidden entries keep their data and their place. Editing an entry while others are hidden still writes to the right one, and the panel's value is always the full list.
 
 Inside a dynamic panel, expressions get extra context:
 

@@ -889,6 +889,16 @@
         "maxChars": 1000
       }
     ],
+    "navMenu": [
+      {
+        "path": "docs:creators/elements/buttons.md",
+        "maxChars": 1600
+      },
+      {
+        "path": "lib:lib/core/builder/datasets/properties/nav-menu.property.ts",
+        "maxChars": 1000
+      }
+    ],
     "badge": [
       {
         "path": "docs:creators/elements/feedback.md",

@@ -29,7 +29,7 @@ Declarative equivalents exist on `runtimeSettings` (`customCss`, `customCssUrls`
 ## Targeting elements
 
 - Every class the library renders starts with `nvb-`, so `nvb-field`, `nvb-panel`, `nvb-dropdown`. Anything without that prefix in a view belongs to you or to a template.
-- Custom CSS is injected without a cascade layer, so it beats the library's own rules without needing `!important`.
+- Custom CSS is injected without a cascade layer, so it beats the library's global stylesheet. Element styles are different: they are component styles, scoped with an attribute (`.nvb-panel[_ngcontent-...]`), so a plain `.nvb-panel { ... }` rule has the lower specificity and loses. That is why overrides tend to grow into `.nvb-root.nvb-root .nvb-panel` and `!important`. Before writing such a rule, look for a token: most elements read their colours, radii, padding and sizes from `--nvb-*` variables (see [Component tokens](./theming#component-tokens)), and a token set through `cssVariables` needs no selector at all.
 - Elements render with stable identity hooks, so prefer targeting by the element's id/test-id attributes or by classes you add in templates, rather than by internal DOM structure.
 - Template HTML ([template library](../creators/templates)) carries its own scoped CSS, so for card layouts prefer a template's CSS over global custom CSS.
 - Custom-HTML elements can include class names that your custom CSS styles.

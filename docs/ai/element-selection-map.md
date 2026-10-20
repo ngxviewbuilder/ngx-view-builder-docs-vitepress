@@ -94,10 +94,11 @@ This page helps the agent decide which NGX View Builder element to use based on 
 | Avatar | `avatar` | Not for general images |
 | Icon | `icon` | Small UI symbol |
 | Navigation path | `breadcrumbs` | Navigation context |
+| Sidebar or top menu of app pages, with active link, badges and sub-links | `navMenu` | App navigation; items static or from a data source |
 | Page heading | `pageTitle` | Hero or page top |
 | Badge | `badge` | Short status or label |
 | Informational card | `messageCard` | Message, warning, info |
-| Statistics card | `statsCard` | KPI or summary |
+| Statistics card | `statsCard` | KPI or summary; `progressValue` / `progressMax` add a goal bar |
 | Toast notification | `toast` | Temporary notifications |
 | Completion percentage | `progressBar` | Not for step/page navigation; use `progressFlow` |
 
