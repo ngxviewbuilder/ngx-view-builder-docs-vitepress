@@ -7,7 +7,7 @@ description: "How NGX View Builder licensing works: what is free, how to supply 
 
 > NGX View Builder is in public beta, so licenses aren't for sale yet. They go on sale with the 1.0.0 release. Everything below describes the license model you'll buy into at launch.
 
-**The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** Everything on this page describes the commercial license for the builder only.
+**The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** The same goes for the Templates plugin. Everything else on this page describes the commercial license for the builder and its other plugins.
 
 Since 0.5.0 that split is enforced by packaging rather than by promise. `@ngxviewbuilder/runtime`
 and `@ngxviewbuilder/designer` are separate npm packages with separate license files:
@@ -16,8 +16,8 @@ and `@ngxviewbuilder/designer` are separate npm packages with separate license f
 | --- | --- |
 | `@ngxviewbuilder/runtime` | Proprietary but free, perpetual, no key. Commercial and client work allowed. You may not resell it on its own, build a competing product from it, or build a visual editor on top of it. |
 | `@ngxviewbuilder/designer` | The commercial agreement described on this page. |
-| `@ngxviewbuilder/plugin-templates` | Follows the designer. |
-| `@ngxviewbuilder/plugin-logic-map`, `@ngxviewbuilder/plugin-docs`, `@ngxviewbuilder/plugin-shared` | Follow the designer. |
+| `@ngxviewbuilder/plugin-templates` | Proprietary but free, perpetual, no key, like the runtime. It plugs into the designer, which keeps its own license. |
+| `@ngxviewbuilder/plugin-logic-map`, `@ngxviewbuilder/plugin-docs`, `@ngxviewbuilder/plugin-openapi`, `@ngxviewbuilder/plugin-shared` | Commercial, under the designer's agreement, on the same license key. |
 
 An application that only renders views therefore installs no commercially licensed code
 at all, which is the answer to the question procurement usually asks first. Writing the
@@ -26,7 +26,7 @@ runtime license: what you cannot do is ship your own editor UI on top of it.
 
 ## Is this open source?
 
-**No.** NGX View Builder is commercial software, not open source (not MIT, Apache, GPL, or any OSI-approved license). Installing it from npm gives you the right to use it under the terms below. It does not grant a license to fork, redistribute, or build a competing product from it.
+**No.** None of the packages is open source (not MIT, Apache, GPL, or any OSI-approved license). The runtime and the Templates plugin are free to use but proprietary; the designer and the other plugins are commercial. Installing them from npm gives you the right to use them under the terms in each package's `LICENSE.md`. It does not grant a license to fork, redistribute, or build a competing product from them.
 
 If you've used commercial component libraries before, the model will feel familiar: install from the public npm registry, evaluate for free with a watermark, unlock full use with a paid key.
 

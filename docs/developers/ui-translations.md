@@ -12,6 +12,8 @@ Two translation systems exist. Don't mix them up:
 | **Content translations** | the view's labels, options, messages | creators, in the [Translations tab](../creators/translations) |
 | **UI dictionaries** | the builder/runtime chrome: tabs, buttons, property editor labels | developers (this page) |
 
+What the runtime does for screen readers, keyboards and contrast, and how languages and locales fit together, is on [Accessibility and languages](./accessibility).
+
 ## Providing dictionaries
 
 ```ts

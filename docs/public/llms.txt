@@ -23,6 +23,7 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 ## Developer documentation
 
 - [Angular form & view builder for developers](https://ngxviewbuilder.io/developers/): Embed the Angular form and view builder, render saved views with a native runtime, and extend it with custom elements, functions, themes, and plugins.
+- [Accessibility and languages](https://ngxviewbuilder.io/developers/accessibility): How the builder and the views it renders handle accessibility (WCAG 2.2 AA checks, keyboard, screen readers, contrast) and languages (UI dictionaries, content translations, locale).
 - [AI command API](https://ngxviewbuilder.io/developers/ai-command-api): A JSON command surface that lets an external agent read and edit a view while the builder is open.
 - [API service reference](https://ngxviewbuilder.io/developers/api-service): NgxViewBuilderApiService, the one service a host application talks to. How calls reach the view, and every method by area with arguments, return values and examples.
 - [API: builder, templates & tables](https://ngxviewbuilder.io/developers/api/builder): Persist the template library and the element library through the host, store per-user table settings and filters, and control the builder's tabs.
