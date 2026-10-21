@@ -460,7 +460,7 @@ export default defineConfig({
     footer: {
       message:
         'Documentation for NGX View Builder. Found a bug or have an idea? <a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/issues" target="_blank" rel="noopener">Open an issue</a>. ' +
-        '<a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/releases" target="_blank" rel="noopener">Releases</a> · <a href="/developers/licensing">License</a> · <a href="/privacy">Privacy</a> · <a href="mailto:info@heydelabs.com">info@heydelabs.com</a>',
+        '<a href="https://github.com/ngxviewbuilder/ngx-view-builder-community/releases" target="_blank" rel="noopener">Releases</a> · <a href="/developers/licensing">License</a> · <a href="/terms">Terms</a> · <a href="/refund">Refunds</a> · <a href="/privacy">Privacy</a> · <a href="mailto:info@heydelabs.com">info@heydelabs.com</a>',
       copyright: `© ${new Date().getFullYear()} Heyde Labs, MB · NGX View Builder`,
     },
   },

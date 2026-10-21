@@ -104,6 +104,8 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 
 - [Live demo](https://ngxviewbuilder.io/demo): Try the Angular form and view builder in your browser. Build a view in the Builder tab, then switch to Runtime to see it exactly as your end users would.
 - [Privacy Policy](https://ngxviewbuilder.io/privacy): How ngxviewbuilder.io handles analytics, cookies, and the data you enter in the live demo.
+- [Refund Policy](https://ngxviewbuilder.io/refund): Full refund within 14 days of buying an NGX View Builder license, no questions asked.
+- [Terms of Sale](https://ngxviewbuilder.io/terms): The terms that apply when you buy an NGX View Builder license, sold by Heyde Labs, MB through Paddle.
 
 ## Single-file bundles
 
