@@ -27,7 +27,7 @@ A license is for one developer (one seat). A team buys one seat per developer wh
 
 The runtime (`@ngxviewbuilder/runtime`) is free and needs no license. Applications that only render views never need one.
 
-Prices are shown in euros. Paddle works out VAT or sales tax for your country at checkout and shows the final amount before you pay. Business customers in the EU can enter a VAT number at checkout.
+Prices are in euros. In the EU, the UK and other countries where prices are usually shown with tax, they include VAT. Elsewhere, sales tax is added at checkout where it applies. Paddle works out the tax for your country and shows the final amount before you pay. With a valid EU VAT number entered at checkout, the VAT is taken off.
 
 ## How you get the license
 

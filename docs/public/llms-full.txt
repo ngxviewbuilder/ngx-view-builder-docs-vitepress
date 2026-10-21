@@ -18743,7 +18743,7 @@ You can get a full refund within **14 days** of the purchase, no questions asked
 
 ## Support
 
-Support comes with every active license and is given by e-mail at [info@heydelabs.com](mailto:info@heydelabs.com). Bugs and questions can also go to [GitHub](https://github.com/ngxviewbuilder/ngx-view-builder-community/issues).
+Technical support comes with every active license and is given by e-mail at [support@ngxviewbuilder.io](mailto:support@ngxviewbuilder.io). Questions about orders, invoices and licenses go to [info@heydelabs.com](mailto:info@heydelabs.com). Bugs and questions can also go to [GitHub](https://github.com/ngxviewbuilder/ngx-view-builder-community/issues).
 
 ## Warranty and liability
 
