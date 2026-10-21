@@ -5,7 +5,7 @@ description: "How NGX View Builder licensing works: what is free, how to supply 
 
 # Licensing
 
-> NGX View Builder is in public beta, so licenses aren't for sale yet. They go on sale with the 1.0.0 release. Everything below describes the license model you'll buy into at launch.
+> Licenses go on sale on 1 November 2026, with the 1.0.0 release, at [console.ngxviewbuilder.io/purchase](https://console.ngxviewbuilder.io/purchase). Until then the builder is free for everyone. Before you buy, read the [Terms of Sale](/terms) and the [Refund Policy](/refund).
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** The same goes for the Templates plugin. Everything else on this page describes the commercial license for the builder and its other plugins.
 
