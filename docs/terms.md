@@ -14,7 +14,7 @@ These terms apply when you buy a license for the NGX View Builder builder (`@ngx
 
 NGX View Builder is made by **Heyde Labs, MB**, company code 308168362, Europos pr. 34-47, LT-46370 Kaunas, Lithuania ("we", "us"). You can reach us at **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
-Our order process is conducted by our online reseller **Paddle.com**. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns. When you pay, you also accept [Paddle's buyer terms](https://www.paddle.com/legal/checkout-buyer-terms), and the invoice comes from Paddle.
+Our order process is conducted by our online reseller **Paddle.com**. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns. When you pay, you also accept [Paddle's buyer terms](https://www.paddle.com/legal/buyer-terms), and the invoice comes from Paddle.
 
 ## What you buy
 
