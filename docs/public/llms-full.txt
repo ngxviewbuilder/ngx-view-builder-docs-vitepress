@@ -18684,7 +18684,7 @@ Our orders are processed by Paddle.com, our Merchant of Record, so the refund is
 
 ## What happens to the license
 
-A refunded license is revoked: its keys stop unlocking the builder and the licensed plugins, and the builder shows the watermark again.
+A refunded license is revoked. AI access stops at once, and the builder shows the watermark again the next time it checks the key with our license service, which it does at least once a week.
 
 ## After 14 days
 
