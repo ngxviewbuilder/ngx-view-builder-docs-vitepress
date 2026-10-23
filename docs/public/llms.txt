@@ -18,7 +18,6 @@ Every page below is also served as plain Markdown: add `.md` to its URL (`https:
 - [AI: Common mistakes and anti-patterns](https://ngxviewbuilder.io/ai/common-mistakes): Known anti-patterns AI agents repeat when generating NGX View Builder JSON, with corrections.
 - [AI: Good practices for building views](https://ngxviewbuilder.io/ai/good-practices): How an AI agent builds NGX View Builder views that look finished: labels per element, buttons and contrast, layout, names, logic, tables and a final checklist.
 - [AI: Verified example structures](https://ngxviewbuilder.io/ai/examples): Complete, verified NGX View Builder JSON examples: layout, every element family, tables, dynamic panels, data sources, runtime variables and expressions.
-- [AI: Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): How an AI agent converts a legacy form-builder JSON format to NGX View Builder JSON, covering element, property, and expression mapping.
 
 ## Developer documentation
 

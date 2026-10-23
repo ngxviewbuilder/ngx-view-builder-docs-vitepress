@@ -247,7 +247,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 8. [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes): anti-patterns to avoid.
 9. [Good practices](https://ngxviewbuilder.io/ai/good-practices): what makes a view look finished, element by element. Read before building or changing a view.
 10. [Verified examples](https://ngxviewbuilder.io/ai/examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
-11. [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
@@ -264,7 +263,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 | [Verified examples](https://ngxviewbuilder.io/ai/examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |
-| [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration) | Element/property/expression mapping from a legacy form-builder JSON format | When converting legacy form JSON |
 | [API service reference](https://ngxviewbuilder.io/developers/api-service), [Events reference](https://ngxviewbuilder.io/developers/events) | What every host API method / event does, its parameters, payloads and return values | When the user asks a development or integration question |
 
 Every JSON block on those pages is machine-checked against the library source by `npm run validate:ai-json` in this repo: element types against the element registry, property names against the builder property datasets, sub-objects against their TypeScript interfaces. If a property appears in these docs, it exists.
@@ -294,7 +292,7 @@ The agent also draws on the human documentation ([element pages](https://ngxview
 - **`roots`**: where the docs and the library live, relative to the workspace root (the folder that contains all `ngx-view-builder*` projects).
 - **`universal`**: sources injected into every prompt.
 - **`types`**: per element type, which docs page, interface, and property dataset to load.
-- **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
+- **`selection`, `review`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
 Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.
@@ -7355,98 +7353,5 @@ Several entries in `pages` become steps. Each still needs its twin in `elements`
 8. Runtime variables are read as `{__variables.x}`.
 9. Logic fields sit directly on the element; validators use `condition` / `applyIf`.
 10. Every type string matches the canonical list exactly, casing included.
-
----
-
-## AI: Legacy form migration
-
-Source: https://ngxviewbuilder.io/ai/legacy-form-migration
-
-# AI: Legacy form migration
-
-This page is intended for the AI agent when a user asks to convert a form defined in a legacy form-builder JSON format to NGX View Builder JSON.
-
-## Core rule
-
-- Do not copy the source JSON 1:1.
-- First recognize the semantics of the source form.
-- Then map them to the closest supported NGX View Builder structure.
-
-## Element map
-
-| Source JSON | NGX View Builder |
-| --- | --- |
-| `text` | `text` or `number` / `phoneInput` depending on `inputType` |
-| `comment` | `textarea` |
-| `radiogroup` | `radio` |
-| `dropdown` | `select` |
-| `dropdown_list` | `autocomplete` |
-| `tagbox` | `multiSelect` |
-| `checkbox` | `checkbox` or `singleCheckbox` |
-| `boolean` | `singleCheckbox` |
-| `date` / `date_picker` | `datepicker` |
-| `file_uploader` / `file_list` | `fileUpload` |
-| `html` | `customHtml` |
-| `message_box` | `messageCard` |
-| `panel` | `panel` |
-| `paneldynamic` | `dynamicPanel` |
-| `matrixdynamic` / `matrixdropdown` | `dynamicTable` |
-| `dialog` | `dialog` |
-
-## Property map
-
-- `visibleIf` maps directly to `visibleIf`: same field name, same polarity, no inversion needed.
-- `enableIf` is typically mapped to `disableIf`, but the logic must be inverted.
-- `requiredIf` maps to `requireIf`.
-- `resetValueIf` maps to `resetIf`.
-- `setValueExpression` typically maps to `expression`.
-- `defaultValue` stays as `defaultValue` if it is a static value.
-- `defaultValueExpression` can become `defaultValue` if it is a literal, or `expression` if it is a computed value.
-- `choices` maps to `options`.
-- `validators` maps to `validators`.
-
-## Expression translation rules
-
-In the final NGX View Builder JSON, use NGX View Builder / `JEXL`-style syntax.
-
-### Operators
-
-- `and` -> `&&`
-- `or` -> `||`
-- `<>` -> `!=`
-- `=` in comparisons -> `==`
-- `iif(cond, a, b)` -> `cond ? a : b`
-
-### Empty values
-
-- `x notempty` -> `notEmpty(x)`
-- `x empty` -> `isEmpty(x)`
-
-### Collections
-
-- `anyof` -> `containsAny(left, values)`
-- `allof` -> `containsAll(left, values)`
-- `contains` -> `contains(left, value)`
-- `{field.length}` -> `len({field})`
-
-### Dynamic contexts
-
-- `{panelIndex}` -> `panel.index`
-- `{rowIndex}` -> `row.index`
-- `{parentIndex}` -> `parentIndex`
-- `{panel.field}` -> `panel.field`
-- `{row.field}` -> `row.field`
-
-## Important safeguards
-
-- Do not use source-library property names in the final NGX View Builder JSON if NGX View Builder does not have that property.
-- Do not use `and`, `or`, `notempty`, `empty`, `<>`, or `iif(...)` in final NGX View Builder expression strings.
-- Do not use self-reference expressions. A field must not reference itself in a fallback branch.
-- If `expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, or `resetIf` is added, `logicExecutionMode: "onChange"` is typically required.
-
-## When a 1:1 mapping is not possible
-
-- If a source-library feature has no direct NGX View Builder equivalent, produce the closest safe result.
-- In that case, briefly explain in a `warnings` section what was simplified or lost.
 
 ---

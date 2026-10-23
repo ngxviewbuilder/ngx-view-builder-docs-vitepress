@@ -62,7 +62,6 @@ const AI_PAGE_ORDER = [
   'ai/common-mistakes.md',
   'ai/good-practices.md',
   'ai/examples.md',
-  'ai/legacy-form-migration.md',
 ];
 
 function walkMarkdownFiles(dir) {

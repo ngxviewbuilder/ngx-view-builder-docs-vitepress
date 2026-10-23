@@ -26,7 +26,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 8. [Common mistakes](./common-mistakes): anti-patterns to avoid.
 9. [Good practices](./good-practices): what makes a view look finished, element by element. Read before building or changing a view.
 10. [Verified examples](./examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
-11. [Legacy form migration](./legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
@@ -43,7 +42,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 | [Verified examples](./examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](./element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](./logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |
-| [Legacy form migration](./legacy-form-migration) | Element/property/expression mapping from a legacy form-builder JSON format | When converting legacy form JSON |
 | [API service reference](../developers/api-service), [Events reference](../developers/events) | What every host API method / event does, its parameters, payloads and return values | When the user asks a development or integration question |
 
 Every JSON block on those pages is machine-checked against the library source by `npm run validate:ai-json` in this repo: element types against the element registry, property names against the builder property datasets, sub-objects against their TypeScript interfaces. If a property appears in these docs, it exists.
@@ -73,7 +71,7 @@ The agent also draws on the human documentation ([element pages](../creators/ele
 - **`roots`**: where the docs and the library live, relative to the workspace root (the folder that contains all `ngx-view-builder*` projects).
 - **`universal`**: sources injected into every prompt.
 - **`types`**: per element type, which docs page, interface, and property dataset to load.
-- **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
+- **`selection`, `review`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
 Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.

@@ -103,7 +103,24 @@ The licensed plugins wrap their own screens in `<nvb-pro-feature-gate>` from `@n
 
 ## License terms
 
-The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies keep their own licenses: the designer installs CodeMirror, Prettier and Lodash under MIT, the runtime installs Jexl and Lodash under MIT, and both install tslib under 0BSD.
+The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source parts keep their own licenses, listed under [Open-source components](#open-source-components).
+
+## Open-source components
+
+NGX View Builder stands on a few open-source libraries, and we are grateful to the people who write them. They come into your project as ordinary npm dependencies of our packages, each one stays under its own license, and its license text sits in its own folder in `node_modules`. Our licenses cover our code only, never theirs.
+
+| Component | What it does here | License | Installed with |
+| --- | --- | --- | --- |
+| [Jexl](https://github.com/TomFrost/Jexl) | Evaluates expressions: `visibleIf`, `expression`, `disableIf` and the other logic properties | MIT | runtime |
+| [Lodash](https://lodash.com) (`lodash-es`) | Reads and writes values by path and compares them | MIT | runtime, designer |
+| [CodeMirror](https://codemirror.net) (`@codemirror/*`, `@lezer/highlight`) | The code editor for JSON, expressions, templates, HTML, CSS and JavaScript, and the side by side JSON comparison | MIT | designer |
+| [Prettier](https://prettier.io) | Formats code in the editor and template HTML | MIT | designer, Templates plugin |
+| [tslib](https://github.com/microsoft/tslib) | TypeScript helper functions used by the compiled code | 0BSD | every Angular package |
+| [Material Symbols](https://github.com/google/material-design-icons) | The built-in icons, embedded in the runtime as SVG | Apache 2.0 | runtime |
+
+The self hosted MCP server (`ngx-view-builder-mcp`, see [AI command API](./ai-command-api)) adds four more, all MIT: the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) for the protocol, [Express](https://expressjs.com) for HTTP, [ws](https://github.com/websockets/ws) for the connection to the builder tab, and [Zod](https://zod.dev) for checking tool arguments.
+
+Angular, the Angular CDK and RxJS are peer dependencies, so they come from your own application, also under MIT.
 
 ## Notes
 
