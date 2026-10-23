@@ -46,7 +46,7 @@ A panel's `visibleIf` hides the whole group at once, which is usually cleaner th
 
 ## Object panel (`objectPanel`)
 
-A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](#dynamic-panel-dynamicpanel) with exactly one entry: the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes. There is no Add or Remove button, the panel is always there once.
+A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](#dynamic-panel-dynamicpanel) with exactly one entry. Anything can go inside it, not just text boxes. There is no Add or Remove button, the panel is always there once.
 
 Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
 

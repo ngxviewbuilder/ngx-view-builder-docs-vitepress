@@ -243,7 +243,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 8. [Common mistakes](https://ngxviewbuilder.io/ai/common-mistakes): anti-patterns to avoid.
 9. [Good practices](https://ngxviewbuilder.io/ai/good-practices): what makes a view look finished, element by element. Read before building or changing a view.
 10. [Verified examples](https://ngxviewbuilder.io/ai/examples): complete, source-checked JSON for every element family, the full `table` feature set, dynamic tables and panels, data sources, variables and expressions.
-11. [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration): only when converting forms from a legacy form-builder JSON format.
 
 ## Index
 
@@ -260,7 +259,6 @@ An agent (or a person building prompts) should consume the pages in this order:
 | [Verified examples](https://ngxviewbuilder.io/ai/examples) | Complete working JSON: layout, all element families, `table` end to end, `dynamicTable`, `dynamicPanel`, data sources, variables, expressions, actions | When building anything non-trivial; always for `table` |
 | [Element selection map](https://ngxviewbuilder.io/ai/element-selection-map) | Which element type fits the user's intent | When element choice is ambiguous |
 | [Logic & expression properties](https://ngxviewbuilder.io/ai/logic-and-expressions) | Expression fields, syntax rules, correct/incorrect examples | When the request involves logic |
-| [Legacy form migration](https://ngxviewbuilder.io/ai/legacy-form-migration) | Element/property/expression mapping from a legacy form-builder JSON format | When converting legacy form JSON |
 | [API service reference](https://ngxviewbuilder.io/developers/api-service), [Events reference](https://ngxviewbuilder.io/developers/events) | What every host API method / event does, its parameters, payloads and return values | When the user asks a development or integration question |
 
 Every JSON block on those pages is machine-checked against the library source by `npm run validate:ai-json` in this repo: element types against the element registry, property names against the builder property datasets, sub-objects against their TypeScript interfaces. If a property appears in these docs, it exists.
@@ -290,7 +288,7 @@ The agent also draws on the human documentation ([element pages](https://ngxview
 - **`roots`**: where the docs and the library live, relative to the workspace root (the folder that contains all `ngx-view-builder*` projects).
 - **`universal`**: sources injected into every prompt.
 - **`types`**: per element type, which docs page, interface, and property dataset to load.
-- **`selection`, `review`, `legacyForms`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
+- **`selection`, `review`, `logic`, `validators`, `events`, `actions`, `data`**: sources added when the request profile matches.
 - **`groupFallback`**: group-level docs used when no concrete element type was resolved.
 
 Paths use two prefixes: `docs:` (resolved against `roots.docs`, i.e. this documentation) and `lib:` (resolved against `roots.library`, i.e. the library source). An agent loads this file at startup, so when documentation moves, updating this map is the only change needed.
@@ -7354,99 +7352,6 @@ Several entries in `pages` become steps. Each still needs its twin in `elements`
 
 ---
 
-## AI: Legacy form migration
-
-Source: https://ngxviewbuilder.io/ai/legacy-form-migration
-
-# AI: Legacy form migration
-
-This page is intended for the AI agent when a user asks to convert a form defined in a legacy form-builder JSON format to NGX View Builder JSON.
-
-## Core rule
-
-- Do not copy the source JSON 1:1.
-- First recognize the semantics of the source form.
-- Then map them to the closest supported NGX View Builder structure.
-
-## Element map
-
-| Source JSON | NGX View Builder |
-| --- | --- |
-| `text` | `text` or `number` / `phoneInput` depending on `inputType` |
-| `comment` | `textarea` |
-| `radiogroup` | `radio` |
-| `dropdown` | `select` |
-| `dropdown_list` | `autocomplete` |
-| `tagbox` | `multiSelect` |
-| `checkbox` | `checkbox` or `singleCheckbox` |
-| `boolean` | `singleCheckbox` |
-| `date` / `date_picker` | `datepicker` |
-| `file_uploader` / `file_list` | `fileUpload` |
-| `html` | `customHtml` |
-| `message_box` | `messageCard` |
-| `panel` | `panel` |
-| `paneldynamic` | `dynamicPanel` |
-| `matrixdynamic` / `matrixdropdown` | `dynamicTable` |
-| `dialog` | `dialog` |
-
-## Property map
-
-- `visibleIf` maps directly to `visibleIf`: same field name, same polarity, no inversion needed.
-- `enableIf` is typically mapped to `disableIf`, but the logic must be inverted.
-- `requiredIf` maps to `requireIf`.
-- `resetValueIf` maps to `resetIf`.
-- `setValueExpression` typically maps to `expression`.
-- `defaultValue` stays as `defaultValue` if it is a static value.
-- `defaultValueExpression` can become `defaultValue` if it is a literal, or `expression` if it is a computed value.
-- `choices` maps to `options`.
-- `validators` maps to `validators`.
-
-## Expression translation rules
-
-In the final NGX View Builder JSON, use NGX View Builder / `JEXL`-style syntax.
-
-### Operators
-
-- `and` -> `&&`
-- `or` -> `||`
-- `<>` -> `!=`
-- `=` in comparisons -> `==`
-- `iif(cond, a, b)` -> `cond ? a : b`
-
-### Empty values
-
-- `x notempty` -> `notEmpty(x)`
-- `x empty` -> `isEmpty(x)`
-
-### Collections
-
-- `anyof` -> `containsAny(left, values)`
-- `allof` -> `containsAll(left, values)`
-- `contains` -> `contains(left, value)`
-- `{field.length}` -> `len({field})`
-
-### Dynamic contexts
-
-- `{panelIndex}` -> `panel.index`
-- `{rowIndex}` -> `row.index`
-- `{parentIndex}` -> `parentIndex`
-- `{panel.field}` -> `panel.field`
-- `{row.field}` -> `row.field`
-
-## Important safeguards
-
-- Do not use source-library property names in the final NGX View Builder JSON if NGX View Builder does not have that property.
-- Do not use `and`, `or`, `notempty`, `empty`, `<>`, or `iif(...)` in final NGX View Builder expression strings.
-- Do not use self-reference expressions. A field must not reference itself in a fallback branch.
-- If `expression`, `visibleIf`, `disableIf`, `requireIf`, `readonlyIf`, or `resetIf` is added, `logicExecutionMode: "onChange"` is typically required.
-
-## When a 1:1 mapping is not possible
-
-- If a source-library feature has no direct NGX View Builder equivalent, produce the closest safe result.
-- In that case, briefly explain in a `warnings` section what was simplified or lost.
-
----
-
 ## Angular form & view builder for developers
 
 Source: https://ngxviewbuilder.io/developers/
@@ -12193,7 +12098,7 @@ Source: https://ngxviewbuilder.io/developers/licensing
 
 # Licensing
 
-> NGX View Builder is in public beta, so licenses aren't for sale yet. They go on sale with the 1.0.0 release. Everything below describes the license model you'll buy into at launch.
+> Licenses go on sale on 1 November 2026, with the 1.0.0 release, at [console.ngxviewbuilder.io/purchase](https://console.ngxviewbuilder.io/purchase). Until then the builder is free for everyone. Before you buy, read the [Terms of Sale](https://ngxviewbuilder.io/terms) and the [Refund Policy](https://ngxviewbuilder.io/refund).
 
 **The runtime is free forever and never requires a license key, at 1.0.0 or any version after.** The same goes for the Templates plugin. Everything else on this page describes the commercial license for the builder and its other plugins.
 
@@ -12291,7 +12196,24 @@ The licensed plugins wrap their own screens in `<nvb-pro-feature-gate>` from `@n
 
 ## License terms
 
-The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source dependencies keep their own licenses: the designer installs CodeMirror, Prettier and Lodash under MIT, the runtime installs Jexl and Lodash under MIT, and both install tslib under 0BSD.
+The designer is **commercial software**, distributed under the NGX View Builder Commercial License Agreement, and the full text ships as `LICENSE.md` inside the published npm package (also shown on the npm package page). The runtime package ships its own, free license text instead. In short: a paid key covers all versions released during your license term perpetually; **client work is included and either side can hold the license**: an agency's key covers the applications it builds for its clients, or the end customer buys the key and it covers contractors developing their application (operating a delivered application never needs a key); evaluation without a key is free but watermarked; redistributing the library on its own or circumventing license enforcement is prohibited. The open-source parts keep their own licenses, listed under [Open-source components](https://ngxviewbuilder.io/developers/licensing#open-source-components).
+
+## Open-source components
+
+NGX View Builder stands on a few open-source libraries, and we are grateful to the people who write them. They come into your project as ordinary npm dependencies of our packages, each one stays under its own license, and its license text sits in its own folder in `node_modules`. Our licenses cover our code only, never theirs.
+
+| Component | What it does here | License | Installed with |
+| --- | --- | --- | --- |
+| [Jexl](https://github.com/TomFrost/Jexl) | Evaluates expressions: `visibleIf`, `expression`, `disableIf` and the other logic properties | MIT | runtime |
+| [Lodash](https://lodash.com) (`lodash-es`) | Reads and writes values by path and compares them | MIT | runtime, designer |
+| [CodeMirror](https://codemirror.net) (`@codemirror/*`, `@lezer/highlight`) | The code editor for JSON, expressions, templates, HTML, CSS and JavaScript, and the side by side JSON comparison | MIT | designer |
+| [Prettier](https://prettier.io) | Formats code in the editor and template HTML | MIT | designer, Templates plugin |
+| [tslib](https://github.com/microsoft/tslib) | TypeScript helper functions used by the compiled code | 0BSD | every Angular package |
+| [Material Symbols](https://github.com/google/material-design-icons) | The built-in icons, embedded in the runtime as SVG | Apache 2.0 | runtime |
+
+The self hosted MCP server (`ngx-view-builder-mcp`, see [AI command API](https://ngxviewbuilder.io/developers/ai-command-api)) adds four more, all MIT: the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) for the protocol, [Express](https://expressjs.com) for HTTP, [ws](https://github.com/websockets/ws) for the connection to the builder tab, and [Zod](https://zod.dev) for checking tool arguments.
+
+Angular, the Angular CDK and RxJS are peer dependencies, so they come from your own application, also under MIT.
 
 ## Notes
 
@@ -15721,7 +15643,7 @@ A panel's `visibleIf` hides the whole group at once, which is usually cleaner th
 
 ## Object panel (`objectPanel`)
 
-A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](https://ngxviewbuilder.io/creators/elements/containers#dynamic-panel-dynamicpanel) with exactly one entry: the same idea as SurveyJS's *multipletext* question, except that anything can go inside, not just text boxes. There is no Add or Remove button, the panel is always there once.
+A group of fields that saves its answers as one object named after the panel. Think of it as a [Dynamic panel](https://ngxviewbuilder.io/creators/elements/containers#dynamic-panel-dynamicpanel) with exactly one entry. Anything can go inside it, not just text boxes. There is no Add or Remove button, the panel is always there once.
 
 Drop an Object panel named `address`, put a few fields in it, and the data comes out like this:
 

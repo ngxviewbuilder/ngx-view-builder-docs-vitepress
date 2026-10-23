@@ -70,16 +70,6 @@
       "maxChars": 1200
     }
   ],
-  "legacyForms": [
-    {
-      "path": "docs:ai/legacy-form-migration.md",
-      "maxChars": 2400
-    },
-    {
-      "path": "docs:ai/logic-and-expressions.md",
-      "maxChars": 1800
-    }
-  ],
   "logic": [
     {
       "path": "docs:creators/cheat-sheet.md",
