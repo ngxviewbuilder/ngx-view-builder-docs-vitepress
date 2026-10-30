@@ -6,7 +6,7 @@ sidebar: false
 
 # Privacy Policy
 
-*Last updated: 21 October 2026*
+*Last updated: 30 October 2026*
 
 This policy covers **ngxviewbuilder.io**, **demo.ngxviewbuilder.io** and **console.ngxviewbuilder.io** (together, "the Site"), operated by Heyde Labs, MB, company code 308168362, Europos pr. 34-47, LT-46370 Kaunas, Lithuania, the company behind NGX View Builder ("we", "us"). For questions, contact **[info@heydelabs.com](mailto:info@heydelabs.com)**.
 
@@ -19,6 +19,8 @@ This policy covers **ngxviewbuilder.io**, **demo.ngxviewbuilder.io** and **conso
 **Buying a license and the console.** When you buy a license we keep what we need to deliver and support it: your name, e-mail address and company (and VAT number, if you give one), your order and its amount, the licenses and keys issued, the people you add to your organization, and the support conversations you start in the console. We never see your card or bank details: payment happens in Paddle's checkout, and Paddle.com processes it as our Merchant of Record under [its own privacy policy](https://www.paddle.com/legal/privacy).
 
 **License checks.** The builder can send its license key and the domain it runs on (`window.location.hostname`) to our license service, and the hosted AI access (MCP) server checks the key the same way. We use this only to confirm that the key is genuine and active.
+
+**AI access (MCP).** When you connect the builder to your own AI client, our hosted MCP server relays the tool calls between them while they are in transit: the view structure the AI reads or changes, screenshots of the Preview it asks for, and the requests you send with **Ask AI** (your words plus the names, types, labels and option values of the view's fields, never form data). The server keeps nothing on disk and does not log any of it; an Ask AI request stays in memory until it is answered or five minutes old. Your conversation with the AI is between you and your AI provider, under its terms. You can run the MCP server yourself to keep all of it inside your network.
 
 **Contacting us.** If you email us, we process your email address and message content only to respond to you.
 

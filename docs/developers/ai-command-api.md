@@ -7,7 +7,7 @@ description: A JSON command surface that lets an external agent read and edit a 
 
 The AI command API is a design time surface that lets an agent inspect and edit the view a user is currently designing. Everything crosses the boundary as plain JSON, so nothing Angular shaped leaks out and the whole contract survives a trip through a websocket.
 
-NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas.
+NGX View Builder has **no AI chat and no AI model inside it**. The AI is your own client (Claude, ChatGPT, Cursor, Codex or an agent you run), which connects from outside over MCP and drives the builder while you watch the canvas. The one thing that goes the other way is **Ask AI** by an expression: the person writes in their own words what a rule should do, and that same client writes the expression (see [Requests from the builder](#requests-from-the-builder)).
 
 An agent reaches it over MCP. The browser dials out to the MCP server and the server forwards each method call back down that socket, so the user's machine never has to accept an inbound connection.
 
@@ -31,8 +31,16 @@ It exposes one write door and a handful of read methods, one MCP tool each:
 | `listPlugins()` | `nvb_list_plugins` | the installed plugins an AI client can use, see [Plugins](#plugins) |
 | `readPlugin(id, query?)` | `nvb_read_plugin` | what a plugin knows, such as the logic map or the field documentation |
 | `executePlugin(id, command, args?)` | `nvb_plugin_execute` | runs one of a plugin's commands |
+| `validate()` | `nvb_validate` | checks the whole view, see [Checking its own work](#checking-its-own-work) |
+| `screenshot(options?)` | `nvb_screenshot` | a PNG of the Preview at desktop, tablet or mobile width |
+| `previewInteract(steps, options?)` | `nvb_preview_interact` | fills in, clicks and validates in the Preview, then reports every field |
+| `getJsonSchema()` | `nvb_get_json_schema` | the JSON Schema of the view format, from this builder's element catalog |
+| `getToolSchema(options?)` | `nvb_get_tool_schema` | the open view as an AI tool definition, see [AI tooling](./ai-tooling#views-as-ai-tools) |
+| `getAssistRequests()`, `answerAssist(id, answer)` | `nvb_reply` | the Ask AI requests and their answers |
 
-Four more tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), and `nvb_read_docs`.
+More tools belong to the MCP server itself and never reach the builder: `nvb_pair`, `nvb_status` and `nvb_unpair`, which are about who may talk to which tab (the next section), `nvb_read_docs`, and `nvb_wait_for_request` and `nvb_get_requests` for [requests from the builder](#requests-from-the-builder).
+
+The server also offers prompts, which clients that support them show as slash commands: `nvb-listen` (answer the builder's requests until told to stop), `nvb-check` (validate, look at it, fix it), `nvb-build` (build from a description and test it), `nvb-translate` (add a language) and `nvb-a11y` (fix accessibility).
 
 `nvb_read_docs` hands the AI reference to the model page by page, so it works for clients that cannot open a URL. The server fetches it from [llms-authoring.txt](https://ngxviewbuilder.io/llms-authoring.txt), and the whole site from [llms-full.txt](https://ngxviewbuilder.io/llms-full.txt) when asked. Before the first change the model has to read the core pages: the command API, the generation contract, the layout model, the authoring rules, the element rules, the properties reference, the common mistakes and the [good practices](../ai/good-practices). Until it has, `nvb_execute` answers with the list of pages still to read. That is about 33 000 tokens once per connection, and it is what keeps a model from inventing property names that are silently ignored.
 
@@ -95,6 +103,78 @@ If your backend already knows who should drive which view, it can hand out the k
 
 If the socket drops, the builder reconnects on its own, backing off from one second to thirty. The key does not change, so neither does the pairing: once the server is back, the AI continues where it stopped. The status in the settings reads *MCP server unreachable, retrying…* in the meantime.
 
+## Checking its own work
+
+A model that cannot see what it built guesses. Three tools let it look before it tells the person it is done.
+
+**`nvb_validate`** lists what loads but is wrong, with a severity and, where it can, a hint:
+
+- a column places an element that does not exist, an element is defined but placed nowhere, an element is placed twice;
+- an expression does not compile, builds an object with braces, or reads a field or variable the view does not have (with a "did you mean");
+- an input has no label, a button has neither text nor `ariaLabel`, two inputs share a label, an image has no alternative text;
+- a validator type is not registered, a pattern does not compile, a custom validator has no condition;
+- an element loads from a data source that is not defined, a data source carries a credential in its URL.
+
+The same checks run in Node and CI as [`npx nvb validate`](./ai-tooling#check-views-in-ci).
+
+**`nvb_screenshot`** returns a PNG of the Preview at `desktop`, `tablet` or `mobile` width, optionally of one page. The builder switches to the Preview for a moment and back, so the person sees it happen. The picture is drawn in the browser: system fonts stand in for web fonts, images from other sites become grey boxes, and a password field never shows its value. It is good for judging layout, which is what it is for.
+
+**`nvb_preview_interact`** runs steps in the Preview the way a person would, then reports every field: visible, required, disabled, read only, has a value, errors. One key per step:
+
+```json
+[
+  { "set": { "qty": 11, "customerType": "regular" } },
+  { "click": "addLineButton" },
+  { "page": "details" },
+  { "validate": true },
+  { "wait": 300 }
+]
+```
+
+It starts from an empty form unless `reset` is false, and puts the person back on the tab they were on. Values come back only for fields the run wrote and for calculated fields; everything else reports `hasValue`, because a Preview fed by a live data source can hold real records. A button that submits, navigates, calls a data source or sends a socket message is refused: the Preview talks to your real servers, so those stay the person's to press. Rules and triggers run as if a person typed.
+
+## Requests from the builder
+
+By every expression, in the Logic dialog and the expression editor, the person sees **Ask AI** while an AI client is paired. They write what the rule should do in their own words, such as "show when the total is over 1000 and the customer is not VIP", and press **Write expression**. Words typed straight into the expression field are sent when they press Ask AI. **Explain current** asks for an existing expression in plain words.
+
+MCP gives a server no way to start a turn in a chat, so the request reaches the AI one of two ways:
+
+- **`nvb_wait_for_request`**, which works with every client. The AI waits, up to 55 seconds a call, and gets each request as it arrives. A request sent while nobody waits is kept for five minutes and handed to the next wait. The prompt `nvb-listen` starts the loop; so does asking the AI in the chat to listen to the builder.
+- **A Claude Code channel.** The server declares the `claude/channel` capability and sends each request as a `notifications/claude/channel` message to the clients paired with the tab. Claude Code started with channels enabled gets it in the running session without a loop.
+
+A request carries the person's words, the property and the element it belongs to, and the fields the expression may read: names, types, labels and option values. It never carries form data. The AI answers with `nvb_reply`, and the builder checks the answer before the person sees it: the expression has to compile and read only fields and variables the view has. If it does not, `nvb_reply` answers `accepted: false` with the reason and the AI corrects itself in the same turn; after four refused answers the request is closed. The person still chooses **Use this**, **Try again** or **Discard**, and Use this is one undo step like any edit.
+
+The box tells the person when the AI is not listening yet, and what to say in the chat.
+
+### Your own model instead of MCP
+
+A host that runs its own model endpoint can answer these requests without any MCP client. The builder then shows Ask AI for everyone, and the same checks and retries apply:
+
+```ts
+import { HttpClient } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import {
+  NgxViewBuilderAiAssistService,
+  type INgxViewBuilderAiAssistAnswer,
+} from '@ngxviewbuilder/runtime';
+
+@Component({ /* the page that hosts <ngx-view-builder-designer> */ })
+export class BuilderPage {
+  private readonly http = inject(HttpClient);
+
+  constructor() {
+    // request.kind is 'expression' or 'explainExpression', request.text the person's words,
+    // request.fields what the expression may read. Your backend calls the model.
+    inject(NgxViewBuilderAiAssistService).useHandler((request) =>
+      firstValueFrom(this.http.post<INgxViewBuilderAiAssistAnswer>('/api/ai/expression', request)),
+    );
+  }
+}
+```
+
+Keep the model key on your server. The request holds no form data, but it is your call what your endpoint sends on.
+
 ## The two guarantees
 
 **It runs only while the builder is on screen.** Three things must all hold: the host configured `mcp`, the builder component is mounted, and a person paired a key. Leaving the builder disarms the API and drops the socket. Disarming is what matters: closing the socket alone would leave the surface open to anything that had captured it. A disarmed API refuses every command with `apiClosed` and every read returns `null` or empty, so a captured reference is worth nothing on a runtime page.
@@ -119,9 +199,10 @@ What it does hold, in memory only, is what it needs to route calls and enforce l
 - for ChatGPT and Codex, the anonymous conversation and user ids OpenAI sends with each call, so a pairing outlives the single call it was made on;
 - how many calls each tab made in the current hour;
 - how many browsers use each license right now (by license number), for the seat limit;
-- the license service's answer about a key, for ten minutes, so it is not asked on every connection.
+- the license service's answer about a key, for ten minutes, so it is not asked on every connection;
+- Ask AI requests until they are answered, cancelled or five minutes old.
 
-A restart clears all of it. The server's log records only connection events: a tab opened or closed, a license refused or full, with the license number and a shortened key such as `NVB-…TWN5`. Structures, data, commands and answers never appear in it.
+A restart clears all of it. The server's log records only connection events: a tab opened or closed, a license refused or full, with the license number and a shortened key such as `NVB-…TWN5`. Structures, data, commands, screenshots, Ask AI requests and answers never appear in it.
 
 Your conversation with the AI stays between you and your AI provider. The server only sees the tool calls the AI makes, while they are in transit. If even that should not leave your network, run the server yourself, as described below, and point the builder at it.
 

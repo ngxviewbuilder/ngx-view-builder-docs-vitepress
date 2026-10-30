@@ -1,0 +1,7497 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ngxviewbuilder.io/schema/view.json",
+  "title": "NGX View Builder view (1.0.0-rc.0)",
+  "description": "A view for @ngxviewbuilder/runtime: pages lay out rows of columns, each column places one element by name.",
+  "type": "object",
+  "required": [
+    "settings",
+    "pages",
+    "elements"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "settings": {
+      "type": "object",
+      "description": "View settings: width, language, render mode, variables, rules, process."
+    },
+    "header": {
+      "type": "object"
+    },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/page"
+      }
+    },
+    "elements": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/element"
+      }
+    },
+    "dataSources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/dataSource"
+      }
+    },
+    "localization": {
+      "type": "object",
+      "properties": {
+        "defaultLanguage": {
+          "type": "string"
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "texts": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "row": {
+      "type": "object",
+      "required": [
+        "columns"
+      ],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/column"
+          }
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "required": [
+        "elementRef"
+      ],
+      "description": "One cell of a row. elementRef names an element in `elements` (or in the template of the panel the row belongs to).",
+      "properties": {
+        "elementRef": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/row"
+          },
+          "description": "Children of a container element."
+        },
+        "tabRows": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/row"
+            }
+          },
+          "description": "Children of tabs, accordions and steps, per tab."
+        },
+        "fragmentRef": {
+          "type": "string"
+        },
+        "fragmentBindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "fragmentMode": {
+          "enum": [
+            "append",
+            "replace"
+          ]
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "required": [
+        "name",
+        "rows"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/row"
+          }
+        },
+        "status": {
+          "enum": [
+            "default",
+            "readonly"
+          ]
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "readOnly": {
+          "type": "boolean"
+        }
+      }
+    },
+    "validator": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "required, minlength, maxlength, min, max, pattern, email, strictoptions, custom, or a registered type."
+        },
+        "value": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Expression for a custom validator: true means valid."
+        },
+        "applyIf": {
+          "type": "string",
+          "description": "Expression: the validator runs only while it is true."
+        }
+      }
+    },
+    "option": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {},
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "dataSource": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "rest",
+            "route",
+            "local",
+            "websocket",
+            "sse"
+          ]
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "element_number": {
+      "type": "object",
+      "description": "Number input",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "number"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "inputMode": {
+          "description": "Input mode",
+          "enum": [
+            "",
+            "numeric",
+            "decimal"
+          ]
+        },
+        "valueStorageType": {
+          "description": "Store value as",
+          "enum": [
+            "number",
+            "string"
+          ]
+        },
+        "step": {
+          "description": "Step",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "visualFormatEnabled": {
+          "description": "Use visual number format",
+          "type": "boolean"
+        },
+        "visualFormatUseGrouping": {
+          "description": "Use thousands separator",
+          "type": "boolean"
+        },
+        "visualFormatLocale": {
+          "description": "Visual format locale (optional)",
+          "enum": [
+            "",
+            "en-US",
+            "en-GB",
+            "de-DE",
+            "fr-FR",
+            "es-ES",
+            "it-IT",
+            "pl-PL",
+            "lt-LT",
+            "lv-LV",
+            "et-EE",
+            "nl-NL",
+            "sv-SE",
+            "nb-NO",
+            "da-DK",
+            "fi-FI",
+            "pt-PT",
+            "pt-BR",
+            "cs-CZ",
+            "sk-SK",
+            "uk-UA",
+            "ru-RU",
+            "zh-CN",
+            "ja-JP"
+          ]
+        },
+        "visualFormatMinFractionDigits": {
+          "description": "Visual min fraction digits",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "visualFormatMaxFractionDigits": {
+          "description": "Visual max fraction digits",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "min": {
+          "description": "Min value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "max": {
+          "description": "Max value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_timePicker": {
+      "type": "object",
+      "description": "Time picker",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "timePicker"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "minuteStep": {
+          "description": "Minute step",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_slider": {
+      "type": "object",
+      "description": "Slider",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "slider"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "valueStorageType": {
+          "description": "Store value as",
+          "enum": [
+            "number",
+            "string"
+          ]
+        },
+        "step": {
+          "description": "Step",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "min": {
+          "description": "Min",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "max": {
+          "description": "Max",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "showValueLabel": {
+          "description": "Show value label",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_text": {
+      "type": "object",
+      "description": "Text input",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "text"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "autocomplete": {
+          "description": "Autocomplete",
+          "type": "string"
+        },
+        "inputMode": {
+          "description": "Input mode",
+          "enum": [
+            "",
+            "text",
+            "search",
+            "email",
+            "tel",
+            "url",
+            "numeric",
+            "decimal"
+          ]
+        },
+        "spellcheck": {
+          "description": "Spellcheck",
+          "type": "boolean"
+        },
+        "maskType": {
+          "description": "Input mask",
+          "enum": [
+            "none",
+            "phoneIntl",
+            "date",
+            "time",
+            "dateTime",
+            "digits",
+            "custom"
+          ]
+        },
+        "maskPattern": {
+          "description": "Custom mask pattern",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "minlength": {
+          "description": "Min length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "maxlength": {
+          "description": "Max length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "showMaxLengthCounter": {
+          "description": "Show max length counter",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_textarea": {
+      "type": "object",
+      "description": "Long text input",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "textarea"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "rows": {
+          "description": "Rows",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "spellcheck": {
+          "description": "Spellcheck",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "minlength": {
+          "description": "Min length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "maxlength": {
+          "description": "Max length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "showMaxLengthCounter": {
+          "description": "Show max length counter",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_phoneInput": {
+      "type": "object",
+      "description": "Phone input",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "phoneInput"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "defaultCountryCode": {
+          "description": "Default country code",
+          "enum": [
+            "LT",
+            "LV",
+            "EE",
+            "PL",
+            "DE",
+            "SE",
+            "NO",
+            "DK",
+            "FI",
+            "GB",
+            "IE",
+            "US"
+          ]
+        },
+        "autocomplete": {
+          "description": "Autocomplete",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "maxlength": {
+          "description": "Max length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "allowedCountryCodes": {
+          "description": "Allowed country codes",
+          "type": "string"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_richText": {
+      "type": "object",
+      "description": "Rich text editor",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "richText"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "htmlContent": {
+          "description": "HTML content"
+        },
+        "showWordCount": {
+          "description": "Show word count. Adds a words and characters line under the editor.",
+          "type": "boolean"
+        },
+        "toolbarTools": {
+          "description": "Toolbar tools. Left alone, the editor shows the basic toolbar. Tick a tool to add it, untick one to hide it.",
+          "enum": [
+            "undo",
+            "redo",
+            "heading",
+            "font",
+            "size",
+            "lineHeight",
+            "inlineCode",
+            "subscript",
+            "superscript",
+            "bold",
+            "italic",
+            "underline",
+            "strikeThrough",
+            "orderedList",
+            "unorderedList",
+            "taskList",
+            "indent",
+            "outdent",
+            "blockquote",
+            "horizontalRule",
+            "textColor",
+            "highlight",
+            "alignLeft",
+            "alignCenter",
+            "alignRight",
+            "alignJustify",
+            "link",
+            "image",
+            "video",
+            "embed",
+            "table",
+            "specialCharacter",
+            "findReplace",
+            "sourceCode",
+            "unlink",
+            "clearFormatting"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        }
+      }
+    },
+    "element_customHtml": {
+      "type": "object",
+      "description": "HTML",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "customHtml"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "htmlTemplate": {
+          "description": "HTML template (inline)"
+        },
+        "htmlTemplateName": {
+          "description": "HTML template ref"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        }
+      }
+    },
+    "element_richTextViewer": {
+      "type": "object",
+      "description": "HTML viewer",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "richTextViewer"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "htmlSourcePath": {
+          "description": "HTML source path",
+          "type": "string"
+        },
+        "htmlContent": {
+          "description": "Fallback HTML content"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        }
+      }
+    },
+    "element_datepicker": {
+      "type": "object",
+      "description": "Date picker",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "datepicker"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "pickerMode": {
+          "description": "Picker mode",
+          "enum": [
+            "date",
+            "datetime"
+          ]
+        },
+        "format": {
+          "description": "Output format",
+          "enum": [
+            "",
+            "YYYY-MM-DD",
+            "DD/MM/YYYY",
+            "MM/DD/YYYY",
+            "DD.MM.YYYY",
+            "YYYY/MM/DD",
+            "custom"
+          ]
+        },
+        "customFormat": {
+          "description": "Custom output format",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "minValue": {
+          "description": "Min value (optional)",
+          "type": "string"
+        },
+        "maxValue": {
+          "description": "Max value (optional)",
+          "type": "string"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_dateRange": {
+      "type": "object",
+      "description": "Date range",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "dateRange"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "format": {
+          "description": "Output format",
+          "enum": [
+            "",
+            "YYYY-MM-DD",
+            "DD/MM/YYYY",
+            "MM/DD/YYYY",
+            "DD.MM.YYYY",
+            "YYYY/MM/DD",
+            "custom"
+          ]
+        },
+        "customFormat": {
+          "description": "Custom output format",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "minValue": {
+          "description": "Min value (optional)",
+          "type": "string"
+        },
+        "maxValue": {
+          "description": "Max value (optional)",
+          "type": "string"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_button": {
+      "type": "object",
+      "description": "Button",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "button"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "text": {
+          "description": "Button text",
+          "type": "string"
+        },
+        "badge": {
+          "description": "Badge",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "loading": {
+          "description": "Loading",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "menuActions": {
+          "description": "Dropdown actions"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "solid",
+            "outline",
+            "text"
+          ]
+        },
+        "iconOnly": {
+          "description": "Icon only",
+          "type": "boolean"
+        },
+        "size": {
+          "description": "Size",
+          "enum": [
+            "small",
+            "normal",
+            "large"
+          ]
+        },
+        "tone": {
+          "description": "Tone",
+          "enum": [
+            "primary",
+            "neutral",
+            "success",
+            "info",
+            "warning",
+            "risk"
+          ]
+        },
+        "color": {
+          "description": "Color",
+          "type": "string"
+        },
+        "textColor": {
+          "description": "Text color",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Icon",
+          "type": "string"
+        },
+        "iconPosition": {
+          "description": "Icon position",
+          "enum": [
+            "left",
+            "right",
+            "top",
+            "bottom"
+          ]
+        },
+        "iconSize": {
+          "description": "Icon size",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "iconColor": {
+          "description": "Icon color",
+          "type": "string"
+        }
+      }
+    },
+    "element_navMenu": {
+      "type": "object",
+      "description": "Navigation menu",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "navMenu"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "items": {
+          "description": "Menu items"
+        },
+        "selectionPath": {
+          "description": "Switch screens with field",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "itemsPath": {
+          "description": "Items path",
+          "type": "string"
+        },
+        "sourceItemsPosition": {
+          "description": "Server items position",
+          "enum": [
+            "after",
+            "before"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "orientation": {
+          "description": "Orientation",
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
+        },
+        "showIcons": {
+          "description": "Show icons",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_selectButton": {
+      "type": "object",
+      "description": "Select button",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "selectButton"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "multiple": {
+          "description": "Multiple",
+          "type": "boolean"
+        },
+        "allowEmpty": {
+          "description": "Allow empty",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "strictOptions": {
+          "description": "Strict options",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "filterIfEqual": {
+          "description": "Filter if equal",
+          "type": "string"
+        },
+        "filterIfNotEqual": {
+          "description": "Filter if not equal",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "buttons",
+            "segmented"
+          ]
+        },
+        "orientation": {
+          "description": "Orientation",
+          "enum": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        "size": {
+          "description": "Size",
+          "enum": [
+            "small",
+            "normal",
+            "large"
+          ]
+        },
+        "tone": {
+          "description": "Tone",
+          "enum": [
+            "primary",
+            "neutral",
+            "success",
+            "info",
+            "warning",
+            "risk"
+          ]
+        },
+        "color": {
+          "description": "Color",
+          "type": "string"
+        },
+        "textColor": {
+          "description": "Text color",
+          "type": "string"
+        },
+        "showSelectedIcon": {
+          "description": "Show selected icon",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_radio": {
+      "type": "object",
+      "description": "Radio input",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "radio"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "strictOptions": {
+          "description": "Strict options",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "filterIfEqual": {
+          "description": "Filter if equal",
+          "type": "string"
+        },
+        "filterIfNotEqual": {
+          "description": "Filter if not equal",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "showInline": {
+          "description": "Show inline",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_checkbox": {
+      "type": "object",
+      "description": "Checkbox group",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "checkbox"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "strictOptions": {
+          "description": "Strict options",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "filterIfEqual": {
+          "description": "Filter if equal",
+          "type": "string"
+        },
+        "filterIfNotEqual": {
+          "description": "Filter if not equal",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "showInline": {
+          "description": "Show inline",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_singleCheckbox": {
+      "type": "object",
+      "description": "Single checkbox",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "singleCheckbox"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "checkboxLabel": {
+          "description": "Checkbox label",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_toggleSwitch": {
+      "type": "object",
+      "description": "Toggle switch",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "toggleSwitch"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "toggleMode": {
+          "description": "Mode",
+          "enum": [
+            "checkbox",
+            "toggle"
+          ]
+        },
+        "trueValue": {
+          "description": "True value",
+          "type": "string"
+        },
+        "falseValue": {
+          "description": "False value",
+          "type": "string"
+        },
+        "trueLabel": {
+          "description": "True label",
+          "type": "string"
+        },
+        "falseLabel": {
+          "description": "False label",
+          "type": "string"
+        },
+        "hideLabel": {
+          "description": "Hide label",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "shape": {
+          "description": "Shape",
+          "enum": [
+            "round",
+            "square"
+          ]
+        }
+      }
+    },
+    "element_dynamicTable": {
+      "type": "object",
+      "description": "Dynamic table",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "dynamicTable"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "columns": {
+          "description": "Columns"
+        },
+        "emptyMessage": {
+          "description": "Empty message",
+          "type": "string"
+        },
+        "addRowButtonText": {
+          "description": "Add row button text",
+          "type": "string"
+        },
+        "confirmDeleteTitle": {
+          "description": "Delete confirm title",
+          "type": "string"
+        },
+        "confirmDeleteMessage": {
+          "description": "Delete confirm message",
+          "type": "string"
+        },
+        "confirmDeleteConfirmLabel": {
+          "description": "Delete confirm button text",
+          "type": "string"
+        },
+        "confirmDeleteCancelLabel": {
+          "description": "Delete cancel button text",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "itemsPath": {
+          "description": "Items path",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "disallowAddRows": {
+          "description": "Disallow adding rows",
+          "type": "boolean"
+        },
+        "maxRows": {
+          "description": "Max rows",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "disallowDeleteRows": {
+          "description": "Disallow deleting rows",
+          "type": "boolean"
+        },
+        "confirmRowDeletion": {
+          "description": "Confirm row deletion",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "hideRowIf": {
+          "description": "Hide row if",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "disallowAddRowsIf": {
+          "description": "Disallow adding rows if",
+          "type": "string"
+        },
+        "disallowDeleteRowsIf": {
+          "description": "Disallow deleting rows if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        }
+      }
+    },
+    "element_table": {
+      "type": "object",
+      "description": "Table",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "table"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "emptyMessage": {
+          "description": "Empty message",
+          "type": "string"
+        },
+        "loadingLabel": {
+          "description": "Loading label",
+          "type": "string"
+        },
+        "quickSearchPlaceholder": {
+          "description": "Quick search placeholder",
+          "type": "string"
+        },
+        "columnSettingsDialogTitle": {
+          "description": "Column settings dialog title",
+          "type": "string"
+        },
+        "selectAllLabel": {
+          "description": "Select all label",
+          "type": "string"
+        },
+        "selectLabel": {
+          "description": "Select label",
+          "type": "string"
+        },
+        "selectRowLabel": {
+          "description": "Select row label",
+          "type": "string"
+        },
+        "selectionActionsLabel": {
+          "description": "Selection actions label",
+          "type": "string"
+        },
+        "expandLabel": {
+          "description": "Expand label",
+          "type": "string"
+        },
+        "collapseLabel": {
+          "description": "Collapse label",
+          "type": "string"
+        },
+        "expandedEmptyMessage": {
+          "description": "Expanded empty message",
+          "type": "string"
+        },
+        "detailsPanelTitle": {
+          "description": "Details panel title",
+          "type": "string"
+        },
+        "prevLabel": {
+          "description": "Prev label",
+          "type": "string"
+        },
+        "nextLabel": {
+          "description": "Next label",
+          "type": "string"
+        },
+        "actionsLabel": {
+          "description": "Actions label",
+          "type": "string"
+        },
+        "showActionsHeaderLabel": {
+          "description": "Show actions header label",
+          "type": "boolean"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "tableItemsPath": {
+          "description": "Items path (optional)",
+          "type": "string"
+        },
+        "lazyLoad": {
+          "description": "Lazy load",
+          "type": "boolean"
+        },
+        "params": {
+          "description": "Request params"
+        },
+        "tableTotalPath": {
+          "description": "Total path (lazy)",
+          "type": "string"
+        },
+        "orderClause": {
+          "description": "Order clause",
+          "type": "string"
+        },
+        "orderDirection": {
+          "description": "Order direction",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "quickSearchParamName": {
+          "description": "Quick search param name",
+          "type": "string"
+        },
+        "quickSearchCondition": {
+          "description": "Quick search condition",
+          "enum": [
+            "%-%",
+            "!%-%",
+            "%-",
+            "-%",
+            "=",
+            "!="
+          ]
+        },
+        "quickSearchCaseMode": {
+          "description": "Quick search case mode",
+          "enum": [
+            "caseInsensitiveLatin",
+            "caseSensitive",
+            "uppercase",
+            "lowercase"
+          ]
+        },
+        "searchDebounceMs": {
+          "description": "Quick search debounce (ms)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "detailedSearchCaseMode": {
+          "description": "Detailed search case mode",
+          "enum": [
+            "caseInsensitiveLatin",
+            "caseSensitive",
+            "uppercase",
+            "lowercase"
+          ]
+        },
+        "savedFiltersDataSourceName": {
+          "description": "Saved filters datasource"
+        },
+        "savedFiltersItemsPath": {
+          "description": "Saved filters items path",
+          "type": "string"
+        },
+        "saveFilterDataSourceName": {
+          "description": "Save filter datasource"
+        },
+        "deleteFilterDataSourceName": {
+          "description": "Delete filter datasource"
+        },
+        "savedFilterIdKey": {
+          "description": "Saved filter id key",
+          "type": "string"
+        },
+        "savedFilterNameKey": {
+          "description": "Saved filter name key",
+          "type": "string"
+        },
+        "savedFilterDescriptionKey": {
+          "description": "Saved filter description key",
+          "type": "string"
+        },
+        "savedFilterCodeKey": {
+          "description": "Saved filter code key",
+          "type": "string"
+        },
+        "savedFilterPayloadKey": {
+          "description": "Saved filter payload key",
+          "type": "string"
+        },
+        "columnSettingsStorageKey": {
+          "description": "Column settings storage key",
+          "type": "string"
+        },
+        "columnSettingsDataSourceName": {
+          "description": "Column settings datasource"
+        },
+        "columnSettingsDataSourcePath": {
+          "description": "Column settings datasource path",
+          "type": "string"
+        },
+        "saveColumnSettingsDataSourceName": {
+          "description": "Save column settings datasource"
+        },
+        "resetColumnSettingsDataSourceName": {
+          "description": "Reset column settings datasource"
+        },
+        "expandedItemsPath": {
+          "description": "Expanded rows path",
+          "type": "string"
+        },
+        "expandedDataSourceName": {
+          "description": "Expanded datasource"
+        },
+        "expandedDataSourceItemsPath": {
+          "description": "Expanded datasource items path",
+          "type": "string"
+        },
+        "inlineEditSaveDataSourceName": {
+          "description": "Inline save datasource"
+        },
+        "headerMenuItemsPath": {
+          "description": "Header dropdown items path",
+          "type": "string"
+        },
+        "headerMenuDataSourceName": {
+          "description": "Header dropdown datasource"
+        },
+        "headerMenuDataSourceItemsPath": {
+          "description": "Header dropdown datasource items path",
+          "type": "string"
+        },
+        "headerMenuLabelKey": {
+          "description": "Header dropdown label key",
+          "type": "string"
+        },
+        "headerMenuValueKey": {
+          "description": "Header dropdown value key",
+          "type": "string"
+        },
+        "showHeaderControls": {
+          "description": "Show header controls",
+          "type": "boolean"
+        },
+        "showQuickSearch": {
+          "description": "Show quick search",
+          "type": "boolean"
+        },
+        "quickSearchOnType": {
+          "description": "Search while typing",
+          "type": "boolean"
+        },
+        "showDetailedSearch": {
+          "description": "Show detailed search",
+          "type": "boolean"
+        },
+        "showColumnSettings": {
+          "description": "Show column settings",
+          "type": "boolean"
+        },
+        "columnSettingsMode": {
+          "description": "Column settings save mode",
+          "enum": [
+            "none",
+            "localStorage",
+            "dataSource",
+            "host"
+          ]
+        },
+        "showExport": {
+          "description": "Show export buttons",
+          "type": "boolean"
+        },
+        "exportUseColumnPicker": {
+          "description": "Export column picker dialog",
+          "type": "boolean"
+        },
+        "exportFileName": {
+          "description": "Export file name",
+          "type": "string"
+        },
+        "exportAllPageSize": {
+          "description": "Export all page size",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "enableSavedFilters": {
+          "description": "Enable saved filters",
+          "type": "boolean"
+        },
+        "savedFiltersMode": {
+          "description": "Saved filters mode",
+          "enum": [
+            "localStorage",
+            "dataSource",
+            "host"
+          ]
+        },
+        "enableSelection": {
+          "description": "Enable multi select",
+          "type": "boolean"
+        },
+        "selectionKey": {
+          "description": "Selection key path",
+          "type": "string"
+        },
+        "autoSelectCondition": {
+          "description": "Auto select if",
+          "type": "string"
+        },
+        "expandableRows": {
+          "description": "Expandable rows",
+          "type": "boolean"
+        },
+        "expandedDisplayMode": {
+          "description": "Expanded display mode",
+          "enum": [
+            "sidePanel",
+            "inline"
+          ]
+        },
+        "rowClickOpensDetails": {
+          "description": "Open details on row click",
+          "type": "boolean"
+        },
+        "showExpandChevron": {
+          "description": "Show expand chevron in first column",
+          "type": "boolean"
+        },
+        "alwaysShowExpandChevron": {
+          "description": "Always show expand chevron",
+          "type": "boolean"
+        },
+        "enableInlineEdit": {
+          "description": "Enable inline edit",
+          "type": "boolean"
+        },
+        "inlineEditStartMode": {
+          "description": "Inline edit start mode",
+          "enum": [
+            "action",
+            "doubleClick"
+          ]
+        },
+        "inlineEditCancelOnReload": {
+          "description": "Cancel edit on reload",
+          "type": "boolean"
+        },
+        "paginator": {
+          "description": "Paginator",
+          "type": "boolean"
+        },
+        "pageSize": {
+          "description": "Page size",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "showPageSizeSelector": {
+          "description": "Show page size selector",
+          "type": "boolean"
+        },
+        "pageSizeOptions": {
+          "description": "Page size options",
+          "type": "string"
+        },
+        "virtualScroll": {
+          "description": "Virtual scroll",
+          "type": "boolean"
+        },
+        "virtualScrollViewportHeight": {
+          "description": "Virtual scroll viewport height",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "virtualScrollRowHeight": {
+          "description": "Virtual row height",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "virtualScrollBuffer": {
+          "description": "Virtual buffer rows",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "headerMenuEnabled": {
+          "description": "Header dropdown",
+          "type": "boolean"
+        },
+        "headerMenuPlaceholder": {
+          "description": "Header dropdown placeholder",
+          "type": "string"
+        },
+        "headerMenuOptions": {
+          "description": "Header dropdown static options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "columnsConfig": {
+          "description": "Columns"
+        },
+        "expandedColumnsConfig": {
+          "description": "Expanded columns"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "rowActions": {
+          "description": "Row actions"
+        },
+        "rowActionVisibilityPath": {
+          "description": "Row action visibility path",
+          "type": "string"
+        },
+        "rowClickActions": {
+          "description": "Row click actions"
+        },
+        "rowExpandActions": {
+          "description": "Row expand actions"
+        },
+        "expandedRowActions": {
+          "description": "Expanded row actions"
+        },
+        "selectionActions": {
+          "description": "Selection actions"
+        },
+        "headerActions": {
+          "description": "Header actions"
+        },
+        "headerMenuActions": {
+          "description": "Header dropdown actions"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "responsiveMode": {
+          "description": "Responsive mode",
+          "enum": [
+            "auto",
+            "stack"
+          ]
+        },
+        "stickyHeader": {
+          "description": "Sticky header",
+          "type": "boolean"
+        },
+        "flatHeaderSurface": {
+          "description": "Flat header surface",
+          "type": "boolean"
+        },
+        "flatFooterSurface": {
+          "description": "Flat footer surface",
+          "type": "boolean"
+        },
+        "tableStyle": {
+          "description": "Table style",
+          "enum": [
+            "default",
+            "grid",
+            "striped"
+          ]
+        },
+        "rowHover": {
+          "description": "Row hover",
+          "type": "boolean"
+        },
+        "headerCenterElementsPosition": {
+          "description": "Header added elements position",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "headerActionsPosition": {
+          "description": "Header actions position",
+          "enum": [
+            "start",
+            "center",
+            "end"
+          ]
+        },
+        "headerActionsDisplayMode": {
+          "description": "Header actions display",
+          "enum": [
+            "buttons",
+            "dropdown"
+          ]
+        },
+        "rowActionsDisplayMode": {
+          "description": "Row actions display",
+          "enum": [
+            "dropdown",
+            "iconButtons",
+            "buttons"
+          ]
+        },
+        "rowActionsDropdownButtonStyle": {
+          "description": "Row actions dropdown button style",
+          "enum": [
+            "borderless",
+            "default"
+          ]
+        },
+        "paginatorStyle": {
+          "description": "Paginator style",
+          "enum": [
+            "default",
+            "compact",
+            "segmented"
+          ]
+        },
+        "paginatorVariant": {
+          "description": "Paginator variant",
+          "enum": [
+            "full",
+            "pager",
+            "numbers",
+            "simple"
+          ]
+        },
+        "paginatorAlign": {
+          "description": "Paginator align",
+          "enum": [
+            "end",
+            "center",
+            "start"
+          ]
+        },
+        "paginatorMaxButtons": {
+          "description": "Paginator max buttons",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "headerTemplate": {
+          "description": "Header center template (HTML)",
+          "type": "string"
+        },
+        "rowTemplateName": {
+          "description": "Row template ref"
+        },
+        "rowTemplate": {
+          "description": "Row template (HTML)",
+          "type": "string"
+        },
+        "expandedTemplate": {
+          "description": "Expanded content template (HTML)",
+          "type": "string"
+        },
+        "selectionItemTemplate": {
+          "description": "Selected item template",
+          "type": "string"
+        }
+      }
+    },
+    "element_listGrid": {
+      "type": "object",
+      "description": "List / Grid",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "listGrid"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "emptyMessage": {
+          "description": "Empty message",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "itemsPath": {
+          "description": "Items path",
+          "type": "string"
+        },
+        "lazyLoad": {
+          "description": "Lazy load",
+          "type": "boolean"
+        },
+        "totalPath": {
+          "description": "Total count path",
+          "type": "string"
+        },
+        "quickSearchParamName": {
+          "description": "Quick search param name",
+          "type": "string"
+        },
+        "quickSearchCondition": {
+          "description": "Quick search condition",
+          "enum": [
+            "%-%",
+            "!%-%",
+            "%-",
+            "-%",
+            "=",
+            "!="
+          ]
+        },
+        "quickSearchCaseMode": {
+          "description": "Quick search case mode",
+          "enum": [
+            "caseInsensitiveLatin",
+            "caseSensitive",
+            "uppercase",
+            "lowercase"
+          ]
+        },
+        "searchDebounceMs": {
+          "description": "Quick search debounce (ms)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "sortField": {
+          "description": "Sort field",
+          "type": "string"
+        },
+        "orderDirection": {
+          "description": "Initial direction",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "layout": {
+          "description": "Layout",
+          "enum": [
+            "grid",
+            "list"
+          ]
+        },
+        "gridColumns": {
+          "description": "Columns",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "gap": {
+          "description": "Gap"
+        },
+        "minCardWidth": {
+          "description": "Min card width"
+        },
+        "cardTemplateName": {
+          "description": "Card template ref"
+        },
+        "cardTemplate": {
+          "description": "Card template (HTML)",
+          "type": "string"
+        },
+        "paginator": {
+          "description": "Pagination",
+          "type": "boolean"
+        },
+        "infinityScroll": {
+          "description": "Infinity scroll",
+          "type": "boolean"
+        },
+        "pageSize": {
+          "description": "Page size",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "paginatorStyle": {
+          "description": "Paginator style",
+          "enum": [
+            "default",
+            "compact",
+            "segmented"
+          ]
+        },
+        "paginatorVariant": {
+          "description": "Paginator variant",
+          "enum": [
+            "full",
+            "pager",
+            "numbers",
+            "simple"
+          ]
+        },
+        "paginatorMaxButtons": {
+          "description": "Paginator max buttons",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "showPageSizeSelector": {
+          "description": "Show page size selector",
+          "type": "boolean"
+        },
+        "pageSizeOptions": {
+          "description": "Page size options",
+          "type": "string"
+        },
+        "showRecordCount": {
+          "description": "Show record count",
+          "type": "boolean"
+        },
+        "stickyHeader": {
+          "description": "Sticky header",
+          "type": "boolean"
+        },
+        "showQuickSearch": {
+          "description": "Show quick search",
+          "type": "boolean"
+        },
+        "quickSearchPlaceholder": {
+          "description": "Quick search placeholder",
+          "type": "string"
+        },
+        "showSortControl": {
+          "description": "Show sort control",
+          "type": "boolean"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_panel": {
+      "type": "object",
+      "description": "Panel",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "panel"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "maxHeight": {
+          "description": "Max height"
+        },
+        "panelPadding": {
+          "description": "Padding"
+        },
+        "mobilePadding": {
+          "description": "Mobile padding"
+        },
+        "panelRadius": {
+          "description": "Radius"
+        },
+        "panelShadow": {
+          "description": "Shadow",
+          "type": "string"
+        },
+        "showBorder": {
+          "description": "Show border",
+          "type": "boolean"
+        },
+        "panelBorderWidth": {
+          "description": "Border width"
+        },
+        "panelBorderColor": {
+          "description": "Border color",
+          "type": "string"
+        },
+        "panelBackgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "sectionMode": {
+          "description": "Use as page section. Full width band with its own background, content centred at a readable width. Build web pages from sections, best with the Canvas render mode.",
+          "type": "boolean"
+        },
+        "sectionTheme": {
+          "description": "Section colours",
+          "enum": [
+            "light",
+            "dark"
+          ]
+        },
+        "sectionContentWidth": {
+          "description": "Content width. Maximum width of the content inside the band. Default 1120px."
+        },
+        "sectionPaddingY": {
+          "description": "Space above and below. Default grows with the screen: 48px on phones up to 96px on wide screens."
+        },
+        "sectionMinHeight": {
+          "description": "Minimum height. For a hero band, e.g. 480px or 80vh."
+        },
+        "sectionVerticalAlign": {
+          "description": "Vertical position",
+          "enum": [
+            "start",
+            "center",
+            "end"
+          ]
+        },
+        "backgroundImage": {
+          "description": "Background image"
+        },
+        "backgroundOverlayColor": {
+          "description": "Image overlay. A colour over the image keeps text readable, e.g. rgba(0, 0, 0, 0.45).",
+          "type": "string"
+        },
+        "titleUnderline": {
+          "description": "Title underline",
+          "type": "boolean"
+        },
+        "titleUnderlineColor": {
+          "description": "Title underline color",
+          "type": "string"
+        },
+        "titleUnderlineWidth": {
+          "description": "Title underline width",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "contentJustify": {
+          "description": "Content justify",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly"
+          ]
+        },
+        "contentAlign": {
+          "description": "Content align",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ]
+        },
+        "contentGap": {
+          "description": "Content gap"
+        },
+        "headerTemplateName": {
+          "description": "Header template ref"
+        },
+        "headerTemplate": {
+          "description": "Header template (HTML)",
+          "type": "string"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_objectPanel": {
+      "type": "object",
+      "description": "Object panel",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "objectPanel"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "hideHeader": {
+          "description": "Hide header",
+          "type": "boolean"
+        },
+        "showQuickSearch": {
+          "description": "Show quick search",
+          "type": "boolean"
+        },
+        "quickSearchPlaceholder": {
+          "description": "Quick search placeholder",
+          "type": "string"
+        },
+        "noMatchesMessage": {
+          "description": "No matches text",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "itemsFilter": {
+          "description": "Show rows if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "panelPadding": {
+          "description": "Padding"
+        },
+        "mobilePadding": {
+          "description": "Mobile padding"
+        },
+        "panelRadius": {
+          "description": "Radius"
+        },
+        "panelShadow": {
+          "description": "Shadow",
+          "type": "string"
+        },
+        "panelBorderWidth": {
+          "description": "Border width"
+        },
+        "panelBorderColor": {
+          "description": "Border color",
+          "type": "string"
+        },
+        "panelBackgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "contentJustify": {
+          "description": "Content justify",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly"
+          ]
+        },
+        "contentAlign": {
+          "description": "Content align",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ]
+        },
+        "contentGap": {
+          "description": "Content gap"
+        },
+        "headerTemplateName": {
+          "description": "Header template ref"
+        },
+        "headerTemplate": {
+          "description": "Header template (HTML)",
+          "type": "string"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_splitter": {
+      "type": "object",
+      "description": "Splitter",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "splitter"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "panels": {
+          "description": "Panels",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "stateful": {
+          "description": "Save state (localStorage)",
+          "type": "boolean"
+        },
+        "stateKey": {
+          "description": "State key",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "orientation": {
+          "description": "Orientation",
+          "enum": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        "showPanelHeaders": {
+          "description": "Show panel headers",
+          "type": "boolean"
+        },
+        "allowResize": {
+          "description": "Allow resize",
+          "type": "boolean"
+        },
+        "gutterSize": {
+          "description": "Gutter size (px)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "minPanelSize": {
+          "description": "Min panel size (%)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_emptyBlock": {
+      "type": "object",
+      "description": "Empty block",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "emptyBlock"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "blockType": {
+          "description": "Block type",
+          "enum": [
+            "layout",
+            "form"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "minHeight": {
+          "description": "Min height"
+        },
+        "height": {
+          "description": "Height"
+        },
+        "maxHeight": {
+          "description": "Max height"
+        },
+        "overflow": {
+          "description": "Overflow",
+          "enum": [
+            "visible",
+            "auto",
+            "hidden",
+            "scroll",
+            "clip"
+          ]
+        },
+        "panelPadding": {
+          "description": "Padding"
+        },
+        "mobilePadding": {
+          "description": "Mobile padding"
+        },
+        "panelRadius": {
+          "description": "Radius"
+        },
+        "panelShadow": {
+          "description": "Shadow",
+          "type": "string"
+        },
+        "panelBorderWidth": {
+          "description": "Border width"
+        },
+        "panelBorderStyle": {
+          "description": "Border style",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double"
+          ]
+        },
+        "panelBorderColor": {
+          "description": "Border color",
+          "type": "string"
+        },
+        "panelBackgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "backgroundImage": {
+          "description": "Background image"
+        },
+        "backgroundPosition": {
+          "description": "Background position",
+          "type": "string"
+        },
+        "backgroundSize": {
+          "description": "Background size",
+          "enum": [
+            "cover",
+            "contain",
+            "auto",
+            "100% 100%"
+          ]
+        },
+        "backgroundRepeat": {
+          "description": "Background repeat",
+          "enum": [
+            "no-repeat",
+            "repeat",
+            "repeat-x",
+            "repeat-y"
+          ]
+        },
+        "backgroundOverlayColor": {
+          "description": "Background overlay color",
+          "type": "string"
+        },
+        "backgroundBlendMode": {
+          "description": "Background blend mode",
+          "enum": [
+            "normal",
+            "multiply",
+            "screen",
+            "overlay",
+            "darken",
+            "lighten"
+          ]
+        },
+        "opacity": {
+          "description": "Opacity",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "backdropFilter": {
+          "description": "Backdrop filter",
+          "type": "string"
+        },
+        "contentDisplay": {
+          "description": "Display",
+          "enum": [
+            "flex",
+            "grid"
+          ]
+        },
+        "flexDirection": {
+          "description": "Flex direction",
+          "enum": [
+            "row",
+            "column"
+          ]
+        },
+        "contentWrap": {
+          "description": "Content wrap",
+          "enum": [
+            "nowrap",
+            "wrap",
+            "wrap-reverse"
+          ]
+        },
+        "contentJustify": {
+          "description": "Content justify",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly"
+          ]
+        },
+        "contentAlign": {
+          "description": "Content align",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ]
+        },
+        "contentAlignContent": {
+          "description": "Content align content",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ]
+        },
+        "contentGap": {
+          "description": "Content gap"
+        },
+        "contentRowGap": {
+          "description": "Content row gap"
+        },
+        "contentColumnGap": {
+          "description": "Content column gap"
+        },
+        "gridTemplateColumns": {
+          "description": "Grid columns",
+          "type": "string"
+        },
+        "gridTemplateRows": {
+          "description": "Grid rows",
+          "type": "string"
+        },
+        "gridAutoRows": {
+          "description": "Grid auto rows",
+          "type": "string"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_dynamicPanel": {
+      "type": "object",
+      "description": "Dynamic panel",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "dynamicPanel"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "hideHeader": {
+          "description": "Hide header",
+          "type": "boolean"
+        },
+        "showQuickSearch": {
+          "description": "Show quick search",
+          "type": "boolean"
+        },
+        "addRowButtonText": {
+          "description": "Add row button text",
+          "type": "string"
+        },
+        "removeRowButtonText": {
+          "description": "Remove row button text",
+          "type": "string"
+        },
+        "emptyMessage": {
+          "description": "Empty message",
+          "type": "string"
+        },
+        "quickSearchPlaceholder": {
+          "description": "Quick search placeholder",
+          "type": "string"
+        },
+        "noMatchesMessage": {
+          "description": "No matches text",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "disallowAddRows": {
+          "description": "Disallow adding rows",
+          "type": "boolean"
+        },
+        "disallowDeleteRows": {
+          "description": "Disallow deleting rows",
+          "type": "boolean"
+        },
+        "maxRows": {
+          "description": "Max rows",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "confirmRowDeletion": {
+          "description": "Confirm row deletion",
+          "type": "boolean"
+        },
+        "confirmDeleteTitle": {
+          "description": "Delete confirm title",
+          "type": "string"
+        },
+        "confirmDeleteMessage": {
+          "description": "Delete confirm message",
+          "type": "string"
+        },
+        "confirmDeleteConfirmLabel": {
+          "description": "Delete confirm button text",
+          "type": "string"
+        },
+        "confirmDeleteCancelLabel": {
+          "description": "Delete cancel button text",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "itemsFilter": {
+          "description": "Show rows if",
+          "type": "string"
+        },
+        "disallowAddRowsIf": {
+          "description": "Disallow adding rows if",
+          "type": "string"
+        },
+        "disallowDeleteRowsIf": {
+          "description": "Disallow deleting rows if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "panelPadding": {
+          "description": "Padding"
+        },
+        "mobilePadding": {
+          "description": "Mobile padding"
+        },
+        "panelRadius": {
+          "description": "Radius"
+        },
+        "panelShadow": {
+          "description": "Shadow",
+          "type": "string"
+        },
+        "panelBorderWidth": {
+          "description": "Border width"
+        },
+        "panelBorderColor": {
+          "description": "Border color",
+          "type": "string"
+        },
+        "panelBackgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "contentJustify": {
+          "description": "Content justify",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly"
+          ]
+        },
+        "contentAlign": {
+          "description": "Content align",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ]
+        },
+        "contentGap": {
+          "description": "Content gap"
+        },
+        "headerTemplateName": {
+          "description": "Header template ref"
+        },
+        "headerTemplate": {
+          "description": "Header template (HTML)",
+          "type": "string"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_tabs": {
+      "type": "object",
+      "description": "Tabs",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "tabs"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "showContent": {
+          "description": "Show content",
+          "type": "boolean"
+        },
+        "itemSourceMode": {
+          "description": "Tabs source",
+          "enum": [
+            "manual",
+            "dataSource"
+          ]
+        },
+        "tabs": {
+          "description": "Tabs",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "dataSource": {
+          "description": "Tabs data source"
+        },
+        "tabsDataPath": {
+          "description": "Tabs path",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "activeTabDataPath": {
+          "description": "Active tab data path",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fullWidthTabs": {
+          "description": "Full width tabs",
+          "type": "boolean"
+        },
+        "tabsPosition": {
+          "description": "Tabs position",
+          "enum": [
+            "top",
+            "left",
+            "right"
+          ]
+        },
+        "tabsVariant": {
+          "description": "Tabs variant",
+          "enum": [
+            "buttons",
+            "header",
+            "underline"
+          ]
+        },
+        "tabTemplateName": {
+          "description": "Tab template"
+        },
+        "tabTemplate": {
+          "description": "Tab template (inline HTML)"
+        }
+      }
+    },
+    "element_dialog": {
+      "type": "object",
+      "description": "Dialog",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "dialog"
+        },
+        "label": {
+          "description": "Title",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "showTriggerButton": {
+          "description": "Show trigger button",
+          "type": "boolean"
+        },
+        "dialogMode": {
+          "description": "Dialog mode",
+          "enum": [
+            "modal",
+            "fullscreen"
+          ]
+        },
+        "initiallyOpen": {
+          "description": "Initially open",
+          "type": "boolean"
+        },
+        "closeOnBackdrop": {
+          "description": "Close on backdrop",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "openDataPath": {
+          "description": "Open state path",
+          "type": "string"
+        },
+        "stateDataPath": {
+          "description": "Dialog state path",
+          "type": "string"
+        },
+        "openIf": {
+          "description": "Open If",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "triggerText": {
+          "description": "Trigger text",
+          "type": "string"
+        },
+        "triggerIcon": {
+          "description": "Trigger icon",
+          "type": "string"
+        },
+        "triggerIconPosition": {
+          "description": "Trigger icon position",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "triggerIconOnly": {
+          "description": "Trigger icon only",
+          "type": "boolean"
+        },
+        "triggerAlign": {
+          "description": "Trigger align",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "triggerVariant": {
+          "description": "Trigger variant",
+          "enum": [
+            "solid",
+            "outline",
+            "text"
+          ]
+        },
+        "triggerColor": {
+          "description": "Trigger color",
+          "type": "string"
+        },
+        "triggerTextColor": {
+          "description": "Trigger text color",
+          "type": "string"
+        },
+        "triggerWidth": {
+          "description": "Trigger width"
+        },
+        "triggerMobileWidth": {
+          "description": "Trigger mobile width"
+        },
+        "showCloseButton": {
+          "description": "Show close button",
+          "type": "boolean"
+        },
+        "allowFullscreenToggle": {
+          "description": "Allow fullscreen toggle",
+          "type": "boolean"
+        },
+        "dialogWidth": {
+          "description": "Dialog width"
+        },
+        "dialogMaxWidth": {
+          "description": "Dialog max width"
+        },
+        "dialogHeight": {
+          "description": "Dialog height"
+        },
+        "headerTemplateName": {
+          "description": "Header template ref"
+        },
+        "headerTemplate": {
+          "description": "Header template (HTML)",
+          "type": "string"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_select": {
+      "type": "object",
+      "description": "Dropdown",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "select"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "showSearch": {
+          "description": "Show search",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "strictOptions": {
+          "description": "Strict options",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "filterIfEqual": {
+          "description": "Filter if equal",
+          "type": "string"
+        },
+        "filterIfNotEqual": {
+          "description": "Filter if not equal",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "optionTemplateName": {
+          "description": "Option template"
+        },
+        "optionTemplate": {
+          "description": "Option template (inline HTML)",
+          "type": "string"
+        }
+      }
+    },
+    "element_autocomplete": {
+      "type": "object",
+      "description": "Autocomplete",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "autocomplete"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "forceSelection": {
+          "description": "Force selection",
+          "type": "boolean"
+        },
+        "maxSuggestions": {
+          "description": "Max suggestions",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "searchDataSourceName": {
+          "description": "Search datasource"
+        },
+        "searchItemsPath": {
+          "description": "Items path",
+          "type": "string"
+        },
+        "searchLabelKey": {
+          "description": "Label key",
+          "type": "string"
+        },
+        "searchValueKey": {
+          "description": "Value key",
+          "type": "string"
+        },
+        "searchResultLimit": {
+          "description": "Server result limit",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "minSearchLength": {
+          "description": "Min search length",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "debounceMs": {
+          "description": "Debounce (ms)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "queryContextKey": {
+          "description": "Query context key",
+          "type": "string"
+        },
+        "lazyLoad": {
+          "description": "Lazy load",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_multiSelect": {
+      "type": "object",
+      "description": "Multi-choice menu",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "multiSelect"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "showSearch": {
+          "description": "Show search",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "strictOptions": {
+          "description": "Strict options",
+          "type": "boolean"
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "filterIfEqual": {
+          "description": "Filter if equal",
+          "type": "string"
+        },
+        "filterIfNotEqual": {
+          "description": "Filter if not equal",
+          "type": "string"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_listBox": {
+      "type": "object",
+      "description": "List box",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "listBox"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "selectionMode": {
+          "description": "Selection mode",
+          "enum": [
+            "single",
+            "multiple"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "options": {
+          "description": "Options",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "maxHeight": {
+          "description": "Max height (px)",
+          "type": [
+            "number",
+            "string"
+          ]
+        }
+      }
+    },
+    "element_messageCard": {
+      "type": "object",
+      "description": "Message card",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "messageCard"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "variantMode": {
+          "description": "Variant mode",
+          "enum": [
+            "static",
+            "conditional"
+          ]
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "descriptionText": {
+          "description": "Description text",
+          "type": "string"
+        },
+        "dismissible": {
+          "description": "Dismissible",
+          "type": "boolean"
+        },
+        "initiallyVisible": {
+          "description": "Initially visible",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "variantRules": {
+          "description": "Variant rules",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "variantExpression": {
+          "description": "Variant expression",
+          "type": "string"
+        },
+        "events": {
+          "description": "Buttons. Each click action with a label becomes a small button under the text. One or two work best: the first is drawn as the main action in the message colour, the rest as quiet outlined buttons, unless you set a style."
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "appearance": {
+          "description": "Appearance",
+          "enum": [
+            "soft",
+            "card",
+            "accent"
+          ]
+        },
+        "actionsLayout": {
+          "description": "Buttons position",
+          "enum": [
+            "stacked",
+            "inline"
+          ]
+        },
+        "icon": {
+          "description": "Icon",
+          "type": "string"
+        },
+        "showIcon": {
+          "description": "Show icon",
+          "type": "boolean"
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_numberStepper": {
+      "type": "object",
+      "description": "Number stepper",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "numberStepper"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "step": {
+          "description": "Step",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "min": {
+          "description": "Min value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "max": {
+          "description": "Max value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "requiredMessage": {
+          "description": "Required message",
+          "type": "string"
+        },
+        "validators": {
+          "description": "Validators",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validator"
+          }
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_badge": {
+      "type": "object",
+      "description": "Status badge",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "badge"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text",
+          "type": "string"
+        },
+        "variantMode": {
+          "description": "Variant mode",
+          "enum": [
+            "static",
+            "conditional"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "variantRules": {
+          "description": "Variant rules",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "variantExpression": {
+          "description": "Variant expression",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "size": {
+          "description": "Size",
+          "enum": [
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        "showIcon": {
+          "description": "Show icon",
+          "type": "boolean"
+        },
+        "pill": {
+          "description": "Pill",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_statsCard": {
+      "type": "object",
+      "description": "Stats card",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "statsCard"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "valueText": {
+          "description": "Value",
+          "type": "string"
+        },
+        "trendText": {
+          "description": "Trend text",
+          "type": "string"
+        },
+        "progressValue": {
+          "description": "Goal value",
+          "type": "string"
+        },
+        "progressMax": {
+          "description": "Goal target",
+          "type": "string"
+        },
+        "progressText": {
+          "description": "Goal caption",
+          "type": "string"
+        },
+        "trendDirection": {
+          "description": "Trend direction",
+          "enum": [
+            "neutral",
+            "up",
+            "down"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "variantRules": {
+          "description": "Variant rules",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "variantExpression": {
+          "description": "Variant expression",
+          "type": "string"
+        },
+        "iconExpression": {
+          "description": "Icon expression",
+          "type": "string"
+        },
+        "trendDirectionExpression": {
+          "description": "Trend direction expression",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "icon": {
+          "description": "Icon",
+          "type": "string"
+        },
+        "variantMode": {
+          "description": "Variant mode",
+          "enum": [
+            "static",
+            "conditional"
+          ]
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "neutral",
+            "info",
+            "success",
+            "warn",
+            "risk",
+            "primary"
+          ]
+        },
+        "template": {
+          "type": "object",
+          "description": "Child elements of a dynamic or object panel, by name.",
+          "additionalProperties": {
+            "$ref": "#/definitions/element"
+          }
+        }
+      }
+    },
+    "element_progressBar": {
+      "type": "object",
+      "description": "Progress bar",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "progressBar"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "defaultValue": {
+          "description": "Initial value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "dataSource": {
+          "description": "Progress data source"
+        },
+        "progressDataPath": {
+          "description": "Progress data path",
+          "type": "string"
+        },
+        "progressValuePath": {
+          "description": "Value path",
+          "type": "string"
+        },
+        "progressMaxPath": {
+          "description": "Max path",
+          "type": "string"
+        },
+        "min": {
+          "description": "Min value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "max": {
+          "description": "Max value",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "expression": {
+          "description": "Value expression",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "displayType": {
+          "description": "Display type",
+          "enum": [
+            "linear",
+            "circular"
+          ]
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "primary",
+            "success",
+            "warning",
+            "risk"
+          ]
+        },
+        "styleType": {
+          "description": "Style type",
+          "enum": [
+            "solid",
+            "soft",
+            "striped",
+            "segmented"
+          ]
+        },
+        "valueLabelMode": {
+          "description": "Value label mode",
+          "enum": [
+            "percent",
+            "value",
+            "fraction"
+          ]
+        },
+        "showValueLabel": {
+          "description": "Show value label",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_accordion": {
+      "type": "object",
+      "description": "Accordion",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "accordion"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "items": {
+          "description": "Items",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "allowMultiple": {
+          "description": "Allow multiple",
+          "type": "boolean"
+        },
+        "openFirst": {
+          "description": "Open first",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "resetChildrenOnHide": {
+          "description": "Reset child fields on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "itemTemplateName": {
+          "description": "Item template"
+        },
+        "itemTemplate": {
+          "description": "Item template (inline HTML)"
+        }
+      }
+    },
+    "element_progressFlow": {
+      "type": "object",
+      "description": "Stepper / Timeline",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "progressFlow"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "activeIndex": {
+          "description": "Active index",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "itemSourceMode": {
+          "description": "Steps source",
+          "enum": [
+            "manual",
+            "dataSource"
+          ]
+        },
+        "items": {
+          "description": "Items"
+        },
+        "dataSource": {
+          "description": "Steps data source"
+        },
+        "stepsDataPath": {
+          "description": "Steps path",
+          "type": "string"
+        },
+        "stepLabelKey": {
+          "description": "Step label key",
+          "type": "string"
+        },
+        "stepValueKey": {
+          "description": "Step value key",
+          "type": "string"
+        },
+        "stepDescriptionKey": {
+          "description": "Step description key",
+          "type": "string"
+        },
+        "allowManualNavigation": {
+          "description": "Allow manual navigation",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "activeStepExpression": {
+          "description": "Active step expression",
+          "type": "string"
+        },
+        "activeStepDataPath": {
+          "description": "Active step data path",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "mode": {
+          "description": "Mode",
+          "enum": [
+            "stepper",
+            "timeline"
+          ]
+        },
+        "variant": {
+          "description": "Variant",
+          "enum": [
+            "default",
+            "soft",
+            "underline",
+            "plain",
+            "accordion",
+            "side"
+          ]
+        },
+        "showContent": {
+          "description": "Show content",
+          "type": "boolean"
+        },
+        "showNumbers": {
+          "description": "Show numbers",
+          "type": "boolean"
+        },
+        "showConnector": {
+          "description": "Show connector",
+          "type": "boolean"
+        },
+        "stepTemplateName": {
+          "description": "Step template"
+        },
+        "stepTemplate": {
+          "description": "Step template (inline HTML)"
+        }
+      }
+    },
+    "element_chart": {
+      "type": "object",
+      "description": "Chart",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "chart"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "chartType": {
+          "description": "Chart type",
+          "enum": [
+            "bar",
+            "line",
+            "area",
+            "pie",
+            "donut",
+            "horizontalBar"
+          ]
+        },
+        "showLegend": {
+          "description": "Show legend",
+          "type": "boolean"
+        },
+        "legendLayout": {
+          "description": "Legend layout",
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
+        },
+        "points": {
+          "description": "Points",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/option"
+          }
+        },
+        "dataSource": {
+          "description": "Data source"
+        },
+        "chartDataPath": {
+          "description": "Data path. Where the items sit inside the data source payload, e.g. data.items. Leave empty when the payload is the array itself.",
+          "type": "string"
+        },
+        "labelKey": {
+          "description": "Label key",
+          "type": "string"
+        },
+        "mergeDuplicateLabels": {
+          "description": "Merge items with the same label. Items sharing a label become one item whose value is their sum.",
+          "type": "boolean"
+        },
+        "valueKey": {
+          "description": "Value key",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "chartHeight": {
+          "description": "Chart height"
+        }
+      }
+    },
+    "element_fileUpload": {
+      "type": "object",
+      "description": "File upload",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "fileUpload"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder",
+          "type": "string"
+        },
+        "labelTooltip": {
+          "description": "Label tooltip",
+          "type": "string"
+        },
+        "multiple": {
+          "description": "Multiple",
+          "type": "boolean"
+        },
+        "showPreview": {
+          "description": "Open preview on click",
+          "type": "boolean"
+        },
+        "accept": {
+          "description": "Accept",
+          "type": "string"
+        },
+        "maxFiles": {
+          "description": "Max files",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "maxFileSizeMb": {
+          "description": "Max file size (MB)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "dropzoneText": {
+          "description": "Dropzone text",
+          "type": "string"
+        },
+        "storageMode": {
+          "description": "Save files as",
+          "enum": [
+            "base64",
+            "server"
+          ]
+        },
+        "uploadDataSourceName": {
+          "description": "Upload data source"
+        },
+        "downloadDataSourceName": {
+          "description": "Download data source"
+        },
+        "deleteDataSourceName": {
+          "description": "Delete data source"
+        },
+        "fileKeyField": {
+          "description": "File key field",
+          "type": "string"
+        },
+        "fileNameField": {
+          "description": "File name field",
+          "type": "string"
+        },
+        "fileTypeField": {
+          "description": "File type field",
+          "type": "string"
+        },
+        "fileSizeField": {
+          "description": "File size field",
+          "type": "string"
+        },
+        "uploadFormFieldName": {
+          "description": "Upload form file field",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Read only",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "readonlyIf": {
+          "description": "Read only if",
+          "type": "string"
+        },
+        "resetIf": {
+          "description": "Reset if",
+          "type": "string"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable If",
+          "type": "string"
+        },
+        "requireIf": {
+          "description": "Require If",
+          "type": "string"
+        },
+        "resetOnHide": {
+          "description": "Reset value on hide",
+          "type": "boolean"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "fitContent": {
+          "description": "Fit content",
+          "type": "boolean"
+        },
+        "displayMode": {
+          "description": "Display mode",
+          "enum": [
+            "modern",
+            "grid"
+          ]
+        }
+      }
+    },
+    "element_image": {
+      "type": "object",
+      "description": "Image",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "image"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "srcFile": {
+          "description": "Image file"
+        },
+        "src": {
+          "description": "Image src URL",
+          "type": "string"
+        },
+        "alt": {
+          "description": "Alt text",
+          "type": "string"
+        },
+        "caption": {
+          "description": "Caption",
+          "type": "string"
+        },
+        "linkUrl": {
+          "description": "Link URL",
+          "type": "string"
+        },
+        "openInNewTab": {
+          "description": "Open link in new tab",
+          "type": "boolean"
+        },
+        "loading": {
+          "description": "Loading mode",
+          "enum": [
+            "lazy",
+            "eager"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "aspectRatio": {
+          "description": "Aspect ratio",
+          "enum": [
+            "auto",
+            "1 / 1",
+            "4 / 3",
+            "16 / 9",
+            "21 / 9",
+            "3 / 4"
+          ]
+        },
+        "fit": {
+          "description": "Object fit",
+          "enum": [
+            "cover",
+            "contain",
+            "fill",
+            "none"
+          ]
+        },
+        "objectPosition": {
+          "description": "Object position",
+          "type": "string"
+        },
+        "imageHeight": {
+          "description": "Image height"
+        },
+        "radius": {
+          "description": "Radius"
+        },
+        "borderless": {
+          "description": "Borderless",
+          "type": "boolean"
+        },
+        "shadow": {
+          "description": "Shadow",
+          "type": "boolean"
+        },
+        "backgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "captionAlign": {
+          "description": "Caption align",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "showPreview": {
+          "description": "Show preview",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_video": {
+      "type": "object",
+      "description": "Video / YouTube",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "video"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "provider": {
+          "description": "Provider",
+          "enum": [
+            "youtube",
+            "embed",
+            "file"
+          ]
+        },
+        "srcFile": {
+          "description": "Video file"
+        },
+        "src": {
+          "description": "Video URL / YouTube URL",
+          "type": "string"
+        },
+        "caption": {
+          "description": "Caption",
+          "type": "string"
+        },
+        "poster": {
+          "description": "Poster image URL",
+          "type": "string"
+        },
+        "loading": {
+          "description": "Loading mode",
+          "enum": [
+            "lazy",
+            "eager"
+          ]
+        },
+        "privacyMode": {
+          "description": "YouTube no-cookie mode",
+          "type": "boolean"
+        },
+        "showRelated": {
+          "description": "Show related videos",
+          "type": "boolean"
+        },
+        "startAt": {
+          "description": "Start at (seconds)",
+          "type": "string"
+        },
+        "endAt": {
+          "description": "End at (seconds)",
+          "type": "string"
+        },
+        "allow": {
+          "description": "Iframe allow",
+          "type": "string"
+        },
+        "referrerPolicy": {
+          "description": "Referrer policy",
+          "type": "string"
+        },
+        "allowFullscreen": {
+          "description": "Allow fullscreen",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "aspectRatio": {
+          "description": "Aspect ratio",
+          "enum": [
+            "auto",
+            "16 / 9",
+            "4 / 3",
+            "1 / 1",
+            "21 / 9",
+            "9 / 16"
+          ]
+        },
+        "frameHeight": {
+          "description": "Height"
+        },
+        "radius": {
+          "description": "Radius"
+        },
+        "autoplay": {
+          "description": "Autoplay",
+          "type": "boolean"
+        },
+        "muted": {
+          "description": "Muted",
+          "type": "boolean"
+        },
+        "loop": {
+          "description": "Loop",
+          "type": "boolean"
+        },
+        "controls": {
+          "description": "Show controls",
+          "type": "boolean"
+        },
+        "playsInline": {
+          "description": "Play inline on mobile",
+          "type": "boolean"
+        },
+        "borderless": {
+          "description": "Borderless",
+          "type": "boolean"
+        },
+        "shadow": {
+          "description": "Shadow",
+          "type": "boolean"
+        },
+        "backgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        }
+      }
+    },
+    "element_iframe": {
+      "type": "object",
+      "description": "IFrame",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "iframe"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "src": {
+          "description": "Source URL",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "loading": {
+          "description": "Loading mode",
+          "enum": [
+            "lazy",
+            "eager"
+          ]
+        },
+        "referrerPolicy": {
+          "description": "Referrer policy",
+          "type": "string"
+        },
+        "sandbox": {
+          "description": "Sandbox",
+          "type": "string"
+        },
+        "allow": {
+          "description": "Allow",
+          "type": "string"
+        },
+        "allowFullscreen": {
+          "description": "Allow fullscreen",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "frameHeight": {
+          "description": "Frame height"
+        },
+        "borderless": {
+          "description": "Borderless",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_routerOutlet": {
+      "type": "object",
+      "description": "Router outlet",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "routerOutlet"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "outletName": {
+          "description": "Outlet name. Leave empty for the primary outlet. Set a name to target an Angular named outlet.",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "activateEvents": {
+          "description": "On activate"
+        },
+        "deactivateEvents": {
+          "description": "On deactivate"
+        },
+        "attachEvents": {
+          "description": "On attach"
+        },
+        "detachEvents": {
+          "description": "On detach"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        }
+      }
+    },
+    "element_divider": {
+      "type": "object",
+      "description": "Divider",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "divider"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "orientation": {
+          "description": "Orientation",
+          "enum": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        "thickness": {
+          "description": "Thickness"
+        },
+        "styleType": {
+          "description": "Style",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted"
+          ]
+        },
+        "color": {
+          "description": "Color",
+          "type": "string"
+        },
+        "spacing": {
+          "description": "Spacing"
+        }
+      }
+    },
+    "element_spacer": {
+      "type": "object",
+      "description": "Spacer",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "spacer"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "axis": {
+          "description": "Axis",
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "size": {
+          "description": "Size"
+        }
+      }
+    },
+    "element_pageTitle": {
+      "type": "object",
+      "description": "Page title",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "pageTitle"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title",
+          "type": "string"
+        },
+        "subtitle": {
+          "description": "Subtitle",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "icon": {
+          "description": "Icon",
+          "type": "string"
+        },
+        "align": {
+          "description": "Align",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "level": {
+          "description": "Heading level",
+          "enum": [
+            "h1",
+            "h2",
+            "h3",
+            "h4"
+          ]
+        },
+        "showDivider": {
+          "description": "Show divider",
+          "type": "boolean"
+        }
+      }
+    },
+    "element_signaturePad": {
+      "type": "object",
+      "description": "Signature pad",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Must equal the key the element is stored under."
+        },
+        "type": {
+          "const": "signaturePad"
+        },
+        "label": {
+          "description": "Label",
+          "type": "string"
+        },
+        "excludeFromDataJson": {
+          "description": "Keep out of data JSON. The field still works and validates, its answer is just not sent with the result.",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "canvasHeight": {
+          "description": "Canvas height (px)",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "clearLabel": {
+          "description": "Clear button label",
+          "type": "string"
+        },
+        "dataPath": {
+          "description": "Data path",
+          "type": "string"
+        },
+        "required": {
+          "description": "Required",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "Disabled",
+          "type": "boolean"
+        },
+        "readOnly": {
+          "description": "Readonly",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hidden",
+          "type": "boolean"
+        },
+        "inheritParentState": {
+          "description": "Inherit parent state",
+          "type": "boolean"
+        },
+        "visibleIf": {
+          "description": "Visible if",
+          "type": "string"
+        },
+        "disableIf": {
+          "description": "Disable if",
+          "type": "string"
+        },
+        "expression": {
+          "description": "Expression",
+          "type": "string"
+        },
+        "events": {
+          "description": "Events"
+        },
+        "width": {
+          "description": "Width"
+        },
+        "tabletWidth": {
+          "description": "Tablet width"
+        },
+        "mobileWidth": {
+          "description": "Mobile width"
+        },
+        "strokeColor": {
+          "description": "Stroke color",
+          "type": "string"
+        },
+        "strokeWidth": {
+          "description": "Stroke width",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "backgroundColor": {
+          "description": "Background color",
+          "type": "string"
+        },
+        "exportFormat": {
+          "description": "Export format",
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "description": "Element type. Custom types the host registers are allowed too.",
+          "anyOf": [
+            {
+              "enum": [
+                "page",
+                "number",
+                "timePicker",
+                "slider",
+                "text",
+                "textarea",
+                "phoneInput",
+                "richText",
+                "customHtml",
+                "richTextViewer",
+                "datepicker",
+                "dateRange",
+                "button",
+                "navMenu",
+                "selectButton",
+                "radio",
+                "checkbox",
+                "singleCheckbox",
+                "toggleSwitch",
+                "dynamicTable",
+                "table",
+                "listGrid",
+                "panel",
+                "objectPanel",
+                "splitter",
+                "emptyBlock",
+                "dynamicPanel",
+                "tabs",
+                "dialog",
+                "select",
+                "autocomplete",
+                "multiSelect",
+                "listBox",
+                "messageCard",
+                "numberStepper",
+                "badge",
+                "statsCard",
+                "progressBar",
+                "accordion",
+                "progressFlow",
+                "chart",
+                "fileUpload",
+                "image",
+                "video",
+                "iframe",
+                "routerOutlet",
+                "divider",
+                "spacer",
+                "pageTitle",
+                "signaturePad"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][\\w-]*$"
+            }
+          ]
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_number"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "timePicker"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_timePicker"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "slider"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_slider"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_text"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "textarea"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_textarea"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "phoneInput"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_phoneInput"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "richText"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_richText"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "customHtml"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_customHtml"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "richTextViewer"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_richTextViewer"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "datepicker"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_datepicker"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dateRange"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_dateRange"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "button"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_button"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "navMenu"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_navMenu"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "selectButton"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_selectButton"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "radio"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_radio"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "checkbox"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_checkbox"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "singleCheckbox"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_singleCheckbox"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "toggleSwitch"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_toggleSwitch"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dynamicTable"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_dynamicTable"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "table"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_table"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "listGrid"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_listGrid"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "panel"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_panel"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "objectPanel"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_objectPanel"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "splitter"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_splitter"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "emptyBlock"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_emptyBlock"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dynamicPanel"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_dynamicPanel"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tabs"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_tabs"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dialog"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_dialog"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "select"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_select"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "autocomplete"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_autocomplete"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "multiSelect"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_multiSelect"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "listBox"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_listBox"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "messageCard"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_messageCard"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "numberStepper"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_numberStepper"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "badge"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_badge"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "statsCard"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_statsCard"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "progressBar"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_progressBar"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "accordion"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_accordion"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "progressFlow"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_progressFlow"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "chart"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_chart"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fileUpload"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_fileUpload"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_image"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "video"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_video"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "iframe"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_iframe"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "routerOutlet"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_routerOutlet"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "divider"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_divider"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "spacer"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_spacer"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "pageTitle"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_pageTitle"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "signaturePad"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/element_signaturePad"
+          }
+        }
+      ]
+    }
+  }
+}

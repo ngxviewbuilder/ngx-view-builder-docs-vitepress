@@ -383,6 +383,7 @@ export default defineConfig({
             },
             { text: "Events reference", link: "/developers/events" },
             { text: "AI command API", link: "/developers/ai-command-api" },
+            { text: "AI tooling", link: "/developers/ai-tooling" },
             {
               text: "Runtime variables",
               link: "/developers/runtime-variables",

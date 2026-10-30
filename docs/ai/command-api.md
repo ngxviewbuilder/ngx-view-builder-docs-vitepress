@@ -191,6 +191,18 @@ await api.execute([
 
 Note that a mutation rebuilds the view, which clears working data. Set data after your last structural change, not before.
 
+### Look at it and test it
+
+Over MCP three more tools close the loop. Use them after every build or larger change, and do not tell the person a view is done before `nvb_validate` reports no errors:
+
+- `nvb_validate`: everything that loads but is wrong, with hints. Missing or unplaced elements, expressions that do not compile or read unknown fields (with a "did you mean"), unlabelled inputs, nameless buttons, unknown validators, missing data sources, credentials in data source URLs. Fix every error.
+- `nvb_screenshot` with `device` `desktop`, `tablet` or `mobile`: a picture of the Preview. Look for fields that do not line up, rows that wrap, labels cut off. Check mobile, not only desktop.
+- `nvb_preview_interact`: steps such as `{ "set": { "qty": 11 } }`, `{ "click": "addButton" }`, `{ "page": "details" }`, `{ "validate": true }`, then the state of every field. Prove each `visibleIf`, `requireIf` and calculation with made-up values. Buttons that submit, navigate, call a data source or send a message are refused; ask the person to press those.
+
+## Requests from the person
+
+The person can ask you things from inside the builder: by an expression they press Ask AI and write what the rule should do. When they ask you to listen to the builder, call `nvb_wait_for_request` in a loop (it returns `request: null` after up to 55 seconds; call it again). Each request says what to do and lists the fields the expression may read as `{name}`. Answer with `nvb_reply`: for an expression request, `expression` and a one or two sentence `explanation` in the language the person wrote in; for an explanation request, `explanation` only. If the builder answers `accepted: false`, fix what it says and reply again. Do not change the view itself unless a request asks you to.
+
 ## Your changes are one undo step
 
 Each `execute()` call is bracketed with a history checkpoint, so a whole batch collapses into a single undo for the user. Batches that share a `group` option (MCP: `group` on `nvb_execute`) fold into one undo step as long as the person edits nothing in between, so a view built section by section still undoes whole. `getAuditLog()` shows every call you made this session, which is worth reading back before you claim what you did.

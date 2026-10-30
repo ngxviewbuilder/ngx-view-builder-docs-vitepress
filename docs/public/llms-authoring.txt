@@ -1,6 +1,6 @@
 # NGX View Builder: JSON authoring reference
 
-> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.
+> NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP, and Ask AI by an expression sends what the person wrote to that same client. View JSON is checked with `npx nvb validate` and the JSON Schema in @ngxviewbuilder/runtime/schema/view.schema.json.
 
 This file is the complete AI reference for AUTHORING NGX View Builder structure JSON: the rules of engagement, the layout model, every supported property, and verified end-to-end examples. It is self-contained on purpose, so it can be pasted whole into a chat as system material.
 
@@ -201,6 +201,18 @@ await api.execute([
 **Do not use `validate` to test whether a section is visible.** It runs on a fresh copy and does not apply container visibility to children, so a field inside a hidden panel is still reported as required. Read the preview instead.
 
 Note that a mutation rebuilds the view, which clears working data. Set data after your last structural change, not before.
+
+### Look at it and test it
+
+Over MCP three more tools close the loop. Use them after every build or larger change, and do not tell the person a view is done before `nvb_validate` reports no errors:
+
+- `nvb_validate`: everything that loads but is wrong, with hints. Missing or unplaced elements, expressions that do not compile or read unknown fields (with a "did you mean"), unlabelled inputs, nameless buttons, unknown validators, missing data sources, credentials in data source URLs. Fix every error.
+- `nvb_screenshot` with `device` `desktop`, `tablet` or `mobile`: a picture of the Preview. Look for fields that do not line up, rows that wrap, labels cut off. Check mobile, not only desktop.
+- `nvb_preview_interact`: steps such as `{ "set": { "qty": 11 } }`, `{ "click": "addButton" }`, `{ "page": "details" }`, `{ "validate": true }`, then the state of every field. Prove each `visibleIf`, `requireIf` and calculation with made-up values. Buttons that submit, navigate, call a data source or send a message are refused; ask the person to press those.
+
+## Requests from the person
+
+The person can ask you things from inside the builder: by an expression they press Ask AI and write what the rule should do. When they ask you to listen to the builder, call `nvb_wait_for_request` in a loop (it returns `request: null` after up to 55 seconds; call it again). Each request says what to do and lists the fields the expression may read as `{name}`. Answer with `nvb_reply`: for an expression request, `expression` and a one or two sentence `explanation` in the language the person wrote in; for an explanation request, `explanation` only. If the builder answers `accepted: false`, fix what it says and reply again. Do not change the view itself unless a request asks you to.
 
 ## Your changes are one undo step
 
