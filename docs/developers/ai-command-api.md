@@ -144,7 +144,9 @@ MCP gives a server no way to start a turn in a chat, so the request reaches the 
 
 A request carries the person's words, the property and the element it belongs to, and the fields the expression may read: names, types, labels and option values. It never carries form data. The AI answers with `nvb_reply`, and the builder checks the answer before the person sees it: the expression has to compile and read only fields and variables the view has. If it does not, `nvb_reply` answers `accepted: false` with the reason and the AI corrects itself in the same turn; after four refused answers the request is closed. The person still chooses **Use this**, **Try again** or **Discard**, and Use this is one undo step like any edit.
 
-The box tells the person when the AI is not listening yet, and what to say in the chat.
+While no AI listens, the box shows the person the exact sentence to paste into the chat, with a Copy button. The server also adds a line to every other tool answer while a request waits ("The person is waiting for you: 1 request…"), so an AI that is busy in the builder anyway picks it up without being told.
+
+In the box, `@` opens a list of the view's fields; a picked field reaches the AI as `{name}`, so the request names the field exactly. An `@` that names no field is left as written.
 
 ### Your own model instead of MCP
 
