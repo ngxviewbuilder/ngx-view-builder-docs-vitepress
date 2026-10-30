@@ -83,6 +83,24 @@ Runtime state of some containers is also addressable: `{myTabs.selectedTab}`, `{
 
 An expression re-evaluates automatically whenever any field it references changes. For text inputs you can tune *when* with **Logic execution mode**: on input (every keystroke), on change, or on blur (leaving the field).
 
+## Ask AI to write it
+
+If your developer connected the builder to an AI client (Settings, AI access), every expression editor has an **Ask AI** button: in the Logic dialog it sits next to the title, in the code editor in its header.
+
+1. Press **Ask AI** and write what the rule should do, in your own words and your own language: *show when the total is over 1000 and the customer is not VIP*.
+2. Press **Write expression** (or Enter).
+3. You get the expression and a sentence or two saying what it does. Press **Use this**, **Try again** or **Discard**.
+
+You can also type the words straight into the expression field and press Ask AI; the builder sees that it is a sentence, not an expression, and sends it.
+
+Before you see anything, the builder checks the answer: the expression has to work and may only read fields and variables this view has. If it does not, the AI is told why and fixes it by itself. Still read it before you use it: the AI picks the most likely meaning, and the sentence under the expression says which one it picked. Use this is one undo step, like any other edit, and in the Logic dialog nothing is kept until you press Save.
+
+**Explain current** does the opposite: it describes an existing expression in plain words, which helps when you open a view someone else built.
+
+If the box says your AI client is not listening, go to its chat and ask it to listen to the builder. The request waits five minutes.
+
+The AI gets your words and the names, types and labels of the fields, never what anyone typed into the form.
+
 ## Debugging
 
 An expression the parser cannot read never runs: `{qty} >= (` is neither true nor false, so a rule written that way silently does nothing. The builder says so as you type. The Logic panel and the code editor show the reason under the expression (*Unexpected end of expression*), and the rule's card keeps the warning after you save, until the expression is fixed.

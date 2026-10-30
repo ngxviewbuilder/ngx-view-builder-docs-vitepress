@@ -37,7 +37,7 @@ function replaceVideoComponents(body) {
 }
 
 const SUMMARY =
-  'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP.';
+  'NGX View Builder is a visual builder for complete Angular views: forms, dashboards, data tables, and guided flows are designed in a drag-and-drop builder, stored as JSON, and rendered natively in an Angular app. It installs as @ngxviewbuilder/runtime (free) and @ngxviewbuilder/designer (the builder); the old unscoped ngx-view-builder package is no longer updated. The builder has no AI chat or model inside it: AI clients (Claude, ChatGPT, Cursor, agents) drive it from outside over MCP, and Ask AI by an expression sends what the person wrote to that same client. View JSON is checked with `npx nvb validate` and the JSON Schema in @ngxviewbuilder/runtime/schema/view.schema.json.';
 
 // A few top-level pages use VitePress's `home`/`page` layouts instead of plain
 // prose and have no `description:` frontmatter, so they are described by hand instead.
