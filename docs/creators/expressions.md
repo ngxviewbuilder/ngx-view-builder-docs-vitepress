@@ -87,17 +87,17 @@ An expression re-evaluates automatically whenever any field it references change
 
 If your developer connected the builder to an AI client (Settings, AI access), every expression editor has an **Ask AI** button: in the Logic dialog it sits next to the title, in the code editor in its header.
 
-1. Press **Ask AI** and write what the rule should do, in your own words and your own language: *show when the total is over 1000 and the customer is not VIP*.
+1. Press **Ask AI** and write what the rule should do, in your own words and your own language: *show when @total is over 1000 and the customer is not VIP*. Type `@` to pick a field from a list (by its name or its label), so the AI knows exactly which one you mean.
 2. Press **Write expression** (or Enter).
 3. You get the expression and a sentence or two saying what it does. Press **Use this**, **Try again** or **Discard**.
 
-You can also type the words straight into the expression field and press Ask AI; the builder sees that it is a sentence, not an expression, and sends it.
+You can also type the words straight into the expression field. The builder sees that it is a sentence, not an expression, and offers **Turn it into an expression with AI** under the syntax message.
 
 Before you see anything, the builder checks the answer: the expression has to work and may only read fields and variables this view has. If it does not, the AI is told why and fixes it by itself. Still read it before you use it: the AI picks the most likely meaning, and the sentence under the expression says which one it picked. Use this is one undo step, like any other edit, and in the Logic dialog nothing is kept until you press Save.
 
 **Explain current** does the opposite: it describes an existing expression in plain words, which helps when you open a view someone else built.
 
-If the box says your AI client is not listening, go to its chat and ask it to listen to the builder. The request waits five minutes.
+Claude Code with channels answers right away. Every other AI client (Codex, ChatGPT, Cursor) only sees your requests while it listens, so the first time the box shows a sentence to paste into that chat, with a **Copy** button. Paste it once per chat and leave the chat open. A request waits five minutes for the AI to pick it up.
 
 The AI gets your words and the names, types and labels of the fields, never what anyone typed into the form.
 
