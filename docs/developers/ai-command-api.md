@@ -48,17 +48,19 @@ The server also offers prompts, which clients that support them show as slash co
 
 The bridge connects only while `<ngx-view-builder-designer>` is mounted, and only for a license key that is genuine and not expired: AI access comes with an active designer license. A runtime only host never opens one, no matter who calls what. Leaving the builder closes it again.
 
-There are two ways to open it. With nothing but `licenseKey` in the settings, the person presses **Connect** under Settings → AI access (MCP) and the builder dials our hosted server, `wss://mcp.ngxviewbuilder.io/bridge`. The hosted server asks the license console about the key before it pairs anything, and again every hour. A host that runs its own server gives the builder its address instead, and the builder connects on its own:
+There are two ways to open it. With nothing but the license key configured, the person presses **Connect** under Settings → AI access (MCP) and the builder dials our hosted server, `wss://mcp.ngxviewbuilder.io/bridge`. The hosted server asks the license console about the key before it pairs anything, and again every hour. A host that runs its own server gives the builder its address instead, and the builder connects on its own:
 
 ```ts
-readonly builderSettings: INgxViewBuilderBuilderSettings = {
+provideNgxViewBuilderDesigner({
   licenseKey: 'NVB-...',
   mcp: {
     url: 'wss://mcp.example.com/bridge',
     client: { app: 'Back office', page: 'Order form' },
   },
-};
+}),
 ```
+
+The same `mcp` object also works in a builder's `runtimeSettings`, which wins for that builder. That is the place for a session key your backend issues per user. `mcp: false` switches AI access off: nothing connects and Settings shows no AI access section.
 
 | Option | Description |
 | --- | --- |
@@ -66,7 +68,7 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
 | `client` | App and page labels. The AI client sees them after pairing, which helps a person with several builder tabs open tell which one is being driven. |
 | `sessionKey` | A key your own backend issued. See [Keys from your backend](#keys-from-your-backend). |
 
-`NgxViewBuilderMcpBridgeService` exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired`, `aiBusy`, `licenseProblem` and `lastError`. The builder's own header already shows an **AI connected** badge while a client is paired. `regenerateKey()` does what the **New key** button does.
+`NgxViewBuilderMcpBridgeService` (from `@ngxviewbuilder/designer`) exposes the connection as signals, in case you want your own indicator somewhere in the host app: `status`, `sessionKey`, `clientUrl`, `pairedClients`, `isPaired`, `aiBusy`, `licenseProblem` and `lastError`. The builder's own header already shows an **AI connected** badge while a client is paired. `regenerateKey()` does what the **New key** button does.
 
 ## Pairing
 
@@ -159,7 +161,7 @@ import { firstValueFrom } from 'rxjs';
 import {
   NgxViewBuilderAiAssistService,
   type INgxViewBuilderAiAssistAnswer,
-} from '@ngxviewbuilder/runtime';
+} from '@ngxviewbuilder/designer';
 
 @Component({ /* the page that hosts <ngx-view-builder-designer> */ })
 export class BuilderPage {

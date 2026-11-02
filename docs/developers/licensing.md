@@ -37,17 +37,35 @@ If you've used commercial component libraries before, the model will feel famili
 The key is read by the designer. There is nowhere to put one in a runtime-only
 application, and nothing there would check it.
 
-Pass it through `runtimeSettings`:
+Give it once, next to the runtime's providers, and every builder in the app uses it:
+
+```ts
+import { provideNgxViewBuilderRuntime } from '@ngxviewbuilder/runtime';
+import { provideNgxViewBuilderDesigner } from '@ngxviewbuilder/designer';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideNgxViewBuilderRuntime(),
+    provideNgxViewBuilderDesigner({ licenseKey: 'NVB-eyJjdXN0b21lcklkIjo...' }),
+  ],
+});
+```
+
+The licensed plugins (Logic map, Documentation, API) read the same key.
+
+When the key only arrives after start, from your backend say, or one builder needs a different one, pass it to that builder through `runtimeSettings` instead. It wins over the provider:
 
 ```ts
 readonly builderSettings: INgxViewBuilderBuilderSettings = {
-  licenseKey: 'NVB-eyJjdXN0b21lcklkIjo...',
+  licenseKey: keyFromYourBackend,
 };
 ```
 
 ```html
-<ngx-view-builder-builder [runtimeSettings]="builderSettings" ... />
+<ngx-view-builder-designer [runtimeSettings]="builderSettings" ... />
 ```
+
+`provideNgxViewBuilderDesigner()` arrived in 1.1.1. On older versions use `runtimeSettings`.
 
 ## How validation works
 

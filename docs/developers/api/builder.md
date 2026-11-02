@@ -289,4 +289,4 @@ setAiAssistantConfig(config: { backendUrl?: string | null } | null): void
 getAiAssistantConfig(): { backendUrl?: string | null }
 ```
 
-Fires `onAiAssistantConfigChanged`. For connecting an AI client to the builder, see [AI command API](../ai-command-api).
+Deprecated since 1.1.1, removed in 2.0. Nothing reads this config: AI clients connect over MCP, see [AI command API](../ai-command-api). It still stores the value and fires `onAiAssistantConfigChanged`.
