@@ -132,7 +132,7 @@ export class CatalogPicker {
 
 ## Letting AI clients use your plugin
 
-`NgxViewBuilderAiPluginRegistryService` lets a plugin tell AI clients what it offers. A plugin has an `id`, a `description` the model reads, an optional `query` description, a `read(query)` function and a list of `commands`, each with `params`, an `example` and a `run(args)`:
+`NgxViewBuilderAiPluginRegistryService` (from `@ngxviewbuilder/designer`) lets a plugin tell AI clients what it offers. A plugin has an `id`, a `description` the model reads, an optional `query` description, a `read(query)` function and a list of `commands`, each with `params`, an `example` and a `run(args)`:
 
 ```ts
 inject(NgxViewBuilderAiPluginRegistryService).register({

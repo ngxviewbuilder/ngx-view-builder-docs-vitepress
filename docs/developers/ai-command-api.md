@@ -161,7 +161,7 @@ import { firstValueFrom } from 'rxjs';
 import {
   NgxViewBuilderAiAssistService,
   type INgxViewBuilderAiAssistAnswer,
-} from '@ngxviewbuilder/runtime';
+} from '@ngxviewbuilder/designer';
 
 @Component({ /* the page that hosts <ngx-view-builder-designer> */ })
 export class BuilderPage {
