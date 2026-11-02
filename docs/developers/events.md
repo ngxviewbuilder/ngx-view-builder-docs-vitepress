@@ -135,7 +135,7 @@ api.onDataSourceLoadFailed.add(({ sourceName, errorMessage }) => {
 | `onCustomCssUrlsChanged` | stylesheet urls changed | `{ urls }` |
 | `onDataSourceTypeSettingsChanged` | optional source types were switched | `{ settings }` |
 | `onElementDefaultsChanged` | element defaults were registered or cleared | `{ defaults, changedTypes }` |
-| `onAiAssistantConfigChanged` | the AI assistant config was set | `{ config }` |
+| `onAiAssistantConfigChanged` | the AI assistant config was set (deprecated since 1.1.1) | `{ config }` |
 
 ## Templates & sidebar library
 

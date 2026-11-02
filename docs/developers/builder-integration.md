@@ -90,9 +90,10 @@ readonly builderSettings: INgxViewBuilderBuilderSettings = {
   runtimeVariableContext: { userRole: 'admin' },
   propertyHints: { name: 'Unique data key' },  // extra hint texts in the sidebar
   mcp: { url: 'wss://mcp.example.com/bridge' },  // let an AI client drive the builder
-  licenseKey: 'NVB-...',
 };
 ```
+
+The license key usually goes in `provideNgxViewBuilderDesigner({ licenseKey })`, once for the app, and `mcp` can go there too. Both still work in `runtimeSettings`, which wins for that one builder. See [Licensing](./licensing#supplying-the-key).
 
 `mcp` is optional. With it, the builder connects to an MCP server while it is on screen and shows a session key under Settings → AI access (MCP), which a person gives to their AI client to let it edit the view. See [AI command API](./ai-command-api#connecting-the-builder).
 
