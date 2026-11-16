@@ -28,7 +28,10 @@ Click **New data source** in the **Data sources** tab below the canvas. Every so
 
 With the OpenAPI plugin, an **API** row above the request lets you pick the endpoint from your application's API instead of typing it, and fills in the URL, method and body for you. See [API](./api).
 
-`{placeholders}` are filled from the request params you map on the element or action. If a required placeholder has no value yet, the request is skipped: a city list bound to `{countryId}` stays empty until a country is picked.
+`{placeholders}` are filled from the request params you map on the element or action. Where the placeholder sits decides what an empty value does:
+
+- In the path, `/api/cities/{countryId}`, the value is required. Until a country is picked the request is skipped and the city list stays empty.
+- In the query string, `/api/customers?q={search}&status={status}`, the placeholder is an optional filter. An empty value leaves that `name=value` pair out, so with nothing picked the request is `/api/customers` and the table shows everything. Fill in a status and the request becomes `/api/customers?status=active`.
 
 ### Route data
 
