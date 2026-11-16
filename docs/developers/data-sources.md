@@ -250,7 +250,8 @@ Call these after host-side mutations so tables and dropdowns reflect new data.
 ## Caching & skipped requests
 
 - Responses are cached per request signature (URL + method + payload); identical concurrent requests are coalesced. Force fresh data with the reload APIs.
-- A request whose URL/body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
+- A request whose URL **path** or body still contains an **unresolved `{placeholder}`** is skipped and yields empty data. That's by design (dependent dropdowns before their parent has a value).
+- A `{placeholder}` in the **query string** is optional: when its value is empty the whole `name=value` pair is dropped. `/api/customers?q={search}&status={status}` becomes `/api/customers` with nothing filled in and `/api/customers?status=active` with only a status. A pair with a literal next to the placeholder (`sort={field}-asc`) is always sent.
 
 ## WebSocket sources <Badge type="warning" text="Experimental" /> {#websocket-sources}
 
